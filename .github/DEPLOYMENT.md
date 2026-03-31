@@ -7,6 +7,7 @@
 1. Перейдите в Settings → Secrets and variables → Actions
 2. Нажмите "New repository secret" и добавьте:
 
+
 ### Обязательные секреты:
 
 - **SSH_HOST** - IP адрес или домен вашего сервера (например: `123.45.67.89` или `server.example.com`)
