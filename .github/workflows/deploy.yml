@@ -26,9 +26,21 @@ jobs:
 
             cd ${{ secrets.PROJECT_PATH }}
 
+            export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
+            export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+            [ -s "$HOME/.profile" ] && . "$HOME/.profile"
+            [ -s "$HOME/.bashrc" ] && . "$HOME/.bashrc"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
             command -v php >/dev/null 2>&1 || { echo "php not found"; exit 1; }
             command -v composer >/dev/null 2>&1 || { echo "composer not found"; exit 1; }
             command -v npm >/dev/null 2>&1 || { echo "npm not found"; exit 1; }
+            command -v node >/dev/null 2>&1 || { echo "node not found"; exit 1; }
+
+            echo "php: $(command -v php)"
+            echo "composer: $(command -v composer)"
+            echo "node: $(command -v node)"
+            echo "npm: $(command -v npm)"
 
             git pull origin main
             composer install --no-dev --optimize-autoloader
