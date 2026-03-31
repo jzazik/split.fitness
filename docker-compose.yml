@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: split_fitness_app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=${DB_DATABASE:-split_fitness}
+      - DB_USERNAME=${DB_USERNAME:-root}
+      - DB_PASSWORD=${DB_PASSWORD:-secret}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    networks:
+      - split_fitness_network
+    depends_on:
+      - mysql
+      - redis
+
+  nginx:
+    image: nginx:alpine
+    container_name: split_fitness_nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - split_fitness_network
+    depends_on:
+      - app
+
+  mysql:
+    image: mysql:8.0
+    container_name: split_fitness_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-split_fitness}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_USER: ${DB_USERNAME:-split_fitness}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - split_fitness_network
+    command: --default-authentication-plugin=mysql_native_password
+
+  redis:
+    image: redis:7-alpine
+    container_name: split_fitness_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - split_fitness_network
+
+  node:
+    image: node:20-alpine
+    container_name: split_fitness_node
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    command: npm run dev
+    ports:
+      - "5173:5173"
+    networks:
+      - split_fitness_network
+    depends_on:
+      - app
+
+networks:
+  split_fitness_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
