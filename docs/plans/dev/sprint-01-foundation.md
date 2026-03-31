@@ -297,14 +297,14 @@ php artisan route:list | grep -E "athlete|coach|admin"
 - Modify: `resources/js/app.js`
 
 **Steps:**
-- [ ] Установить pinia: `npm install pinia`
-- [ ] Зарегистрировать Pinia в app.js
-- [ ] Создать auth store:
+- [x] Установить pinia: `npm install pinia`
+- [x] Зарегистрировать Pinia в app.js
+- [x] Создать auth store:
   - state: user (из shared props)
   - getters: isAthlete, isCoach, isAdmin, fullName
   - actions: logout
-- [ ] Использовать auth store в layouts (показывать user.fullName)
-- [ ] Mark completed
+- [x] Использовать auth store в layouts (показывать user.fullName)
+- [x] Mark completed
 
 ---
 

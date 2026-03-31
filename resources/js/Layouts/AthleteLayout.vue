@@ -1,23 +1,16 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
+import { useAuthStore } from '@/stores/auth';
 
 const showingNavigationDropdown = ref(false);
-const page = usePage();
-
-const user = computed(() => page.props.auth.user);
-const userFullName = computed(() => {
-    const u = user.value;
-    if (u.first_name && u.last_name) {
-        return `${u.first_name} ${u.last_name}`;
-    }
-    return u.email;
-});
+const authStore = useAuthStore();
+const { user, fullName } = authStore;
 </script>
 
 <template>
@@ -62,7 +55,7 @@ const userFullName = computed(() => {
                                                 type="button"
                                                 class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
                                             >
-                                                {{ userFullName }}
+                                                {{ fullName }}
 
                                                 <svg
                                                     class="-me-0.5 ms-2 h-4 w-4"
@@ -156,7 +149,7 @@ const userFullName = computed(() => {
                     <div class="border-t border-gray-200 pb-1 pt-4">
                         <div class="px-4">
                             <div class="text-base font-medium text-gray-800">
-                                {{ userFullName }}
+                                {{ fullName }}
                             </div>
                             <div class="text-sm font-medium text-gray-500">
                                 {{ user.email }}
