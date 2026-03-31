@@ -140,18 +140,18 @@ php artisan route:list | grep -E "athlete|coach|admin"
 - Create: `database/seeders/SportsSeeder.php`
 
 **Steps:**
-- [ ] Создать миграцию cities:
+- [x] Создать миграцию cities:
   - id, name, slug, country_code, lat, lng, timestamps
-- [ ] Создать миграцию sports:
+- [x] Создать миграцию sports:
   - id, slug, name, icon nullable, is_active boolean default true
-- [ ] Создать модели City, Sport
-- [ ] Создать CitiesSeeder с основными городами РФ (Москва, СПб, Екатеринбург, Казань, Новосибирск)
-- [ ] Создать SportsSeeder (running, functional, yoga, cycling, boxing, crossfit)
-- [ ] Добавить relationship `User belongsTo City`
-- [ ] Запустить `php artisan migrate`
-- [ ] Запустить `php artisan db:seed --class=CitiesSeeder`
-- [ ] Запустить `php artisan db:seed --class=SportsSeeder`
-- [ ] Mark completed
+- [x] Создать модели City, Sport
+- [x] Создать CitiesSeeder с основными городами РФ (Москва, СПб, Екатеринбург, Казань, Новосибирск)
+- [x] Создать SportsSeeder (running, functional, yoga, cycling, boxing, crossfit)
+- [x] Добавить relationship `User belongsTo City`
+- [x] Запустить `php artisan migrate`
+- [x] Запустить `php artisan db:seed --class=CitiesSeeder`
+- [x] Запустить `php artisan db:seed --class=SportsSeeder`
+- [x] Mark completed
 
 ---
 
