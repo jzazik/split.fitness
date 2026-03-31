@@ -339,17 +339,17 @@ php artisan route:list | grep -E "athlete|coach|admin"
 - Create: `tests/Feature/Middleware/RoleMiddlewareTest.php`
 
 **Steps:**
-- [ ] Создать RegistrationWithRolesTest:
+- [x] Создать RegistrationWithRolesTest:
   - Тест регистрации athlete → редирект на /athlete/bookings
   - Тест регистрации coach → редирект на /coach/dashboard
   - Тест валидации: роль обязательна
-- [ ] Создать RoleMiddlewareTest:
+- [x] Создать RoleMiddlewareTest:
   - Athlete не может зайти на /coach/*
   - Coach не может зайти на /athlete/*
   - Неавторизованный → редирект на /login
-- [ ] Запустить `php artisan test`
-- [ ] Убедиться, что все тесты проходят
-- [ ] Mark completed
+- [x] Запустить `php artisan test`
+- [x] Убедиться, что все тесты проходят
+- [x] Mark completed
 
 ---
 
@@ -393,9 +393,9 @@ php artisan route:list | grep -E "athlete|coach|admin"
 ---
 
 **Definition of Done:**
-- [ ] Обязательные задачи 1-8, 10 завершены
+- [x] Обязательные задачи 1-8, 10 завершены
 - [ ] Task 9 (Docker) опциональна — выполнить по желанию
-- [ ] Validation commands выполнены успешно
-- [ ] Feature tests проходят
-- [ ] Ручная проверка в браузере пройдена
-- [ ] Код прошёл review (если команда)
+- [x] Validation commands выполнены успешно
+- [x] Feature tests проходят
+- [ ] Ручная проверка в браузере пройдена (manual - not automatable)
+- [ ] Код прошёл review (если команда) (manual - not automatable)
