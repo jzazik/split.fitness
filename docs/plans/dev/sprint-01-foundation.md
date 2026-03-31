@@ -244,23 +244,23 @@ php artisan route:list | grep -E "athlete|coach|admin"
 - Modify: `resources/js/Pages/Auth/Register.vue`
 
 **Steps:**
-- [ ] Создать PublicLayout.vue:
+- [x] Создать PublicLayout.vue:
   - Header с логотипом split.fitness
   - Кнопки Войти / Регистрация
   - Footer (пустой пока)
-- [ ] Создать AthleteLayout.vue:
+- [x] Создать AthleteLayout.vue:
   - Header с навигацией: Тренировки | Профиль
   - Аватар пользователя (справа)
   - Slot для контента
-- [ ] Создать CoachLayout.vue:
+- [x] Создать CoachLayout.vue:
   - Header с навигацией: Тренировки | Профиль | Выплаты
   - Аватар пользователя
   - Slot для контента
-- [ ] Обернуть Login.vue и Register.vue в PublicLayout
-- [ ] Создать заглушки страниц:
+- [x] Обернуть Login.vue и Register.vue в PublicLayout
+- [x] Создать заглушки страниц:
   - `resources/js/Pages/Athlete/Bookings/Index.vue` (с AthleteLayout)
   - `resources/js/Pages/Coach/Dashboard.vue` (с CoachLayout)
-- [ ] Mark completed
+- [x] Mark completed
 
 ---
 

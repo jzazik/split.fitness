@@ -1,5 +1,5 @@
 <script setup>
-import GuestLayout from '@/Layouts/GuestLayout.vue';
+import PublicLayout from '@/Layouts/PublicLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
@@ -24,10 +24,15 @@ const submit = () => {
 </script>
 
 <template>
-    <GuestLayout>
+    <PublicLayout>
         <Head title="Register" />
 
-        <form @submit.prevent="submit">
+        <div class="flex min-h-[calc(100vh-12rem)] items-center justify-center px-4 py-12">
+            <div class="w-full max-w-md">
+                <div class="bg-white px-8 py-10 shadow-md rounded-lg">
+                    <h2 class="text-2xl font-bold text-center text-gray-900 mb-6">Регистрация</h2>
+
+                    <form @submit.prevent="submit">
             <div>
                 <InputLabel for="role" value="Я хочу" />
 
@@ -171,6 +176,9 @@ const submit = () => {
                     Регистрация
                 </PrimaryButton>
             </div>
-        </form>
-    </GuestLayout>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </PublicLayout>
 </template>
