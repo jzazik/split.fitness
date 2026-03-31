@@ -25,12 +25,45 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            'role' => fake()->randomElement(['athlete', 'coach']),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
+            'phone' => fake()->optional()->numerify('+7##########'),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
         ];
+    }
+
+    /**
+     * Indicate that the user should be an athlete.
+     */
+    public function athlete(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'athlete',
+        ]);
+    }
+
+    /**
+     * Indicate that the user should be a coach.
+     */
+    public function coach(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'coach',
+        ]);
+    }
+
+    /**
+     * Indicate that the user should be an admin.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'admin',
+        ]);
     }
 
     /**

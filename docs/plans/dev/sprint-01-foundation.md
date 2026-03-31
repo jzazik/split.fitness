@@ -165,23 +165,23 @@ php artisan route:list | grep -E "athlete|coach|admin"
 - Create: `app/Http/Requests/Auth/RegisterRequest.php`
 
 **Steps:**
-- [ ] Создать RegisterRequest с валидацией:
+- [x] Создать RegisterRequest с валидацией:
   - role required in:athlete,coach
   - email required unique
   - phone nullable unique
   - first_name required
   - last_name required
   - password required min:8
-- [ ] Обновить RegisteredUserController:
+- [x] Обновить RegisteredUserController:
   - Использовать RegisterRequest
   - Сохранять role, first_name, last_name, phone
-- [ ] Обновить Register.vue:
+- [x] Обновить Register.vue:
   - Убрать поле name
   - Добавить first_name, last_name
   - Добавить radio buttons для выбора роли (Атлет / Тренер)
   - Добавить phone (опционально)
-- [ ] Проверить регистрацию в браузере для athlete и coach
-- [ ] Mark completed
+- [x] Проверить регистрацию в браузере для athlete и coach
+- [x] Mark completed
 
 ---
 

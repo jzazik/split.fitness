@@ -3,14 +3,13 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -26,27 +25,38 @@ class RegisteredUserController extends Controller
 
     /**
      * Handle an incoming registration request.
-     *
-     * @throws ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(RegisterRequest $request): RedirectResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        $validated = $request->validated();
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'role' => $validated['role'],
+            'first_name' => $validated['first_name'],
+            'last_name' => $validated['last_name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        Log::info('User registered successfully', [
+            'user_id' => $user->id,
+            'role' => $user->role,
+            'email' => $user->email,
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // Role-based redirect (fallback to dashboard if role routes don't exist yet)
+        $redirectRoute = match ($user->role) {
+            'athlete' => \Illuminate\Support\Facades\Route::has('athlete.bookings') ? 'athlete.bookings' : 'dashboard',
+            'coach' => \Illuminate\Support\Facades\Route::has('coach.dashboard') ? 'coach.dashboard' : 'dashboard',
+            'admin' => \Illuminate\Support\Facades\Route::has('filament.admin.pages.dashboard') ? 'filament.admin.pages.dashboard' : 'dashboard',
+            default => 'dashboard',
+        };
+
+        return redirect()->route($redirectRoute);
     }
 }
