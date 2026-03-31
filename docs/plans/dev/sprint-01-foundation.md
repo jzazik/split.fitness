@@ -106,8 +106,8 @@ php artisan route:list | grep -E "athlete|coach|admin"
 - Modify: `app/Models/User.php`
 
 **Steps:**
-- [ ] Открыть миграцию create_users_table
-- [ ] Добавить поля:
+- [x] Открыть миграцию create_users_table
+- [x] Добавить поля:
   - `role` enum('athlete', 'coach', 'admin') not null
   - `phone` string nullable unique
   - `first_name` string nullable
@@ -117,13 +117,13 @@ php artisan route:list | grep -E "athlete|coach|admin"
   - `city_id` foreignId nullable
   - `phone_verified_at` timestamp nullable
   - `status` enum('active', 'blocked') default 'active'
-- [ ] Убрать поле `name` (заменено на first_name, last_name)
-- [ ] Обновить Model User:
+- [x] Убрать поле `name` (заменено на first_name, last_name)
+- [x] Обновить Model User:
   - Добавить поля в `$fillable`
   - Добавить casts для `phone_verified_at`, `role`, `status`
   - Добавить accessor `getFullNameAttribute()`
-- [ ] Запустить `php artisan migrate`
-- [ ] Mark completed
+- [x] Запустить `php artisan migrate`
+- [x] Mark completed
 
 ---
 

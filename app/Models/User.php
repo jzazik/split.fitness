@@ -19,9 +19,16 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'role',
         'email',
         'password',
+        'phone',
+        'first_name',
+        'last_name',
+        'middle_name',
+        'avatar_path',
+        'city_id',
+        'status',
     ];
 
     /**
@@ -43,7 +50,30 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the user's full name.
+     */
+    public function getFullNameAttribute(): string
+    {
+        $parts = array_filter([
+            $this->last_name,
+            $this->first_name,
+            $this->middle_name,
+        ]);
+
+        return implode(' ', $parts);
+    }
+
+    /**
+     * Get the city that the user belongs to.
+     */
+    public function city()
+    {
+        return $this->belongsTo(City::class);
     }
 }
