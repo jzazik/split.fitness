@@ -24,4 +24,20 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Athlete routes
+Route::middleware(['auth', 'role:athlete'])->prefix('athlete')->name('athlete.')->group(function () {
+    Route::get('/bookings', [\App\Http\Controllers\Athlete\BookingsController::class, 'index'])->name('bookings');
+});
+
+// Coach routes
+Route::middleware(['auth', 'role:coach'])->prefix('coach')->name('coach.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Coach\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/profile', [\App\Http\Controllers\Coach\ProfileController::class, 'edit'])->name('profile');
+});
+
+// Admin routes (stub for future)
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Admin routes will be added later
+});
+
 require __DIR__.'/auth.php';

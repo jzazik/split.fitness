@@ -28,7 +28,7 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route('athlete.bookings', absolute: false));
     }
 
     public function test_users_can_register_as_athlete(): void
@@ -49,6 +49,7 @@ class RegistrationTest extends TestCase
             'first_name' => 'Test',
             'last_name' => 'Athlete',
         ]);
+        $response->assertRedirect(route('athlete.bookings', absolute: false));
     }
 
     public function test_users_can_register_as_coach(): void
@@ -69,6 +70,7 @@ class RegistrationTest extends TestCase
             'first_name' => 'Test',
             'last_name' => 'Coach',
         ]);
+        $response->assertRedirect(route('coach.dashboard', absolute: false));
     }
 
     public function test_role_is_required(): void

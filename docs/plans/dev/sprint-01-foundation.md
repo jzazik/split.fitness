@@ -214,21 +214,21 @@ php artisan route:list | grep -E "athlete|coach|admin"
 - Create: `app/Http/Controllers/Coach/DashboardController.php`
 
 **Steps:**
-- [ ] В routes/web.php создать группы:
+- [x] В routes/web.php создать группы:
   - `/athlete/*` с middleware ['auth', 'role:athlete']
   - `/coach/*` с middleware ['auth', 'role:coach']
   - `/admin/*` с middleware ['auth', 'role:admin']
-- [ ] Создать роуты:
+- [x] Создать роуты:
   - `GET /athlete/bookings` → Athlete\BookingsController@index (stub)
   - `GET /coach/dashboard` → Coach\DashboardController@index
   - `GET /coach/profile` → Coach\ProfileController@edit (stub)
-- [ ] Создать контроллеры с заглушками (возвращают Inertia::render)
-- [ ] После логина редиректить:
+- [x] Создать контроллеры с заглушками (возвращают Inertia::render)
+- [x] После логина редиректить:
   - athlete → `/athlete/bookings`
   - coach → `/coach/dashboard`
   - admin → `/admin` (Filament позже)
-- [ ] Настроить role-based redirect после логина в auth контроллере/handler
-- [ ] Mark completed
+- [x] Настроить role-based redirect после логина в auth контроллере/handler
+- [x] Mark completed
 
 ---
 
