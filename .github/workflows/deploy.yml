@@ -4,11 +4,19 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production-main
+  cancel-in-progress: false
 
 jobs:
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
 
     steps:
       - name: Deploy to server
@@ -42,12 +50,17 @@ jobs:
             echo "node: $(command -v node)"
             echo "npm: $(command -v npm)"
 
-            git pull origin main
-            composer install --no-dev --optimize-autoloader
-            npm install
+            git pull --ff-only origin main
+            composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+            if [ -f package-lock.json ]; then
+              npm ci --no-audit --no-fund
+            else
+              npm install --no-audit --no-fund
+            fi
             npm run build
 
-            php artisan migrate --force
+            php artisan migrate --force --no-interaction
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
