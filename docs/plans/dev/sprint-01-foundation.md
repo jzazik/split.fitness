@@ -194,13 +194,13 @@ php artisan route:list | grep -E "athlete|coach|admin"
 - Modify: `bootstrap/app.php`
 
 **Steps:**
-- [ ] Создать middleware EnsureUserHasRole с параметром $role
-- [ ] Проверять `auth()->user()->role === $role`, иначе abort(403)
-- [ ] Зарегистрировать middleware alias в bootstrap/app.php:
+- [x] Создать middleware EnsureUserHasRole с параметром $role
+- [x] Проверять `auth()->user()->role === $role`, иначе abort(403)
+- [x] Зарегистрировать middleware alias в bootstrap/app.php:
   - `role:athlete`
   - `role:coach`
   - `role:admin`
-- [ ] Mark completed
+- [x] Mark completed
 
 ---
 
