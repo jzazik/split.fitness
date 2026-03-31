@@ -275,16 +275,16 @@ php artisan route:list | grep -E "athlete|coach|admin"
 - Create: `resources/js/Components/UI/Input.vue`
 
 **Steps:**
-- [ ] Обновить tailwind.config.js:
+- [x] Обновить tailwind.config.js:
   - Добавить цвета проекта (если есть в Figma дизайне)
   - Добавить кастомные breakpoints при необходимости
-- [ ] В app.css добавить базовые стили (reset, typography)
-- [ ] Создать базовые UI компоненты:
+- [x] В app.css добавить базовые стили (reset, typography)
+- [x] Создать базовые UI компоненты:
   - Button.vue (primary, secondary, danger variants)
   - Input.vue (с поддержкой errors)
-- [ ] Применить компоненты в Login.vue и Register.vue
-- [ ] Проверить responsive на 350px - 428px (мобильные)
-- [ ] Mark completed
+- [x] Применить компоненты в Login.vue и Register.vue
+- [x] Проверить responsive на 350px - 428px (мобильные)
+- [x] Mark completed
 
 ---
 

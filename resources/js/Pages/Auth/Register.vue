@@ -1,9 +1,8 @@
 <script setup>
 import PublicLayout from '@/Layouts/PublicLayout.vue';
+import Button from '@/Components/UI/Button.vue';
+import Input from '@/Components/UI/Input.vue';
 import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const form = useForm({
@@ -34,27 +33,27 @@ const submit = () => {
 
                     <form @submit.prevent="submit">
             <div>
-                <InputLabel for="role" value="Я хочу" />
+                <label class="block text-sm font-medium text-gray-700 mb-2">Я хочу</label>
 
-                <div class="mt-2 space-y-2">
-                    <label class="flex items-center">
+                <div class="space-y-2">
+                    <label class="flex items-center cursor-pointer">
                         <input
                             type="radio"
                             name="role"
                             value="athlete"
                             v-model="form.role"
-                            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                            class="rounded-full border-gray-300 text-primary-600 shadow-sm focus:ring-primary-500"
                         />
                         <span class="ms-2 text-sm text-gray-700">Тренироваться (Атлет)</span>
                     </label>
 
-                    <label class="flex items-center">
+                    <label class="flex items-center cursor-pointer">
                         <input
                             type="radio"
                             name="role"
                             value="coach"
                             v-model="form.role"
-                            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                            class="rounded-full border-gray-300 text-primary-600 shadow-sm focus:ring-primary-500"
                         />
                         <span class="ms-2 text-sm text-gray-700">Проводить тренировки (Тренер)</span>
                     </label>
@@ -64,117 +63,93 @@ const submit = () => {
             </div>
 
             <div class="mt-4">
-                <InputLabel for="first_name" value="Имя" />
-
-                <TextInput
+                <Input
                     id="first_name"
                     type="text"
-                    class="mt-1 block w-full"
+                    label="Имя"
                     v-model="form.first_name"
+                    :error="form.errors.first_name"
                     required
                     autofocus
                     autocomplete="given-name"
                 />
-
-                <InputError class="mt-2" :message="form.errors.first_name" />
             </div>
 
             <div class="mt-4">
-                <InputLabel for="last_name" value="Фамилия" />
-
-                <TextInput
+                <Input
                     id="last_name"
                     type="text"
-                    class="mt-1 block w-full"
+                    label="Фамилия"
                     v-model="form.last_name"
+                    :error="form.errors.last_name"
                     required
                     autocomplete="family-name"
                 />
-
-                <InputError class="mt-2" :message="form.errors.last_name" />
             </div>
 
             <div class="mt-4">
-                <InputLabel for="email" value="Email" />
-
-                <TextInput
+                <Input
                     id="email"
                     type="email"
-                    class="mt-1 block w-full"
+                    label="Email"
                     v-model="form.email"
+                    :error="form.errors.email"
                     required
                     autocomplete="username"
                 />
-
-                <InputError class="mt-2" :message="form.errors.email" />
             </div>
 
             <div class="mt-4">
-                <InputLabel for="phone" value="Телефон (необязательно)" />
-
-                <TextInput
+                <Input
                     id="phone"
                     type="tel"
-                    class="mt-1 block w-full"
+                    label="Телефон (необязательно)"
                     v-model="form.phone"
+                    :error="form.errors.phone"
                     autocomplete="tel"
                     placeholder="+7 (999) 123-45-67"
                 />
-
-                <InputError class="mt-2" :message="form.errors.phone" />
             </div>
 
             <div class="mt-4">
-                <InputLabel for="password" value="Пароль" />
-
-                <TextInput
+                <Input
                     id="password"
                     type="password"
-                    class="mt-1 block w-full"
+                    label="Пароль"
                     v-model="form.password"
+                    :error="form.errors.password"
                     required
                     autocomplete="new-password"
                 />
-
-                <InputError class="mt-2" :message="form.errors.password" />
             </div>
 
             <div class="mt-4">
-                <InputLabel
-                    for="password_confirmation"
-                    value="Подтвердите пароль"
-                />
-
-                <TextInput
+                <Input
                     id="password_confirmation"
                     type="password"
-                    class="mt-1 block w-full"
+                    label="Подтвердите пароль"
                     v-model="form.password_confirmation"
+                    :error="form.errors.password_confirmation"
                     required
                     autocomplete="new-password"
                 />
-
-                <InputError
-                    class="mt-2"
-                    :message="form.errors.password_confirmation"
-                />
             </div>
 
-            <div class="mt-4 flex items-center justify-end">
+            <div class="mt-6 flex items-center justify-between">
                 <Link
                     :href="route('login')"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    class="text-sm text-primary-600 hover:text-primary-700 underline"
                 >
                     Уже зарегистрированы?
                 </Link>
 
-                <PrimaryButton
-                    class="ms-4"
-                    :class="{ 'opacity-25': form.processing }"
+                <Button
+                    type="submit"
+                    variant="primary"
                     :disabled="form.processing"
                 >
                     Регистрация
-                </PrimaryButton>
+                </Button>
             </div>
                     </form>
                 </div>
