@@ -168,13 +168,13 @@ php artisan schedule:test
 - Modify: `resources/js/Pages/Public/Map/Index.vue`
 
 **Steps:**
-- [ ] В WorkoutBottomCard:
+- [x] В WorkoutBottomCard:
   - Кнопка "Записаться"
   - Если не auth → редирект /login?redirect=/map
   - Если auth (athlete) → POST /api/bookings {workout_id}
   - После успеха → redirect /booking/{id}/payment (placeholder)
-- [ ] Показать "Мест нет" если slots_booked >= slots_total
-- [ ] Mark completed
+- [x] Показать "Мест нет" если slots_booked >= slots_total
+- [x] Mark completed
 
 ---
 

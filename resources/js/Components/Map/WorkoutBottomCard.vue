@@ -182,16 +182,41 @@ const close = () => {
   emit('close');
 };
 
-const handleBooking = () => {
+const handleBooking = async () => {
   // Check if user is authenticated
   const isAuthenticated = page.props.auth?.user;
 
   if (!isAuthenticated) {
-    // Redirect to login if not authenticated
-    router.visit('/login');
-  } else {
-    // TODO: Implement booking flow in future sprint
-    console.log('Booking workout:', props.workout.id);
+    // Redirect to login with redirect parameter back to map
+    router.visit('/login?redirect=/map');
+    return;
+  }
+
+  // Check if user is an athlete
+  const userRole = page.props.auth?.user?.role;
+  if (userRole !== 'athlete') {
+    alert('Только атлеты могут записываться на тренировки');
+    return;
+  }
+
+  try {
+    // Make POST request to create booking
+    const response = await window.axios.post('/api/bookings', {
+      workout_id: props.workout.id,
+      slots_count: 1,
+    });
+
+    // On success, redirect to booking payment placeholder
+    // For now, redirect to athlete bookings page
+    const bookingId = response.data.id;
+    router.visit(`/athlete/bookings`);
+  } catch (error) {
+    if (error.response?.data?.message) {
+      alert(error.response.data.message);
+    } else {
+      alert('Не удалось создать бронирование. Попробуйте позже.');
+    }
+    console.error('Booking error:', error);
   }
 };
 
