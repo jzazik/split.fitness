@@ -2,6 +2,7 @@
 
 namespace App\Actions\Booking;
 
+use App\Events\BookingCreated;
 use App\Models\Booking;
 use App\Models\User;
 use App\Models\Workout;
@@ -42,6 +43,8 @@ class CreateBookingAction
             'status' => $booking->status,
             'total_amount' => $totalAmount,
         ]);
+
+        BookingCreated::dispatch($booking);
 
         return $booking;
     }

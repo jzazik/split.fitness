@@ -226,10 +226,10 @@ php artisan schedule:test
 - Modify: `app/Actions/Booking/CreateBookingAction.php`
 
 **Steps:**
-- [ ] Создать событие BookingCreated
-- [ ] Создать listener (заглушка, email в Sprint 7)
-- [ ] В CreateBookingAction dispatch event
-- [ ] Mark completed
+- [x] Создать событие BookingCreated
+- [x] Создать listener (заглушка, email в Sprint 7)
+- [x] В CreateBookingAction dispatch event
+- [x] Mark completed
 
 ---
 

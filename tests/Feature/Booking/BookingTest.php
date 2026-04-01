@@ -4,12 +4,16 @@ namespace Tests\Feature\Booking;
 
 use App\Actions\Booking\CreateBookingAction;
 use App\Actions\Booking\ReserveSlotAction;
+use App\Events\BookingCreated;
 use App\Jobs\ExpirePendingBookingJob;
+use App\Listeners\NotifyCoachNewBooking;
 use App\Models\Booking;
 use App\Models\User;
 use App\Models\Workout;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -301,6 +305,8 @@ class BookingTest extends TestCase
 
     public function test_booking_logs_creation_with_context(): void
     {
+        Queue::fake();
+
         Log::shouldReceive('info')
             ->once()
             ->withArgs(function ($message, $context) {
@@ -391,5 +397,24 @@ class BookingTest extends TestCase
         $workout->refresh();
         $this->assertEquals(6, $workout->slots_booked);
         $this->assertEquals(3, $workout->bookings()->count());
+    }
+
+    public function test_booking_created_event_is_dispatched(): void
+    {
+        Event::fake([BookingCreated::class]);
+
+        $workout = Workout::factory()->published()->create();
+        $athlete = User::factory()->athlete()->create();
+
+        $booking = $this->createBookingAction->execute($workout, $athlete, 1);
+
+        Event::assertDispatched(BookingCreated::class, function ($event) use ($booking) {
+            return $event->booking->id === $booking->id;
+        });
+
+        Event::assertListening(
+            BookingCreated::class,
+            NotifyCoachNewBooking::class
+        );
     }
 }
