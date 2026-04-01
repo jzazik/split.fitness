@@ -46,7 +46,7 @@ const { user, fullName } = authStore;
                                     :href="route('coach.profile')"
                                     :active="route().current('coach.profile')"
                                 >
-                                    Выплаты
+                                    Профиль тренера
                                 </NavLink>
                             </div>
                         </div>
@@ -153,7 +153,7 @@ const { user, fullName } = authStore;
                             :href="route('coach.profile')"
                             :active="route().current('coach.profile')"
                         >
-                            Выплаты
+                            Профиль тренера
                         </ResponsiveNavLink>
                     </div>
 

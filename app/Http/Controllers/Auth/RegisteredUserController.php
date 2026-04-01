@@ -53,7 +53,6 @@ class RegisteredUserController extends Controller
         $redirectRoute = match ($user->role) {
             'athlete' => 'athlete.bookings',
             'coach' => 'coach.dashboard',
-            'admin' => 'filament.admin.pages.dashboard',
             default => 'dashboard',
         };
 
