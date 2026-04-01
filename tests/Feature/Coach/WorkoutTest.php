@@ -342,4 +342,131 @@ class WorkoutTest extends TestCase
             ->has('workouts.data', 1) // Only one workout for current coach
         );
     }
+
+    public function test_workouts_index_can_filter_by_status(): void
+    {
+        // Create workouts with different statuses
+        Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'draft',
+        ]);
+
+        Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'published',
+            'published_at' => Carbon::now(),
+        ]);
+
+        Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'cancelled',
+            'cancelled_at' => Carbon::now(),
+        ]);
+
+        // Filter by draft
+        $response = $this
+            ->actingAs($this->coach)
+            ->get(route('coach.workouts.index', ['status' => 'draft']));
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->has('workouts.data', 1)
+            ->where('filters.status', 'draft')
+        );
+
+        // Filter by published
+        $response = $this
+            ->actingAs($this->coach)
+            ->get(route('coach.workouts.index', ['status' => 'published']));
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->has('workouts.data', 1)
+            ->where('filters.status', 'published')
+        );
+
+        // Filter by cancelled
+        $response = $this
+            ->actingAs($this->coach)
+            ->get(route('coach.workouts.index', ['status' => 'cancelled']));
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->has('workouts.data', 1)
+            ->where('filters.status', 'cancelled')
+        );
+
+        // No filter - should show all 3
+        $response = $this
+            ->actingAs($this->coach)
+            ->get(route('coach.workouts.index'));
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->has('workouts.data', 3)
+        );
+    }
+
+    public function test_workouts_index_orders_by_starts_at_desc(): void
+    {
+        $futureWorkout = Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'starts_at' => Carbon::now()->addDays(5),
+        ]);
+
+        $nearWorkout = Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'starts_at' => Carbon::now()->addDays(2),
+        ]);
+
+        $distantWorkout = Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'starts_at' => Carbon::now()->addDays(10),
+        ]);
+
+        $response = $this
+            ->actingAs($this->coach)
+            ->get(route('coach.workouts.index'));
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->has('workouts.data', 3)
+            ->where('workouts.data.0.id', $distantWorkout->id) // Most distant first
+            ->where('workouts.data.1.id', $futureWorkout->id)
+            ->where('workouts.data.2.id', $nearWorkout->id) // Nearest last
+        );
+    }
+
+    public function test_workouts_index_paginates_results(): void
+    {
+        // Create 20 workouts
+        Workout::factory()->count(20)->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+        ]);
+
+        $response = $this
+            ->actingAs($this->coach)
+            ->get(route('coach.workouts.index'));
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->has('workouts.data', 15) // 15 per page
+            ->where('workouts.total', 20)
+            ->has('workouts.links')
+        );
+    }
 }

@@ -1,12 +1,23 @@
 <script setup>
 import CoachLayout from '@/Layouts/CoachLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
 import Button from '@/Components/UI/Button.vue';
 
 const props = defineProps({
     workouts: Object,
+    filters: Object,
 });
+
+const selectedStatus = ref(props.filters?.status || '');
+
+const filterByStatus = (status) => {
+    selectedStatus.value = status;
+    router.get(route('coach.workouts.index'), { status }, {
+        preserveState: true,
+        preserveScroll: true,
+    });
+};
 
 const getStatusBadgeClass = (status) => {
     const baseClasses = 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium';
@@ -71,6 +82,55 @@ const formatTime = (dateString) => {
                             Создать тренировку
                         </Button>
                     </Link>
+                </div>
+
+                <!-- Status Filters -->
+                <div class="mb-4 flex items-center gap-2">
+                    <span class="text-sm text-gray-600">Фильтр по статусу:</span>
+                    <button
+                        @click="filterByStatus('')"
+                        :class="[
+                            'px-3 py-1 rounded-md text-sm font-medium transition',
+                            selectedStatus === ''
+                                ? 'bg-primary-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ]"
+                    >
+                        Все
+                    </button>
+                    <button
+                        @click="filterByStatus('draft')"
+                        :class="[
+                            'px-3 py-1 rounded-md text-sm font-medium transition',
+                            selectedStatus === 'draft'
+                                ? 'bg-primary-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ]"
+                    >
+                        Черновики
+                    </button>
+                    <button
+                        @click="filterByStatus('published')"
+                        :class="[
+                            'px-3 py-1 rounded-md text-sm font-medium transition',
+                            selectedStatus === 'published'
+                                ? 'bg-primary-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ]"
+                    >
+                        Опубликованные
+                    </button>
+                    <button
+                        @click="filterByStatus('cancelled')"
+                        :class="[
+                            'px-3 py-1 rounded-md text-sm font-medium transition',
+                            selectedStatus === 'cancelled'
+                                ? 'bg-primary-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ]"
+                    >
+                        Отменённые
+                    </button>
                 </div>
 
                 <!-- Workouts Table -->

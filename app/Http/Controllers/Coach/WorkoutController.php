@@ -22,13 +22,24 @@ class WorkoutController extends Controller
     {
         $user = auth()->user();
 
-        $workouts = Workout::where('coach_id', $user->id)
-            ->with(['sport', 'city'])
-            ->orderBy('starts_at', 'desc')
-            ->paginate(15);
+        $query = Workout::where('coach_id', $user->id)
+            ->with(['sport', 'city']);
+
+        // Apply status filter if provided
+        $status = request('status');
+        if ($status && in_array($status, ['draft', 'published', 'cancelled', 'completed'])) {
+            $query->where('status', $status);
+        }
+
+        $workouts = $query->orderBy('starts_at', 'desc')
+            ->paginate(15)
+            ->withQueryString();
 
         return Inertia::render('Coach/Workouts/Index', [
             'workouts' => $workouts,
+            'filters' => [
+                'status' => $status,
+            ],
         ]);
     }
 

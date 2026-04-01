@@ -200,18 +200,18 @@ php artisan tinker
 - Modify: `app/Http/Controllers/Coach/WorkoutController.php`
 
 **Steps:**
-- [ ] В WorkoutController@index:
+- [x] В WorkoutController@index:
   - Получить тренировки текущего тренера
   - Eager load: sport, city
   - Сортировать по starts_at desc
   - Пагинация (15 per page)
-- [ ] Создать Index.vue:
+- [x] Создать Index.vue:
   - Таблица тренировок:
     - Колонки: #ID, Дата, Время, Место, Спорт, Цена, Занято мест, Статус
     - Действия: Редактировать, Опубликовать (если draft), Отменить
   - Кнопка "Создать тренировку" → /coach/workouts/create
   - Фильтры: по статусу (draft/published/cancelled)
-- [ ] Mark completed
+- [x] Mark completed
 
 ---
 
