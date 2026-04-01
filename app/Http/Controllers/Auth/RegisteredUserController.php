@@ -61,7 +61,7 @@ class RegisteredUserController extends Controller
             'athlete' => 'athlete.bookings',
             'coach' => 'coach.dashboard',
             'admin' => 'admin.dashboard',
-            default => 'dashboard',
+            default => throw new \RuntimeException('Unexpected role after registration: '.$user->role),
         };
 
         return redirect()->route($redirectRoute);

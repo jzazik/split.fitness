@@ -74,11 +74,14 @@ class User extends Authenticatable
     protected function fullName(): Attribute
     {
         return Attribute::make(
-            get: fn () => implode(' ', array_filter([
-                $this->last_name,
-                $this->first_name,
-                $this->middle_name,
-            ]))
+            get: fn () => implode(' ', array_filter(
+                array_map('trim', [
+                    $this->last_name,
+                    $this->first_name,
+                    $this->middle_name,
+                ]),
+                fn ($value) => ! empty($value)
+            ))
         );
     }
 

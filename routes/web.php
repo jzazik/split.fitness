@@ -19,7 +19,14 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    $user = auth()->user();
+
+    return redirect(match ($user->role) {
+        'athlete' => route('athlete.bookings'),
+        'coach' => route('coach.dashboard'),
+        'admin' => route('admin.dashboard'),
+        default => '/',
+    });
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
