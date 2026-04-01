@@ -33,18 +33,23 @@ class MapController extends Controller
             $query->where('city_id', $request->input('city_id'));
         }
 
-        // Filter by sport
+        // Filter by sport (supports single or multiple)
         if ($request->filled('sport_id')) {
-            $query->where('sport_id', $request->input('sport_id'));
+            $sportIds = $request->input('sport_id');
+            if (is_array($sportIds)) {
+                $query->whereIn('sport_id', $sportIds);
+            } else {
+                $query->where('sport_id', $sportIds);
+            }
         }
 
         // Filter by date range
         if ($request->filled('date_from')) {
-            $query->where('starts_at', '>=', $request->input('date_from'));
+            $query->whereDate('starts_at', '>=', $request->input('date_from'));
         }
 
         if ($request->filled('date_to')) {
-            $query->where('starts_at', '<=', $request->input('date_to'));
+            $query->whereDate('starts_at', '<=', $request->input('date_to'));
         }
 
         // Bounding box filter (viewport optimization)

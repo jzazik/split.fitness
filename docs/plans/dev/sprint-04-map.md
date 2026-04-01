@@ -146,15 +146,15 @@ curl "http://localhost/api/workouts/map?city_id=1&sport_id=2"
 - Modify: `resources/js/Pages/Public/Map/Index.vue`
 
 **Steps:**
-- [ ] Создать MapFilters.vue:
+- [x] Создать MapFilters.vue:
   - Select города
   - Chips для видов спорта (multiple)
   - DatePicker для даты ("Сегодня", "Завтра", "На этой неделе")
   - Кнопка "Сбросить фильтры"
-- [ ] В Index.vue:
+- [x] В Index.vue:
   - При изменении фильтров → запрос к API с новыми параметрами
   - Обновить маркеры на карте
-- [ ] Mark completed
+- [x] Mark completed
 
 ---
 

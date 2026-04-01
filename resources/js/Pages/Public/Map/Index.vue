@@ -6,6 +6,14 @@
       <!-- Map Container (Fullscreen) -->
       <div ref="mapContainer" class="w-full h-full"></div>
 
+      <!-- Map Filters -->
+      <MapFilters
+        v-model="filters"
+        :cities="cities"
+        :sports="sports"
+        @change="handleFilterChange"
+      />
+
       <!-- Loading State -->
       <div
         v-if="loading"
@@ -21,9 +29,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, reactive, onMounted, onBeforeUnmount } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import PublicLayout from '@/Layouts/PublicLayout.vue';
+import MapFilters from '@/Components/Map/MapFilters.vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useMarkerCluster } from '@/composables/useMarkerCluster';
@@ -46,6 +55,14 @@ const loading = ref(false);
 const workouts = ref([]);
 let map = null;
 let markerClusterGroup = null;
+
+// Filters state
+const filters = reactive({
+  cityId: null,
+  sportIds: [],
+  dateFrom: null,
+  dateTo: null,
+});
 
 // Fix for default marker icon not showing in production builds
 delete L.Icon.Default.prototype._getIconUrl;
@@ -89,7 +106,26 @@ const loadWorkouts = async () => {
   loading.value = true;
 
   try {
-    const response = await window.axios.get('/api/workouts/map');
+    // Build query parameters from filters
+    const params = {};
+
+    if (filters.cityId) {
+      params.city_id = filters.cityId;
+    }
+
+    if (filters.sportIds && filters.sportIds.length > 0) {
+      params.sport_id = filters.sportIds;
+    }
+
+    if (filters.dateFrom) {
+      params.date_from = filters.dateFrom;
+    }
+
+    if (filters.dateTo) {
+      params.date_to = filters.dateTo;
+    }
+
+    const response = await window.axios.get('/api/workouts/map', { params });
     workouts.value = response.data.data;
 
     // Clear existing markers
@@ -109,6 +145,11 @@ const loadWorkouts = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+// Handle filter changes
+const handleFilterChange = () => {
+  loadWorkouts();
 };
 
 const addWorkoutMarker = (workout) => {

@@ -115,6 +115,126 @@ class MapApiTest extends TestCase
             ->assertJsonCount(1, 'data');
     }
 
+    public function test_can_filter_by_multiple_sport_ids(): void
+    {
+        $sport1 = Sport::factory()->create();
+        $sport2 = Sport::factory()->create();
+        $sport3 = Sport::factory()->create();
+
+        Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $sport1->id,
+            'city_id' => $this->city->id,
+            'status' => 'published',
+            'starts_at' => now()->addDay(),
+        ]);
+
+        Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $sport2->id,
+            'city_id' => $this->city->id,
+            'status' => 'published',
+            'starts_at' => now()->addDay(),
+        ]);
+
+        Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $sport3->id,
+            'city_id' => $this->city->id,
+            'status' => 'published',
+            'starts_at' => now()->addDay(),
+        ]);
+
+        $response = $this->getJson("/api/workouts/map?sport_id[]={$sport1->id}&sport_id[]={$sport2->id}");
+
+        $response->assertStatus(200)
+            ->assertJsonCount(2, 'data');
+    }
+
+    public function test_can_filter_by_date_from(): void
+    {
+        Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'published',
+            'starts_at' => now()->addDays(1),
+        ]);
+
+        Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'published',
+            'starts_at' => now()->addDays(5),
+        ]);
+
+        $dateFrom = now()->addDays(3)->format('Y-m-d');
+        $response = $this->getJson("/api/workouts/map?date_from={$dateFrom}");
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data');
+    }
+
+    public function test_can_filter_by_date_to(): void
+    {
+        Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'published',
+            'starts_at' => now()->addDays(1),
+        ]);
+
+        Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'published',
+            'starts_at' => now()->addDays(5),
+        ]);
+
+        $dateTo = now()->addDays(3)->format('Y-m-d');
+        $response = $this->getJson("/api/workouts/map?date_to={$dateTo}");
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data');
+    }
+
+    public function test_can_filter_by_date_range(): void
+    {
+        Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'published',
+            'starts_at' => now()->addDays(1),
+        ]);
+
+        Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'published',
+            'starts_at' => now()->addDays(3),
+        ]);
+
+        Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'published',
+            'starts_at' => now()->addDays(10),
+        ]);
+
+        $dateFrom = now()->addDays(2)->format('Y-m-d');
+        $dateTo = now()->addDays(7)->format('Y-m-d');
+        $response = $this->getJson("/api/workouts/map?date_from={$dateFrom}&date_to={$dateTo}");
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data');
+    }
+
     public function test_can_filter_by_bbox(): void
     {
         Workout::factory()->create([
