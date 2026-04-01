@@ -888,7 +888,7 @@ class WorkoutTest extends TestCase
                 'slots_total' => 5,
             ]);
 
-        $response->assertSessionHasErrors(['slots_booked']);
+        $response->assertSessionHasErrors(['starts_at']);
 
         // Attempt to change time (core field)
         $response = $this->actingAs($this->coach)
@@ -904,7 +904,7 @@ class WorkoutTest extends TestCase
                 'slots_total' => 5,
             ]);
 
-        $response->assertSessionHasErrors(['slots_booked']);
+        $response->assertSessionHasErrors(['starts_at']);
 
         // Attempt to change price (core field)
         $response = $this->actingAs($this->coach)
@@ -920,7 +920,7 @@ class WorkoutTest extends TestCase
                 'slots_total' => 5,
             ]);
 
-        $response->assertSessionHasErrors(['slots_booked']);
+        $response->assertSessionHasErrors(['starts_at']);
 
         // Can update non-core fields (title, description)
         $response = $this->actingAs($this->coach)

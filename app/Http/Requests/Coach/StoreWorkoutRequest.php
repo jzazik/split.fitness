@@ -142,7 +142,7 @@ class StoreWorkoutRequest extends FormRequest
             'lng.between' => 'Долгота должна быть в диапазоне от -180 до 180',
             'starts_at.required' => 'Укажите дату и время начала',
             'starts_at.date' => 'Неверный формат даты',
-            'starts_at.after' => 'Тренировка должна начинаться в будущем',
+            'starts_at.after' => 'Тренировка должна начинаться минимум через 1 час',
             'starts_at.before' => 'Тренировка должна начинаться не позже чем через 3 месяца',
             'duration_minutes.required' => 'Укажите длительность тренировки',
             'duration_minutes.integer' => 'Длительность должна быть целым числом',

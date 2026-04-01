@@ -272,7 +272,7 @@ class WorkoutController extends Controller
 
                     if ($coreFieldsChanged) {
                         throw ValidationException::withMessages([
-                            'slots_booked' => 'Нельзя изменять местоположение, время или цену тренировки с существующими бронированиями.',
+                            'starts_at' => 'Нельзя изменять местоположение, время или цену тренировки с существующими бронированиями.',
                         ]);
                     }
                 }

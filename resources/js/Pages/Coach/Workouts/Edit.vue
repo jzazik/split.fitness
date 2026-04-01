@@ -85,6 +85,11 @@ const submit = () => {
         // datetime-local format is "YYYY-MM-DDTHH:mm"
         // Create a Date object from this, which will interpret it as local time
         const localDate = new Date(localDateTime);
+        // Check if date is valid before converting
+        if (isNaN(localDate.getTime())) {
+            console.error('Invalid date value:', localDateTime);
+            return;
+        }
         // Convert to UTC ISO string for the backend
         form.starts_at = localDate.toISOString();
     }
