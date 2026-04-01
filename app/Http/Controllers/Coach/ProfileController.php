@@ -10,6 +10,6 @@ class ProfileController extends Controller
 {
     public function edit(): Response
     {
-        return Inertia::render('Coach/Profile/Edit');
+        return Inertia::render('Coach/Payments');
     }
 }

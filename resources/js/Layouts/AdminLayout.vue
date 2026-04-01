@@ -23,7 +23,7 @@ const { user, fullName } = authStore;
                         <div class="flex">
                             <!-- Logo -->
                             <div class="flex shrink-0 items-center">
-                                <Link :href="route('coach.dashboard')">
+                                <Link :href="route('dashboard')">
                                     <ApplicationLogo class="block h-9 w-auto fill-current text-gray-800" />
                                 </Link>
                             </div>
@@ -31,22 +31,10 @@ const { user, fullName } = authStore;
                             <!-- Navigation Links -->
                             <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink
-                                    :href="route('coach.dashboard')"
-                                    :active="route().current('coach.dashboard')"
+                                    :href="route('dashboard')"
+                                    :active="route().current('dashboard')"
                                 >
-                                    Тренировки
-                                </NavLink>
-                                <NavLink
-                                    :href="route('profile.edit')"
-                                    :active="route().current('profile.edit')"
-                                >
-                                    Профиль
-                                </NavLink>
-                                <NavLink
-                                    :href="route('coach.profile')"
-                                    :active="route().current('coach.profile')"
-                                >
-                                    Выплаты
+                                    Панель управления
                                 </NavLink>
                             </div>
                         </div>
@@ -80,6 +68,9 @@ const { user, fullName } = authStore;
                                     </template>
 
                                     <template #content>
+                                        <DropdownLink :href="route('profile.edit')">
+                                            Профиль
+                                        </DropdownLink>
                                         <DropdownLink
                                             :href="route('logout')"
                                             method="post"
@@ -135,22 +126,10 @@ const { user, fullName } = authStore;
                 >
                     <div class="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink
-                            :href="route('coach.dashboard')"
-                            :active="route().current('coach.dashboard')"
+                            :href="route('dashboard')"
+                            :active="route().current('dashboard')"
                         >
-                            Тренировки
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            :href="route('profile.edit')"
-                            :active="route().current('profile.edit')"
-                        >
-                            Профиль
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            :href="route('coach.profile')"
-                            :active="route().current('coach.profile')"
-                        >
-                            Выплаты
+                            Панель управления
                         </ResponsiveNavLink>
                     </div>
 
@@ -166,6 +145,9 @@ const { user, fullName } = authStore;
                         </div>
 
                         <div class="mt-3 space-y-1">
+                            <ResponsiveNavLink :href="route('profile.edit')">
+                                Профиль
+                            </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 :href="route('logout')"
                                 method="post"

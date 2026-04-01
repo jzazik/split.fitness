@@ -49,7 +49,7 @@ class CityTest extends TestCase
             'lng' => 37.6173000,
         ]);
 
-        $this->assertIsString($city->lat);
-        $this->assertIsString($city->lng);
+        $this->assertIsFloat($city->lat);
+        $this->assertIsFloat($city->lng);
     }
 }

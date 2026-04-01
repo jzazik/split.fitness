@@ -1,26 +1,46 @@
 <script setup>
 import CoachLayout from '@/Layouts/CoachLayout.vue';
+import DeleteUserForm from '@/Pages/Profile/Partials/DeleteUserForm.vue';
+import UpdatePasswordForm from '@/Pages/Profile/Partials/UpdatePasswordForm.vue';
+import UpdateProfileInformationForm from '@/Pages/Profile/Partials/UpdateProfileInformationForm.vue';
 import { Head } from '@inertiajs/vue3';
+
+defineProps({
+    mustVerifyEmail: {
+        type: Boolean,
+    },
+    status: {
+        type: String,
+    },
+});
 </script>
 
 <template>
     <CoachLayout>
-        <Head title="Выплаты" />
+        <Head title="Профиль" />
 
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
-                Выплаты
+                Профиль
             </h2>
         </template>
 
         <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900">
-                        <p class="text-center text-gray-500">
-                            Раздел выплат находится в разработке. Здесь будет информация о ваших выплатах и настройки профиля.
-                        </p>
-                    </div>
+            <div class="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+                <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                    <UpdateProfileInformationForm
+                        :must-verify-email="mustVerifyEmail"
+                        :status="status"
+                        class="max-w-xl"
+                    />
+                </div>
+
+                <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                    <UpdatePasswordForm class="max-w-xl" />
+                </div>
+
+                <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                    <DeleteUserForm class="max-w-xl" />
                 </div>
             </div>
         </div>
