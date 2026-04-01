@@ -87,7 +87,7 @@ class OnboardingController extends Controller
             'bio' => 'required|string|max:1000',
             'city_id' => 'required|exists:cities,id',
             'sports' => 'required|array|min:1',
-            'sports.*' => 'exists:sports,id',
+            'sports.*' => 'exists:sports,id,is_active,1',
             'experience_years' => 'nullable|integer|min:0|max:100',
         ]);
 
@@ -100,11 +100,6 @@ class OnboardingController extends Controller
             ]);
 
             $profile = $user->coachProfile;
-            if (!$profile) {
-                $profile = $user->coachProfile()->create([
-                    'moderation_status' => 'pending',
-                ]);
-            }
 
             $profile->update([
                 'bio' => $validated['bio'],
@@ -147,14 +142,11 @@ class OnboardingController extends Controller
                 'city_id' => $validated['city_id'] ?? null,
             ]);
 
-            $profile = $user->athleteProfile;
-            if (!$profile) {
-                $profile = $user->athleteProfile()->create([]);
+            if ($user->athleteProfile) {
+                $user->athleteProfile->update([
+                    'emergency_contact' => $validated['emergency_contact'] ?? null,
+                ]);
             }
-
-            $profile->update([
-                'emergency_contact' => $validated['emergency_contact'] ?? null,
-            ]);
 
             Log::info('Athlete profile completed via onboarding', [
                 'user_id' => $user->id,

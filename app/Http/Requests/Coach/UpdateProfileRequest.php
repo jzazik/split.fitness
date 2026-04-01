@@ -20,7 +20,7 @@ class UpdateProfileRequest extends FormRequest
             'bio' => ['required', 'string', 'max:1000'],
             'city_id' => ['required', 'exists:cities,id'],
             'sports' => ['required', 'array', 'min:1'],
-            'sports.*' => ['required', 'integer', 'exists:sports,id'],
+            'sports.*' => ['required', 'integer', 'exists:sports,id,is_active,1'],
             'experience_years' => ['nullable', 'integer', 'min:0', 'max:100'],
         ];
     }

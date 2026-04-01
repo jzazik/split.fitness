@@ -30,7 +30,7 @@ class EnsureProfileCompleted
             $redirectCount = session()->get('onboarding_redirect_count', 0);
 
             if ($redirectCount > 3) {
-                Log::warning('Onboarding redirect loop detected', [
+                Log::error('Onboarding redirect loop detected - profile incomplete but cannot redirect', [
                     'user_id' => $user->id,
                     'role' => $user->role,
                     'redirect_count' => $redirectCount,
@@ -38,7 +38,13 @@ class EnsureProfileCompleted
                 ]);
 
                 session()->forget('onboarding_redirect_count');
-                return $next($request);
+                auth()->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return redirect()->route('login')->withErrors([
+                    'profile' => 'Профиль не завершён. Пожалуйста, войдите снова и завершите регистрацию.',
+                ]);
             }
 
             session()->put('onboarding_redirect_count', $redirectCount + 1);
@@ -89,7 +95,13 @@ class EnsureProfileCompleted
         }
 
         if ($user->isAthlete()) {
-            return !empty($user->first_name);
+            $profile = $user->athleteProfile;
+
+            if (!$profile) {
+                return false;
+            }
+
+            return !empty($user->first_name) && !empty($user->last_name);
         }
 
         return true;

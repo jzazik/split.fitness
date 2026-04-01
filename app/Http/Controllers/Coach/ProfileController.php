@@ -8,6 +8,7 @@ use App\Models\City;
 use App\Models\Sport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -71,27 +72,29 @@ class ProfileController extends Controller
         $user = auth()->user();
         $validated = $request->validated();
 
-        $user->update([
-            'first_name' => $validated['first_name'],
-            'last_name' => $validated['last_name'],
-            'middle_name' => $validated['middle_name'] ?? null,
-            'city_id' => $validated['city_id'],
-        ]);
+        DB::transaction(function () use ($user, $validated) {
+            $user->update([
+                'first_name' => $validated['first_name'],
+                'last_name' => $validated['last_name'],
+                'middle_name' => $validated['middle_name'] ?? null,
+                'city_id' => $validated['city_id'],
+            ]);
 
-        $profile = $user->coachProfile;
-        $profile->update([
-            'bio' => $validated['bio'],
-            'experience_years' => $validated['experience_years'] ?? null,
-        ]);
+            $profile = $user->coachProfile;
+            $profile->update([
+                'bio' => $validated['bio'],
+                'experience_years' => $validated['experience_years'] ?? null,
+            ]);
 
-        $profile->sports()->sync($validated['sports']);
+            $profile->sports()->sync($validated['sports']);
 
-        Log::info('Coach profile updated', [
-            'user_id' => $user->id,
-            'role' => $user->role,
-            'profile_type' => 'coach',
-            'sports_count' => count($validated['sports']),
-        ]);
+            Log::info('Coach profile updated', [
+                'user_id' => $user->id,
+                'role' => $user->role,
+                'profile_type' => 'coach',
+                'sports_count' => count($validated['sports']),
+            ]);
+        });
 
         return redirect()->route('coach.profile')->with('success', 'Профиль обновлён');
     }

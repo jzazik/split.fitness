@@ -25,6 +25,6 @@ class Sport extends Model
 
     public function coachProfiles(): BelongsToMany
     {
-        return $this->belongsToMany(CoachProfile::class, 'coach_sports');
+        return $this->belongsToMany(CoachProfile::class, 'coach_sports')->withTimestamps();
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Requests\Athlete\UpdateProfileRequest;
 use App\Models\City;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -43,24 +44,26 @@ class ProfileController extends Controller
         $user = auth()->user();
         $validated = $request->validated();
 
-        $user->update([
-            'first_name' => $validated['first_name'],
-            'last_name' => $validated['last_name'],
-            'phone' => $validated['phone'] ?? null,
-            'city_id' => $validated['city_id'] ?? null,
-        ]);
-
-        if ($user->athleteProfile) {
-            $user->athleteProfile->update([
-                'emergency_contact' => $validated['emergency_contact'] ?? null,
+        DB::transaction(function () use ($user, $validated) {
+            $user->update([
+                'first_name' => $validated['first_name'],
+                'last_name' => $validated['last_name'],
+                'phone' => $validated['phone'] ?? null,
+                'city_id' => $validated['city_id'] ?? null,
             ]);
-        }
 
-        Log::info('Athlete profile updated', [
-            'user_id' => $user->id,
-            'role' => $user->role,
-            'profile_type' => 'athlete',
-        ]);
+            if ($user->athleteProfile) {
+                $user->athleteProfile->update([
+                    'emergency_contact' => $validated['emergency_contact'] ?? null,
+                ]);
+            }
+
+            Log::info('Athlete profile updated', [
+                'user_id' => $user->id,
+                'role' => $user->role,
+                'profile_type' => 'athlete',
+            ]);
+        });
 
         return redirect()->route('athlete.profile')->with('success', 'Профиль обновлён');
     }

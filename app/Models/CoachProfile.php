@@ -41,7 +41,7 @@ class CoachProfile extends Model implements HasMedia
 
     public function sports(): BelongsToMany
     {
-        return $this->belongsToMany(Sport::class, 'coach_sports');
+        return $this->belongsToMany(Sport::class, 'coach_sports')->withTimestamps();
     }
 
     /**
