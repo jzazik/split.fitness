@@ -3,14 +3,13 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -26,27 +25,50 @@ class RegisteredUserController extends Controller
 
     /**
      * Handle an incoming registration request.
-     *
-     * @throws ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(RegisterRequest $request): RedirectResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        $validated = $request->validated();
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        $user = \DB::transaction(function () use ($validated, $request) {
+            $user = User::create([
+                'role' => $validated['role'],
+                'first_name' => $validated['first_name'],
+                'last_name' => $validated['last_name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'] ?? null,
+                'city_id' => $validated['city_id'] ?? null,
+                'password' => Hash::make($validated['password']),
+            ]);
 
-        event(new Registered($user));
+            // Mask email for logging (keep first char + domain, hide rest)
+            $emailParts = explode('@', $user->email);
+            $maskedEmail = count($emailParts) === 2
+                ? substr($emailParts[0], 0, 1).'***@'.$emailParts[1]
+                : '***';
 
-        Auth::login($user);
+            Log::info('User registered successfully', [
+                'user_id' => $user->id,
+                'role' => $user->role,
+                'email' => $maskedEmail,
+            ]);
 
-        return redirect(route('dashboard', absolute: false));
+            event(new Registered($user));
+
+            Auth::login($user);
+            $request->session()->regenerate();
+
+            return $user;
+        });
+
+        // Role-based redirect
+        $redirectRoute = match ($user->role) {
+            'athlete' => 'athlete.bookings',
+            'coach' => 'coach.dashboard',
+            'admin' => 'admin.dashboard',
+            default => throw new \RuntimeException('Unexpected role after registration: '.$user->role),
+        };
+
+        return redirect()->route($redirectRoute);
     }
 }

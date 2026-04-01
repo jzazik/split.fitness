@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\Athlete\BookingsController;
+use App\Http\Controllers\Coach\DashboardController;
+use App\Http\Controllers\Coach\PaymentsController;
+use App\Http\Controllers\Coach\ProfileController as CoachProfileController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -15,13 +19,38 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    $user = auth()->user();
+
+    return redirect(match ($user->role) {
+        'athlete' => route('athlete.bookings'),
+        'coach' => route('coach.dashboard'),
+        'admin' => route('admin.dashboard'),
+        default => '/',
+    });
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// Athlete routes
+Route::middleware(['auth', 'role:athlete'])->prefix('athlete')->name('athlete.')->group(function () {
+    Route::get('/bookings', [BookingsController::class, 'index'])->name('bookings');
+});
+
+// Coach routes
+Route::middleware(['auth', 'role:coach'])->prefix('coach')->name('coach.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/profile', [CoachProfileController::class, 'edit'])->name('profile');
+    Route::patch('/profile', [CoachProfileController::class, 'update'])->name('profile.update');
+    Route::get('/payments', [PaymentsController::class, 'index'])->name('payments');
+});
+
+// Admin routes (stub for future)
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
 });
 
 require __DIR__.'/auth.php';

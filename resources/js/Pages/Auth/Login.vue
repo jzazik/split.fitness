@@ -1,10 +1,8 @@
 <script setup>
 import Checkbox from '@/Components/Checkbox.vue';
-import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
+import PublicLayout from '@/Layouts/PublicLayout.vue';
+import Button from '@/Components/UI/Button.vue';
+import Input from '@/Components/UI/Input.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 defineProps({
@@ -30,71 +28,73 @@ const submit = () => {
 </script>
 
 <template>
-    <GuestLayout>
+    <PublicLayout>
         <Head title="Log in" />
 
-        <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
-            {{ status }}
-        </div>
+        <div class="flex min-h-[calc(100vh-12rem)] items-center justify-center px-4 py-12">
+            <div class="w-full max-w-md">
+                <div class="bg-white px-8 py-10 shadow-md rounded-lg">
+                    <h2 class="text-2xl font-bold text-center text-gray-900 mb-6">Вход</h2>
 
-        <form @submit.prevent="submit">
+                    <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
+                        {{ status }}
+                    </div>
+
+                    <form @submit.prevent="submit">
             <div>
-                <InputLabel for="email" value="Email" />
-
-                <TextInput
+                <Input
                     id="email"
                     type="email"
-                    class="mt-1 block w-full"
+                    label="Email"
                     v-model="form.email"
+                    :error="form.errors.email"
                     required
                     autofocus
                     autocomplete="username"
                 />
-
-                <InputError class="mt-2" :message="form.errors.email" />
             </div>
 
             <div class="mt-4">
-                <InputLabel for="password" value="Password" />
-
-                <TextInput
+                <Input
                     id="password"
                     type="password"
-                    class="mt-1 block w-full"
+                    label="Пароль"
                     v-model="form.password"
+                    :error="form.errors.password"
                     required
                     autocomplete="current-password"
                 />
-
-                <InputError class="mt-2" :message="form.errors.password" />
             </div>
 
             <div class="mt-4 block">
                 <label class="flex items-center">
                     <Checkbox name="remember" v-model:checked="form.remember" />
                     <span class="ms-2 text-sm text-gray-600"
-                        >Remember me</span
+                        >Запомнить меня</span
                     >
                 </label>
             </div>
 
-            <div class="mt-4 flex items-center justify-end">
+            <div class="mt-6 flex items-center justify-between">
                 <Link
                     v-if="canResetPassword"
                     :href="route('password.request')"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    class="text-sm text-primary-600 hover:text-primary-700 underline"
                 >
-                    Forgot your password?
+                    Забыли пароль?
                 </Link>
 
-                <PrimaryButton
-                    class="ms-4"
-                    :class="{ 'opacity-25': form.processing }"
+                <Button
+                    type="submit"
+                    variant="primary"
                     :disabled="form.processing"
                 >
-                    Log in
-                </PrimaryButton>
+                    Войти
+                </Button>
             </div>
-        </form>
-    </GuestLayout>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </PublicLayout>
 </template>

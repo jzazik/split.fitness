@@ -7,6 +7,117 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Split.Fitness - Docker Setup
+
+This project includes Docker configuration for local development with PHP 8.3, MySQL 8.0, Redis, and Node.js.
+
+### Prerequisites
+
+- Docker Desktop installed and running
+- Docker Compose v2.0 or higher
+
+### Quick Start with Docker
+
+1. Clone the repository and navigate to the project directory
+
+2. Copy the Docker environment file and configure database credentials:
+```bash
+cp .env.docker.example .env.docker
+# Edit .env.docker and set secure passwords for DB_PASSWORD, MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD
+# Optionally change DB_DATABASE, DB_USERNAME (keep DB_* and MYSQL_* values synchronized)
+# Generate secure password: openssl rand -base64 32
+```
+
+3. Start the Docker containers:
+```bash
+docker-compose up -d
+```
+
+4. Install PHP dependencies:
+```bash
+docker-compose exec app composer install
+```
+
+5. Generate application key:
+```bash
+docker-compose exec app php artisan key:generate
+```
+
+6. Run database migrations:
+```bash
+docker-compose exec app php artisan migrate
+```
+
+7. Seed reference data:
+```bash
+docker-compose exec app php artisan db:seed --class=CitiesSeeder
+docker-compose exec app php artisan db:seed --class=SportsSeeder
+```
+
+8. Install Node dependencies and start Vite:
+```bash
+npm install
+npm run dev
+```
+
+The application will be available at:
+- Application: http://localhost:8000
+- Vite dev server: http://localhost:5173
+- MySQL: localhost:3306
+- Redis: localhost:6379
+
+### Docker Services
+
+- **app**: PHP 8.3-FPM with all necessary extensions
+- **nginx**: Nginx web server
+- **mysql**: MySQL 8.0 database
+- **redis**: Redis 7 cache server
+- **node**: Node.js 20 for Vite development server
+
+### Common Docker Commands
+
+```bash
+# Start containers
+docker-compose up -d
+
+# Stop containers
+docker-compose down
+
+# View logs
+docker-compose logs -f
+
+# Run artisan commands
+docker-compose exec app php artisan [command]
+
+# Run composer commands
+docker-compose exec app composer [command]
+
+# Access MySQL CLI
+docker-compose exec mysql mysql -u root -p split_fitness
+
+# Rebuild containers (after Dockerfile changes)
+docker-compose up -d --build
+```
+
+### Hot Reload
+
+The Docker setup includes volume mounting for hot reload during development. Changes to PHP files will be reflected immediately, and Vite will handle frontend hot module replacement.
+
+### Troubleshooting
+
+If you encounter permission issues on macOS:
+```bash
+docker-compose exec app chown -R splituser:splituser /var/www/storage /var/www/bootstrap/cache
+```
+
+To completely reset the Docker environment:
+```bash
+docker-compose down -v
+docker-compose up -d
+```
+
+---
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

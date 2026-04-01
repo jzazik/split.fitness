@@ -33,7 +33,16 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $user = Auth::user();
+
+        $defaultIntended = match ($user->role) {
+            'athlete' => route('athlete.bookings', absolute: false),
+            'coach' => route('coach.dashboard', absolute: false),
+            'admin' => route('admin.dashboard', absolute: false),
+            default => throw new \RuntimeException('Invalid user role: '.$user->role),
+        };
+
+        return redirect()->intended($defaultIntended);
     }
 
     /**
