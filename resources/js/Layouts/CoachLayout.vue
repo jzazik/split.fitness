@@ -37,16 +37,10 @@ const { user, fullName } = authStore;
                                     Тренировки
                                 </NavLink>
                                 <NavLink
-                                    :href="route('profile.edit')"
-                                    :active="route().current('profile.edit')"
-                                >
-                                    Профиль
-                                </NavLink>
-                                <NavLink
                                     :href="route('coach.profile')"
                                     :active="route().current('coach.profile')"
                                 >
-                                    Профиль тренера
+                                    Профиль
                                 </NavLink>
                             </div>
                         </div>
