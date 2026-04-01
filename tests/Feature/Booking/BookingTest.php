@@ -82,6 +82,8 @@ class BookingTest extends TestCase
     {
         $workout = Workout::factory()->published()->create([
             'slot_price' => 750,
+            'slots_total' => 10,
+            'slots_booked' => 0,
         ]);
 
         $athlete = User::factory()->athlete()->create();

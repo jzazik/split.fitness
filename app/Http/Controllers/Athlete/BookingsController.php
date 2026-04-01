@@ -48,10 +48,7 @@ class BookingsController extends Controller
 
     public function show(Booking $booking): Response
     {
-        // Authorize: only the booking owner can view it
-        if ($booking->athlete_id !== auth()->id()) {
-            abort(403, 'Unauthorized access to booking');
-        }
+        $this->authorize('view', $booking);
 
         // Load all necessary relationships
         $booking->load([

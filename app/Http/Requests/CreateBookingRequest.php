@@ -58,15 +58,8 @@ class CreateBookingRequest extends FormRequest
                 $validator->errors()->add('workout_id', 'Тренировка уже началась или завершилась');
             }
 
-            // Check for duplicate booking
-            $existingBooking = Booking::where('workout_id', $workoutId)
-                ->where('athlete_id', $this->user()->id)
-                ->whereIn('status', ['pending_payment', 'paid'])
-                ->exists();
-
-            if ($existingBooking) {
-                $validator->errors()->add('workout_id', 'Вы уже записаны на эту тренировку');
-            }
+            // Note: Duplicate booking check moved to CreateBookingAction within transaction
+            // to prevent TOCTOU race condition
         });
     }
 

@@ -15,6 +15,15 @@ class NotifyCoachNewBooking implements ShouldQueue
     {
         $booking = $event->booking->load('workout.coach', 'athlete');
 
+        if (! $booking->workout || ! $booking->workout->coach) {
+            Log::warning('Cannot notify coach for new booking: workout or coach not found', [
+                'booking_id' => $booking->id,
+                'workout_id' => $booking->workout_id,
+            ]);
+
+            return;
+        }
+
         Log::info('Coach notification queued for new booking', [
             'booking_id' => $booking->id,
             'workout_id' => $booking->workout_id,

@@ -23,6 +23,7 @@ class ExpirePendingBookingJob implements ShouldQueue
         $expiredBookings = Booking::query()
             ->where('status', 'pending_payment')
             ->where('created_at', '<', now()->subMinutes(15))
+            ->lockForUpdate()
             ->with('workout')
             ->get();
 
@@ -50,8 +51,9 @@ class ExpirePendingBookingJob implements ShouldQueue
                     // Update booking status
                     $booking->update(['status' => 'expired']);
 
-                    // Release the slot(s)
-                    $workout->decrement('slots_booked', $booking->slots_count);
+                    // Release the slot(s) - prevent negative values
+                    $workout->slots_booked = max(0, $workout->slots_booked - $booking->slots_count);
+                    $workout->save();
 
                     $slotsAfter = $workout->fresh()->slots_booked;
 
