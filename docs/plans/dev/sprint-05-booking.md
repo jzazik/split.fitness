@@ -82,18 +82,18 @@ php artisan schedule:test
 - Create: `app/Models/Booking.php`
 
 **Steps:**
-- [ ] Создать миграцию bookings:
+- [x] Создать миграцию bookings:
   - id, workout_id foreign, athlete_id (user_id) foreign
   - slots_count int default 1, slot_price decimal, total_amount decimal
   - status enum('pending_payment','paid','expired','cancelled','refunded') default 'pending_payment'
   - payment_status enum('pending','paid','failed','refunded') default 'pending'
   - booked_at nullable, cancelled_at nullable, cancellation_reason nullable
   - timestamps, indexes
-- [ ] Создать Booking model:
+- [x] Создать Booking model:
   - belongsTo Workout, User (athlete)
   - hasOne Payment
   - casts: status, payment_status, booked_at
-- [ ] Mark completed
+- [x] Mark completed
 
 ---
 
