@@ -278,26 +278,26 @@ php artisan tinker
 - Modify: `bootstrap/app.php`
 
 **Steps:**
-- [ ] Создать middleware EnsureProfileCompleted:
+- [x] Создать middleware EnsureProfileCompleted:
   - Для coach: проверить, что coachProfile существует и заполнен (bio, sports, city)
   - Для athlete: проверить, что first_name заполнен
   - Если не заполнен → redirect на /onboarding
   - Исключить сам роут /onboarding из проверки
-- [ ] Создать Onboarding/Coach.vue:
+- [x] Создать Onboarding/Coach.vue:
   - Шаг 1: Загрузить фото, ФИО
   - Шаг 2: Выбрать виды спорта
   - Шаг 3: Выбрать город, написать bio
   - Шаг 4: Загрузить дипломы (опционально на onboarding)
   - Progress bar (1/4, 2/4, ...)
   - Кнопка "Завершить" → сохранить и редирект на /coach/dashboard
-- [ ] Создать Onboarding/Athlete.vue:
+- [x] Создать Onboarding/Athlete.vue:
   - Одна страница: ФИО, фото (опционально), город (опционально)
   - Кнопка "Готово" → сохранить и редирект на /athlete/bookings
-- [ ] Добавить роуты:
+- [x] Добавить роуты:
   - `GET /onboarding` → OnboardingController@show (определяет роль и показывает нужный компонент)
   - `POST /onboarding` → OnboardingController@store
-- [ ] Применить middleware к защищённым роутам (кроме /onboarding, /profile)
-- [ ] Mark completed
+- [x] Применить middleware к защищённым роутам (кроме /onboarding, /profile)
+- [x] Mark completed
 
 ---
 

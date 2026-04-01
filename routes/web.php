@@ -5,6 +5,7 @@ use App\Http\Controllers\Athlete\ProfileController as AthleteProfileController;
 use App\Http\Controllers\Coach\DashboardController;
 use App\Http\Controllers\Coach\PaymentsController;
 use App\Http\Controllers\Coach\ProfileController as CoachProfileController;
+use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -36,8 +37,14 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Onboarding routes
+Route::middleware('auth')->group(function () {
+    Route::get('/onboarding', [OnboardingController::class, 'show'])->name('onboarding.show');
+    Route::post('/onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
+});
+
 // Athlete routes
-Route::middleware(['auth', 'role:athlete'])->prefix('athlete')->name('athlete.')->group(function () {
+Route::middleware(['auth', 'role:athlete', 'ensure.profile.completed'])->prefix('athlete')->name('athlete.')->group(function () {
     Route::get('/bookings', [BookingsController::class, 'index'])->name('bookings');
     Route::get('/profile', [AthleteProfileController::class, 'edit'])->name('profile');
     Route::patch('/profile', [AthleteProfileController::class, 'update'])->name('profile.update');
@@ -46,7 +53,7 @@ Route::middleware(['auth', 'role:athlete'])->prefix('athlete')->name('athlete.')
 });
 
 // Coach routes
-Route::middleware(['auth', 'role:coach'])->prefix('coach')->name('coach.')->group(function () {
+Route::middleware(['auth', 'role:coach', 'ensure.profile.completed'])->prefix('coach')->name('coach.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile', [CoachProfileController::class, 'edit'])->name('profile');
     Route::patch('/profile', [CoachProfileController::class, 'update'])->name('profile.update');
