@@ -120,16 +120,16 @@ php artisan tinker
 - Create: `resources/js/composables/useMap.js`
 
 **Steps:**
-- [ ] Установить: `npm install leaflet vue-leaflet`
-- [ ] Создать WorkoutMap.vue:
+- [x] Установить: `npm install leaflet vue-leaflet`
+- [x] Создать WorkoutMap.vue:
   - Показывать карту Leaflet (OpenStreetMap tiles)
   - Принимать props: initialLat, initialLng, editable
   - При клике на карту: установить маркер, emit coordinates
   - Показывать текущий маркер
-- [ ] Создать composable useMap:
+- [x] Создать composable useMap:
   - Функция reverseGeocode(lat, lng) → возвращает адрес через Nominatim
   - Rate limit: не чаще 1 запроса в секунду (debounce)
-- [ ] Mark completed
+- [x] Mark completed
 
 ---
 
