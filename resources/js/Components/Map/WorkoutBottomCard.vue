@@ -208,7 +208,7 @@ const handleBooking = async () => {
 
     // On success, redirect to booking payment placeholder
     // For now, redirect to athlete bookings page
-    const bookingId = response.data.id;
+    const bookingId = response.data.booking.id;
     router.visit(`/athlete/bookings`);
   } catch (error) {
     if (error.response?.data?.message) {

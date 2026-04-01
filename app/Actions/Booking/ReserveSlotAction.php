@@ -37,16 +37,6 @@ class ReserveSlotAction
                 ]);
             }
 
-            if ($slotsAfter > $workout->slots_total) {
-                Log::critical('Oversell protection failed: slots_booked exceeded slots_total', [
-                    'workout_id' => $workout->id,
-                    'slots_booked_before' => $slotsBefore,
-                    'slots_booked_after' => $slotsAfter,
-                    'slots_total' => $workout->slots_total,
-                    'slots_count' => $slotsCount,
-                ]);
-            }
-
             $workout->increment('slots_booked', $slotsCount);
 
             Log::info('Slot reserved successfully', [

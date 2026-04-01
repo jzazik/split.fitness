@@ -33,11 +33,12 @@ class ExpirePendingBookingJob implements ShouldQueue
                     // Lock the workout to prevent race conditions
                     $workout = $booking->workout()->lockForUpdate()->first();
 
-                    if (!$workout) {
+                    if (! $workout) {
                         Log::warning('Workout not found during booking expiration', [
                             'booking_id' => $booking->id,
                             'workout_id' => $booking->workout_id,
                         ]);
+
                         return;
                     }
 

@@ -111,7 +111,7 @@ class OversellTest extends TestCase
         $this->assertEquals(1, $workout->bookings()->count()); // Only 1 new booking created
     }
 
-    public function test_lockForUpdate_prevents_dirty_reads(): void
+    public function test_lock_for_update_prevents_dirty_reads(): void
     {
         $workout = Workout::factory()->published()->create([
             'slots_total' => 5,

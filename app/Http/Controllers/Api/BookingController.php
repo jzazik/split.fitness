@@ -8,6 +8,7 @@ use App\Http\Requests\CreateBookingRequest;
 use App\Models\Workout;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class BookingController extends Controller
 {
@@ -41,17 +42,19 @@ class BookingController extends Controller
                 ],
                 'payment_url' => null, // Placeholder for Sprint 6
             ], 201);
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Booking creation failed', [
                 'workout_id' => $validated['workout_id'] ?? null,
                 'athlete_id' => $request->user()?->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
-                'message' => 'Не удалось создать бронирование',
-                'error' => $e->getMessage(),
-            ], 422);
+                'message' => 'Не удалось создать бронирование. Попробуйте позже.',
+            ], 500);
         }
     }
 }
