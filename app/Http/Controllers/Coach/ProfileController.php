@@ -144,7 +144,7 @@ class ProfileController extends Controller
     {
         $request->validate([
             'diplomas' => 'required|array',
-            'diplomas.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'diplomas.*' => 'file|mimes:pdf,jpg,jpeg,png|mimetypes:application/pdf,image/jpeg,image/png|max:10240',
         ]);
 
         $user = auth()->user();
@@ -195,7 +195,7 @@ class ProfileController extends Controller
     {
         $request->validate([
             'certificates' => 'required|array',
-            'certificates.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'certificates.*' => 'file|mimes:pdf,jpg,jpeg,png|mimetypes:application/pdf,image/jpeg,image/png|max:10240',
         ]);
 
         $user = auth()->user();
@@ -360,17 +360,19 @@ class ProfileController extends Controller
                 ->withErrors(['profile' => 'Профиль не был отклонён.']);
         }
 
-        $profile->update([
-            'moderation_status' => 'pending',
-            'rejection_reason' => null,
-        ]);
+        DB::transaction(function () use ($profile, $user) {
+            $profile->update([
+                'moderation_status' => 'pending',
+                'rejection_reason' => null,
+            ]);
 
-        Log::info('Coach profile resubmitted for moderation', [
-            'user_id' => $user->id,
-            'role' => $user->role,
-            'profile_type' => 'coach',
-            'moderation_status' => 'pending',
-        ]);
+            Log::info('Coach profile resubmitted for moderation', [
+                'user_id' => $user->id,
+                'role' => $user->role,
+                'profile_type' => 'coach',
+                'moderation_status' => 'pending',
+            ]);
+        });
 
         return redirect()->route('coach.dashboard')
             ->with('success', 'Профиль отправлен на повторную проверку.');

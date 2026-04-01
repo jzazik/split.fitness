@@ -65,14 +65,7 @@ class RegisteredUserController extends Controller
         // Dispatch profile creation event after transaction commits
         event(new UserRegistered($user));
 
-        // Role-based redirect
-        $redirectRoute = match ($user->role) {
-            'athlete' => 'athlete.bookings',
-            'coach' => 'coach.dashboard',
-            'admin' => 'admin.dashboard',
-            default => throw new \RuntimeException('Unexpected role after registration: '.$user->role),
-        };
-
-        return redirect()->route($redirectRoute);
+        // Redirect to onboarding - the onboarding controller will redirect completed profiles to their dashboard
+        return redirect()->route('onboarding.show');
     }
 }

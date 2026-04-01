@@ -83,7 +83,7 @@ class EnsureProfileCompleted
     protected function isProfileCompleted($user): bool
     {
         if ($user->isCoach()) {
-            $profile = $user->load('coachProfile.sports')->coachProfile;
+            $profile = $user->loadMissing('coachProfile.sports')->coachProfile;
 
             if (! $profile) {
                 return false;

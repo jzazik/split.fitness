@@ -98,43 +98,54 @@ class OnboardingController extends Controller
             'experience_years' => 'nullable|integer|min:0|max:100',
         ]);
 
-        DB::transaction(function () use ($user, $validated) {
-            $user->update([
-                'first_name' => $validated['first_name'],
-                'last_name' => $validated['last_name'],
-                'middle_name' => $validated['middle_name'] ?? null,
-                'city_id' => $validated['city_id'],
-            ]);
+        try {
+            DB::transaction(function () use ($user, $validated) {
+                $user->update([
+                    'first_name' => $validated['first_name'],
+                    'last_name' => $validated['last_name'],
+                    'middle_name' => $validated['middle_name'] ?? null,
+                    'city_id' => $validated['city_id'],
+                ]);
 
-            $profile = $user->coachProfile;
+                $profile = $user->coachProfile;
 
-            if (! $profile) {
-                Log::warning('Coach profile was not auto-created, creating now', [
+                if (! $profile) {
+                    Log::warning('Coach profile was not auto-created, creating now', [
+                        'user_id' => $user->id,
+                        'role' => $user->role,
+                    ]);
+
+                    $profile = $user->coachProfile()->create([
+                        'moderation_status' => 'pending',
+                    ]);
+                }
+
+                $profile->update([
+                    'bio' => $validated['bio'],
+                    'experience_years' => $validated['experience_years'] ?? null,
+                ]);
+
+                $profile->sports()->sync($validated['sports']);
+
+                Log::info('Coach profile completed via onboarding', [
                     'user_id' => $user->id,
                     'role' => $user->role,
+                    'profile_type' => 'coach',
+                    'sports_count' => count($validated['sports']),
                 ]);
+            });
 
-                $profile = $user->coachProfile()->create([
-                    'moderation_status' => 'pending',
-                ]);
-            }
-
-            $profile->update([
-                'bio' => $validated['bio'],
-                'experience_years' => $validated['experience_years'] ?? null,
-            ]);
-
-            $profile->sports()->sync($validated['sports']);
-
-            Log::info('Coach profile completed via onboarding', [
+            return redirect()->route('coach.dashboard')->with('success', 'Профиль заполнен! Он будет проверен администратором.');
+        } catch (\Exception $e) {
+            Log::error('Failed to complete coach onboarding', [
                 'user_id' => $user->id,
-                'role' => $user->role,
-                'profile_type' => 'coach',
-                'sports_count' => count($validated['sports']),
+                'error' => $e->getMessage(),
             ]);
-        });
 
-        return redirect()->route('coach.dashboard')->with('success', 'Профиль заполнен! Он будет проверен администратором.');
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['error' => 'Не удалось сохранить профиль. Пожалуйста, попробуйте снова.']);
+        }
     }
 
     protected function storeAthleteProfile(Request $request, $user): RedirectResponse
@@ -152,36 +163,47 @@ class OnboardingController extends Controller
             'emergency_contact' => 'nullable|string|max:255',
         ]);
 
-        DB::transaction(function () use ($user, $validated) {
-            $user->update([
-                'first_name' => $validated['first_name'],
-                'last_name' => $validated['last_name'],
-                'phone' => $validated['phone'] ?? null,
-                'city_id' => $validated['city_id'] ?? null,
-            ]);
-
-            $profile = $user->athleteProfile;
-
-            if (! $profile) {
-                Log::warning('Athlete profile was not auto-created, creating now', [
-                    'user_id' => $user->id,
-                    'role' => $user->role,
+        try {
+            DB::transaction(function () use ($user, $validated) {
+                $user->update([
+                    'first_name' => $validated['first_name'],
+                    'last_name' => $validated['last_name'],
+                    'phone' => $validated['phone'] ?? null,
+                    'city_id' => $validated['city_id'] ?? null,
                 ]);
 
-                $profile = $user->athleteProfile()->create([]);
-            }
+                $profile = $user->athleteProfile;
 
-            $profile->update([
-                'emergency_contact' => $validated['emergency_contact'] ?? null,
-            ]);
+                if (! $profile) {
+                    Log::warning('Athlete profile was not auto-created, creating now', [
+                        'user_id' => $user->id,
+                        'role' => $user->role,
+                    ]);
 
-            Log::info('Athlete profile completed via onboarding', [
+                    $profile = $user->athleteProfile()->create([]);
+                }
+
+                $profile->update([
+                    'emergency_contact' => $validated['emergency_contact'] ?? null,
+                ]);
+
+                Log::info('Athlete profile completed via onboarding', [
+                    'user_id' => $user->id,
+                    'role' => $user->role,
+                    'profile_type' => 'athlete',
+                ]);
+            });
+
+            return redirect()->route('athlete.bookings')->with('success', 'Профиль заполнен!');
+        } catch (\Exception $e) {
+            Log::error('Failed to complete athlete onboarding', [
                 'user_id' => $user->id,
-                'role' => $user->role,
-                'profile_type' => 'athlete',
+                'error' => $e->getMessage(),
             ]);
-        });
 
-        return redirect()->route('athlete.bookings')->with('success', 'Профиль заполнен!');
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['error' => 'Не удалось сохранить профиль. Пожалуйста, попробуйте снова.']);
+        }
     }
 }
