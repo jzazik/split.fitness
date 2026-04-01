@@ -216,6 +216,8 @@ onMounted(async () => {
   await initBootstrap();
 });
 
+let debouncedLoadWorkouts = null;
+
 onBeforeUnmount(() => {
   // Mark component as unmounted to prevent late async continuations
   isMounted = false;
@@ -257,8 +259,6 @@ onBeforeUnmount(() => {
     map = null;
   }
 });
-
-let debouncedLoadWorkouts = null;
 
 const initMap = () => {
   // Guard: bail if component is unmounted or map container not available

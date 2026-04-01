@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Log;
 
 class WorkoutMapResource extends JsonResource
 {
@@ -19,10 +20,18 @@ class WorkoutMapResource extends JsonResource
         $lng = $this->lng;
 
         if ($lat !== null && ($lat < -90 || $lat > 90)) {
+            Log::warning('Invalid latitude detected in workout', [
+                'workout_id' => $this->id,
+                'lat' => $lat,
+            ]);
             $lat = null;
         }
 
         if ($lng !== null && ($lng < -180 || $lng > 180)) {
+            Log::warning('Invalid longitude detected in workout', [
+                'workout_id' => $this->id,
+                'lng' => $lng,
+            ]);
             $lng = null;
         }
 
@@ -40,7 +49,7 @@ class WorkoutMapResource extends JsonResource
             'slots_total' => $this->slots_total,
             'slots_booked' => $this->slots_booked,
             'coach_name' => $this->coach?->full_name,
-            'coach_avatar_url' => $this->coach?->media->first()?->getUrl(),
+            'coach_avatar_url' => $this->coach?->media?->first()?->getUrl(),
             'coach_rating' => $this->coach?->coachProfile?->rating_avg,
         ];
     }

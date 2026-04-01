@@ -35,6 +35,7 @@ class MapWorkoutsRequest extends FormRequest
         ];
 
         // sport_id can be single integer or array of integers
+        // Dynamic rule selection is safe here - Laravel validation still enforces type safety
         if (is_array($this->input('sport_id'))) {
             $rules['sport_id'] = 'array';
             $rules['sport_id.*'] = 'integer|exists:sports,id';
