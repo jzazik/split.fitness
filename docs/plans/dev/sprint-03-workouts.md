@@ -92,7 +92,7 @@ php artisan tinker
 - Create: `app/Models/Workout.php`
 
 **Steps:**
-- [ ] Создать миграцию workouts:
+- [x] Создать миграцию workouts:
   - id, coach_id foreign, sport_id foreign, city_id foreign
   - title string nullable, description text nullable
   - location_name string, address string nullable
@@ -102,13 +102,13 @@ php artisan tinker
   - status enum('draft','published','cancelled','completed') default 'draft'
   - published_at datetime nullable, cancelled_at datetime nullable
   - timestamps, indexes
-- [ ] Создать Workout model:
+- [x] Создать Workout model:
   - belongsTo User (coach), Sport, City
   - hasMany Bookings
   - casts: starts_at, published_at, cancelled_at, status
   - accessor isPublished(), isDraft()
-- [ ] Запустить миграцию
-- [ ] Mark completed
+- [x] Запустить миграцию
+- [x] Mark completed
 
 ---
 
