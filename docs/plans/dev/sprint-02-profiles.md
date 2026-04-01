@@ -333,15 +333,15 @@ php artisan tinker
 - Modify: `app/Providers/AppServiceProvider.php`
 
 **Steps:**
-- [ ] Создать событие UserRegistered с $user
-- [ ] Создать listener CreateUserProfile:
+- [x] Создать событие UserRegistered с $user
+- [x] Создать listener CreateUserProfile:
   - Если user.role === 'coach' → создать CoachProfile с moderation_status = 'pending'
   - Если user.role === 'athlete' → создать AthleteProfile
-- [ ] В RegisteredUserController после создания user:
+- [x] В RegisteredUserController после создания user:
   - Dispatch UserRegistered
-- [ ] Зарегистрировать listener в AppServiceProvider (или включить event discovery)
-- [ ] Проверить: зарегистрировать нового пользователя → профиль создаётся автоматически
-- [ ] Mark completed
+- [x] Зарегистрировать listener в AppServiceProvider (или включить event discovery)
+- [x] Проверить: зарегистрировать нового пользователя → профиль создаётся автоматически
+- [x] Mark completed
 
 ---
 

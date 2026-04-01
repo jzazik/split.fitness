@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\AthleteProfile;
+use App\Models\CoachProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -152,5 +154,53 @@ class RegistrationTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors('phone');
+    }
+
+    public function test_coach_profile_is_created_automatically_on_registration(): void
+    {
+        $this->post('/register', [
+            'role' => 'coach',
+            'first_name' => 'Test',
+            'last_name' => 'Coach',
+            'email' => 'coach@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $user = User::where('email', 'coach@example.com')->first();
+        $this->assertNotNull($user);
+
+        $this->assertDatabaseHas('coach_profiles', [
+            'user_id' => $user->id,
+            'moderation_status' => 'pending',
+            'is_public' => false,
+        ]);
+
+        $coachProfile = CoachProfile::where('user_id', $user->id)->first();
+        $this->assertNotNull($coachProfile);
+        $this->assertEquals('pending', $coachProfile->moderation_status);
+        $this->assertFalse($coachProfile->is_public);
+    }
+
+    public function test_athlete_profile_is_created_automatically_on_registration(): void
+    {
+        $this->post('/register', [
+            'role' => 'athlete',
+            'first_name' => 'Test',
+            'last_name' => 'Athlete',
+            'email' => 'athlete@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $user = User::where('email', 'athlete@example.com')->first();
+        $this->assertNotNull($user);
+
+        $this->assertDatabaseHas('athlete_profiles', [
+            'user_id' => $user->id,
+        ]);
+
+        $athleteProfile = AthleteProfile::where('user_id', $user->id)->first();
+        $this->assertNotNull($athleteProfile);
     }
 }

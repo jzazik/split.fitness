@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Events\UserRegistered;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
@@ -60,6 +61,9 @@ class RegisteredUserController extends Controller
 
             return $user;
         });
+
+        // Dispatch profile creation event after transaction commits
+        event(new UserRegistered($user));
 
         // Role-based redirect
         $redirectRoute = match ($user->role) {
