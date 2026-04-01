@@ -23,6 +23,10 @@ return new class extends Migration
             $table->string('last_name');
             $table->string('middle_name')->nullable();
             $table->string('avatar_path')->nullable();
+            $table->foreignId('city_id')
+                ->nullable()
+                ->constrained('cities')
+                ->nullOnDelete();
             $table->enum('status', ['active', 'blocked'])->default('active');
             $table->rememberToken();
             $table->timestamps();

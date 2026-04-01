@@ -30,31 +30,36 @@ class RegisteredUserController extends Controller
     {
         $validated = $request->validated();
 
-        $user = User::create([
-            'role' => $validated['role'],
-            'first_name' => $validated['first_name'],
-            'last_name' => $validated['last_name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? null,
-            'city_id' => $validated['city_id'] ?? null,
-            'password' => Hash::make($validated['password']),
-        ]);
+        $user = \DB::transaction(function () use ($validated, $request) {
+            $user = User::create([
+                'role' => $validated['role'],
+                'first_name' => $validated['first_name'],
+                'last_name' => $validated['last_name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'] ?? null,
+                'city_id' => $validated['city_id'] ?? null,
+                'password' => Hash::make($validated['password']),
+            ]);
 
-        // Mask email for logging (keep first char + domain, hide rest)
-        $emailParts = explode('@', $user->email);
-        $maskedEmail = count($emailParts) === 2
-            ? substr($emailParts[0], 0, 1).'***@'.$emailParts[1]
-            : '***';
+            // Mask email for logging (keep first char + domain, hide rest)
+            $emailParts = explode('@', $user->email);
+            $maskedEmail = count($emailParts) === 2
+                ? substr($emailParts[0], 0, 1).'***@'.$emailParts[1]
+                : '***';
 
-        Log::info('User registered successfully', [
-            'user_id' => $user->id,
-            'role' => $user->role,
-            'email' => $maskedEmail,
-        ]);
+            Log::info('User registered successfully', [
+                'user_id' => $user->id,
+                'role' => $user->role,
+                'email' => $maskedEmail,
+            ]);
 
-        event(new Registered($user));
+            event(new Registered($user));
 
-        Auth::login($user);
+            Auth::login($user);
+            $request->session()->regenerate();
+
+            return $user;
+        });
 
         // Role-based redirect
         $redirectRoute = match ($user->role) {
