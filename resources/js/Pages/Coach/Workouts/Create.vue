@@ -59,7 +59,24 @@ watch(coordinates, async (newCoordinates) => {
 }, { deep: true });
 
 const submit = () => {
-    form.post(route('coach.workouts.store'));
+    // Convert datetime-local (which is in browser's local timezone) to UTC ISO string
+    const localDateTime = form.starts_at;
+    if (localDateTime) {
+        // datetime-local format is "YYYY-MM-DDTHH:mm"
+        // Create a Date object from this, which will interpret it as local time
+        const localDate = new Date(localDateTime);
+        // Convert to UTC ISO string for the backend
+        form.starts_at = localDate.toISOString();
+    }
+
+    form.post(route('coach.workouts.store'), {
+        onError: () => {
+            // Restore the local datetime if there's an error so the form still shows the right time
+            if (localDateTime) {
+                form.starts_at = localDateTime;
+            }
+        },
+    });
 };
 </script>
 

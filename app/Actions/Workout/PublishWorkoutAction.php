@@ -15,10 +15,10 @@ class PublishWorkoutAction
      */
     public function execute(Workout $workout): void
     {
-        // Check if already published
-        if ($workout->status === 'published') {
+        // Only draft workouts can be published
+        if ($workout->status !== 'draft') {
             throw ValidationException::withMessages([
-                'status' => 'Тренировка уже опубликована.',
+                'status' => 'Можно публиковать только черновики тренировок.',
             ]);
         }
 

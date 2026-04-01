@@ -59,7 +59,48 @@ class PublishWorkoutActionTest extends TestCase
         ]);
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Тренировка уже опубликована');
+        $this->expectExceptionMessage('Можно публиковать только черновики тренировок');
+
+        $this->action->execute($workout);
+    }
+
+    public function test_throws_exception_when_workout_is_cancelled(): void
+    {
+        $coach = User::factory()->coach()->create();
+        CoachProfile::factory()->create([
+            'user_id' => $coach->id,
+            'moderation_status' => 'approved',
+        ]);
+
+        $workout = Workout::factory()->create([
+            'coach_id' => $coach->id,
+            'status' => 'cancelled',
+            'cancelled_at' => now()->subHour(),
+            'starts_at' => now()->addDay(),
+        ]);
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Можно публиковать только черновики тренировок');
+
+        $this->action->execute($workout);
+    }
+
+    public function test_throws_exception_when_workout_is_completed(): void
+    {
+        $coach = User::factory()->coach()->create();
+        CoachProfile::factory()->create([
+            'user_id' => $coach->id,
+            'moderation_status' => 'approved',
+        ]);
+
+        $workout = Workout::factory()->create([
+            'coach_id' => $coach->id,
+            'status' => 'completed',
+            'starts_at' => now()->subDay(), // In the past
+        ]);
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Можно публиковать только черновики тренировок');
 
         $this->action->execute($workout);
     }

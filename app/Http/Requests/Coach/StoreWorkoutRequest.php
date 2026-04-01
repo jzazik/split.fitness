@@ -25,7 +25,13 @@ class StoreWorkoutRequest extends FormRequest
             'lat' => ['required', 'numeric', 'between:-90,90'],
             'lng' => ['required', 'numeric', 'between:-180,180'],
             'starts_at' => ['required', 'date', 'after:1 hour', 'before:+3 months', function ($attribute, $value, $fail) {
+                if (! is_string($value)) {
+                    return;
+                }
                 $timestamp = strtotime($value);
+                if ($timestamp === false) {
+                    return;
+                }
                 $minutes = (int) date('i', $timestamp);
                 if ($minutes % 15 !== 0) {
                     $fail('Время должно быть кратно 15 минутам (например: 08:00, 08:15, 08:30)');
@@ -47,6 +53,11 @@ class StoreWorkoutRequest extends FormRequest
 
     protected function validateWorkoutOverlap($validator): void
     {
+        // Skip if base validation has already failed
+        if ($validator->errors()->isNotEmpty()) {
+            return;
+        }
+
         $startsAt = $this->input('starts_at');
         $durationMinutes = $this->input('duration_minutes');
         $lat = $this->input('lat');
@@ -56,7 +67,12 @@ class StoreWorkoutRequest extends FormRequest
             return;
         }
 
-        $startsAt = Carbon::parse($startsAt);
+        try {
+            $startsAt = Carbon::parse($startsAt);
+        } catch (\Exception $e) {
+            // If Carbon can't parse it, skip this validation - base rules will catch it
+            return;
+        }
         $endsAt = $startsAt->copy()->addMinutes($durationMinutes);
 
         // Check for overlapping workouts for this coach with 30-minute buffer
@@ -96,6 +112,11 @@ class StoreWorkoutRequest extends FormRequest
 
     protected function validateMaxActiveWorkouts($validator): void
     {
+        // Skip if base validation has already failed
+        if ($validator->errors()->isNotEmpty()) {
+            return;
+        }
+
         $activeCount = Workout::where('coach_id', $this->user()->id)
             ->whereIn('status', ['draft', 'published'])
             ->count();

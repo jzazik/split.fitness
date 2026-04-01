@@ -47,20 +47,27 @@ const getStatusLabel = (status) => {
     return labels[status] || status;
 };
 
+// Format date/time consistently for SSR and client to avoid hydration mismatch
 const formatDate = (dateString) => {
     const date = new Date(dateString);
+    // Display in browser's local timezone (or UTC during SSR) using Intl.DateTimeFormat
+    // This ensures consistent rendering between server and client
     return new Intl.DateTimeFormat('ru-RU', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
+        timeZone: typeof window === 'undefined' ? 'UTC' : undefined,
     }).format(date);
 };
 
 const formatTime = (dateString) => {
     const date = new Date(dateString);
+    // Display in browser's local timezone (or UTC during SSR) using Intl.DateTimeFormat
+    // This ensures consistent rendering between server and client
     return new Intl.DateTimeFormat('ru-RU', {
         hour: '2-digit',
         minute: '2-digit',
+        timeZone: typeof window === 'undefined' ? 'UTC' : undefined,
     }).format(date);
 };
 
@@ -235,6 +242,7 @@ const cancelWorkout = (workoutId) => {
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                         <Link
+                                            v-if="['draft', 'published'].includes(workout.status)"
                                             :href="route('coach.workouts.edit', workout.id)"
                                             class="text-primary-600 hover:text-primary-900"
                                         >
@@ -313,7 +321,7 @@ const cancelWorkout = (workoutId) => {
                                             ]"
                                         >
                                             {{ link.label }}
-                                        />
+                                        </Link>
                                     </nav>
                                 </div>
                             </div>
