@@ -116,13 +116,13 @@ class WorkoutController extends Controller
                     }
                 }
 
-                // Recheck same location and time conflict inside transaction with locks
+                // Recheck same location and time conflict inside transaction
+                // Note: No lock needed here - the unique constraint will catch race conditions
                 $sameLocationAndTime = Workout::where('coach_id', '!=', $user->id)
                     ->whereIn('status', ['draft', 'published'])
                     ->where('starts_at', $startsAt->toDateTimeString())
                     ->where('lat', $validated['lat'])
                     ->where('lng', $validated['lng'])
-                    ->lockForUpdate()
                     ->exists();
 
                 if ($sameLocationAndTime) {
@@ -252,6 +252,31 @@ class WorkoutController extends Controller
                 // Use the locked workout instance for updates
                 $workout = $lockedWorkout;
 
+                // Re-validate slots_total >= slots_booked inside transaction with fresh data
+                if ($validated['slots_total'] < $workout->slots_booked) {
+                    throw ValidationException::withMessages([
+                        'slots_total' => 'Нельзя уменьшить количество мест ниже текущего количества бронирований (' . $workout->slots_booked . ')',
+                    ]);
+                }
+
+                // Prevent changing core fields if workout has bookings
+                if ($workout->slots_booked > 0) {
+                    $coreFieldsChanged = (
+                        $workout->lat != $validated['lat'] ||
+                        $workout->lng != $validated['lng'] ||
+                        $workout->starts_at->toDateTimeString() != Carbon::parse($validated['starts_at'])->toDateTimeString() ||
+                        $workout->duration_minutes != $validated['duration_minutes'] ||
+                        $workout->total_price != $validated['total_price'] ||
+                        $workout->slot_price != $calculateSlotPrice->execute($validated['total_price'], $validated['slots_total'])
+                    );
+
+                    if ($coreFieldsChanged) {
+                        throw ValidationException::withMessages([
+                            'slots_booked' => 'Нельзя изменять местоположение, время или цену тренировки с существующими бронированиями.',
+                        ]);
+                    }
+                }
+
                 // Count active workouts excluding target
                 $activeCount = $allWorkouts->where('id', '!=', $workout->id)->count();
 
@@ -278,14 +303,14 @@ class WorkoutController extends Controller
                     }
                 }
 
-                // Recheck same location and time conflict inside transaction with locks
+                // Recheck same location and time conflict inside transaction
+                // Note: No lock needed here - the unique constraint will catch race conditions
                 $sameLocationAndTime = Workout::where('coach_id', '!=', $workout->coach_id)
                     ->where('id', '!=', $workout->id)
                     ->whereIn('status', ['draft', 'published'])
                     ->where('starts_at', $startsAt->toDateTimeString())
                     ->where('lat', $validated['lat'])
                     ->where('lng', $validated['lng'])
-                    ->lockForUpdate()
                     ->exists();
 
                 if ($sameLocationAndTime) {

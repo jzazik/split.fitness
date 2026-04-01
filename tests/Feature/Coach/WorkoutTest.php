@@ -856,4 +856,95 @@ class WorkoutTest extends TestCase
 
         $response->assertSessionHasErrors(['starts_at']);
     }
+
+    public function test_cannot_change_core_fields_of_workout_with_bookings(): void
+    {
+        $workout = Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'published',
+            'slots_booked' => 2,
+            'slots_total' => 5,
+            'lat' => 55.7558,
+            'lng' => 37.6173,
+            'starts_at' => now()->addDays(2)->setTime(14, 0), // 14:00 - multiple of 15
+            'duration_minutes' => 60,
+            'total_price' => 1000,
+            'slot_price' => 200, // ceil(1000 / 5)
+        ]);
+
+        // Attempt to change location (core field)
+        $response = $this->actingAs($this->coach)
+            ->patch(route('coach.workouts.update', $workout), [
+                'sport_id' => $this->sport->id,
+                'city_id' => $this->city->id,
+                'location_name' => 'Updated Location Name',
+                'lat' => 55.7600, // Changed
+                'lng' => 37.6200, // Changed
+                'starts_at' => $workout->starts_at->format('Y-m-d\TH:i'),
+                'duration_minutes' => 60,
+                'total_price' => 1000,
+                'slots_total' => 5,
+            ]);
+
+        $response->assertSessionHasErrors(['slots_booked']);
+
+        // Attempt to change time (core field)
+        $response = $this->actingAs($this->coach)
+            ->patch(route('coach.workouts.update', $workout), [
+                'sport_id' => $this->sport->id,
+                'city_id' => $this->city->id,
+                'location_name' => $workout->location_name,
+                'lat' => $workout->lat,
+                'lng' => $workout->lng,
+                'starts_at' => now()->addDays(3)->setTime(15, 0)->format('Y-m-d\TH:i'), // Changed
+                'duration_minutes' => 60,
+                'total_price' => 1000,
+                'slots_total' => 5,
+            ]);
+
+        $response->assertSessionHasErrors(['slots_booked']);
+
+        // Attempt to change price (core field)
+        $response = $this->actingAs($this->coach)
+            ->patch(route('coach.workouts.update', $workout), [
+                'sport_id' => $this->sport->id,
+                'city_id' => $this->city->id,
+                'location_name' => $workout->location_name,
+                'lat' => $workout->lat,
+                'lng' => $workout->lng,
+                'starts_at' => $workout->starts_at->format('Y-m-d\TH:i'),
+                'duration_minutes' => 60,
+                'total_price' => 1500, // Changed
+                'slots_total' => 5,
+            ]);
+
+        $response->assertSessionHasErrors(['slots_booked']);
+
+        // Can update non-core fields (title, description)
+        $response = $this->actingAs($this->coach)
+            ->patch(route('coach.workouts.update', $workout), [
+                'sport_id' => $this->sport->id,
+                'city_id' => $this->city->id,
+                'title' => 'Updated Title',
+                'description' => 'Updated Description',
+                'location_name' => $workout->location_name,
+                'lat' => $workout->lat,
+                'lng' => $workout->lng,
+                'starts_at' => $workout->starts_at->format('Y-m-d\TH:i'),
+                'duration_minutes' => $workout->duration_minutes,
+                'total_price' => $workout->total_price,
+                'slots_total' => $workout->slots_total,
+            ]);
+
+        $response->assertSessionDoesntHaveErrors();
+        $response->assertRedirect(route('coach.workouts.index'));
+
+        $this->assertDatabaseHas('workouts', [
+            'id' => $workout->id,
+            'title' => 'Updated Title',
+            'description' => 'Updated Description',
+        ]);
+    }
 }
