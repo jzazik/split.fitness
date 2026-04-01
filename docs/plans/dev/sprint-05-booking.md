@@ -127,17 +127,17 @@ php artisan schedule:test
 - Modify: `routes/api.php`
 
 **Steps:**
-- [ ] Создать BookingController:
+- [x] Создать BookingController:
   - store(CreateBookingRequest) → CreateBookingAction
   - Return booking with payment_url (placeholder пока)
-- [ ] Создать CreateBookingRequest:
+- [x] Создать CreateBookingRequest:
   - workout_id required exists
   - slots_count default 1 (для MVP всегда 1)
   - Проверить: user->role === 'athlete'
   - Проверить: workout published, starts_at > now()
   - Проверить: user не записан повторно на эту тренировку
-- [ ] Добавить роут: `POST /api/bookings` (middleware auth, role:athlete)
-- [ ] Mark completed
+- [x] Добавить роут: `POST /api/bookings` (middleware auth, role:athlete)
+- [x] Mark completed
 
 ---
 

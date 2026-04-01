@@ -26,14 +26,14 @@ return new class extends Migration
                 'paid',
                 'expired',
                 'cancelled',
-                'refunded'
+                'refunded',
             ])->default('pending_payment');
 
             $table->enum('payment_status', [
                 'pending',
                 'paid',
                 'failed',
-                'refunded'
+                'refunded',
             ])->default('pending');
 
             $table->dateTime('booked_at')->nullable();

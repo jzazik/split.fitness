@@ -16,13 +16,14 @@ class BookingActionTest extends TestCase
     use RefreshDatabase;
 
     protected ReserveSlotAction $reserveSlotAction;
+
     protected CreateBookingAction $createBookingAction;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->reserveSlotAction = new ReserveSlotAction();
+        $this->reserveSlotAction = new ReserveSlotAction;
         $this->createBookingAction = new CreateBookingAction($this->reserveSlotAction);
     }
 
