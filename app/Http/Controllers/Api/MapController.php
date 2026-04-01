@@ -75,7 +75,9 @@ class MapController extends Controller
                 'sw_lng' => $swLng,
             ];
 
-            $query->whereBetween('lat', [$swLat, $neLat]);
+            $query->whereNotNull('lat')
+                ->whereNotNull('lng')
+                ->whereBetween('lat', [$swLat, $neLat]);
 
             // Handle dateline wrapping for longitude
             if ($swLng > $neLng) {

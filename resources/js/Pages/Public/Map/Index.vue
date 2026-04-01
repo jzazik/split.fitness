@@ -178,8 +178,6 @@ const initBootstrap = async () => {
     L = leafletModule.default;
     await import('leaflet/dist/leaflet.css');
     await import('leaflet.markercluster');
-    await import('leaflet.markercluster/dist/MarkerCluster.css');
-    await import('leaflet.markercluster/dist/MarkerCluster.Default.css');
 
     const markerClusterModule = await import('@/composables/useMarkerCluster');
     useMarkerCluster = markerClusterModule.useMarkerCluster;

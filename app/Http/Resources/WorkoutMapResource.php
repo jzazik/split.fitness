@@ -40,7 +40,7 @@ class WorkoutMapResource extends JsonResource
             'slots_total' => $this->slots_total,
             'slots_booked' => $this->slots_booked,
             'coach_name' => $this->coach?->full_name,
-            'coach_avatar_url' => $this->coach?->getFirstMediaUrl('avatar'),
+            'coach_avatar_url' => $this->coach?->media->first()?->getUrl(),
             'coach_rating' => $this->coach?->coachProfile?->rating_avg,
         ];
     }
