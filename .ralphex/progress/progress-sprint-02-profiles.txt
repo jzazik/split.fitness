@@ -798,3 +798,19 @@ all tasks completed, starting code review...
 [26-04-01 13:23:28] Let me fix these issues:
 [26-04-01 13:23:38] Now I need to refresh the migration and run tests:
 [26-04-01 13:24:36] Now let me run tests to verify everything still works:
+[26-04-01 13:25:13] Fixed two issues from the code review:
+[26-04-01 13:25:13]   1. Added database index on coach_profiles.moderation_status column (performance optimization for filtering queries)
+[26-04-01 13:25:13]    - Created migration: 2026_04_01_102407_add_index_to_moderation_status_on_coach_profiles.php
+[26-04-01 13:25:13]    - Migration applied successfully
+[26-04-01 13:25:13]   2. Added redirect for completed profiles in OnboardingController
+[26-04-01 13:25:13]    - Users with completed profiles are now redirected to their respective dashboards
+[26-04-01 13:25:13]    - Prevents re-submission of already completed profiles
+[26-04-01 13:25:13] All tests pass (59 passed, 2 incomplete WIP tests).
+[26-04-01 13:25:13] Linter clean.
+[26-04-01 13:25:13] Changes committed.
+[26-04-01 13:25:13] issues fixed, running another review iteration...
+
+--- claude review 4: critical/major ---
+[26-04-01 13:25:15] agent "quality": model=default, subagent=general-purpose
+[26-04-01 13:25:15] agent "implementation": model=default, subagent=general-purpose
+[26-04-01 13:25:26] I'll start by checking git status and then proceed with the code review.
