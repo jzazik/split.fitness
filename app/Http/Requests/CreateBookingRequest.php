@@ -27,7 +27,7 @@ class CreateBookingRequest extends FormRequest
     {
         return [
             'workout_id' => 'required|integer|exists:workouts,id',
-            'slots_count' => 'integer|min:1',
+            'slots_count' => 'integer|min:1|max:100',
         ];
     }
 

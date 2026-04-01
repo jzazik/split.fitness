@@ -23,6 +23,7 @@ class ExpirePendingBookingJob implements ShouldQueue
         $expiredBookings = Booking::query()
             ->where('status', 'pending_payment')
             ->where('created_at', '<', now()->subMinutes(15))
+            ->with('workout')
             ->get();
 
         $processedCount = 0;
@@ -34,10 +35,12 @@ class ExpirePendingBookingJob implements ShouldQueue
                     $workout = $booking->workout()->lockForUpdate()->first();
 
                     if (! $workout) {
-                        Log::warning('Workout not found during booking expiration', [
+                        Log::warning('Workout not found during booking expiration, cancelling booking', [
                             'booking_id' => $booking->id,
                             'workout_id' => $booking->workout_id,
                         ]);
+
+                        $booking->update(['status' => 'cancelled']);
 
                         return;
                     }
