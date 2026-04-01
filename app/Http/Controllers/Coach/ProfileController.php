@@ -132,34 +132,179 @@ class ProfileController extends Controller
     public function uploadDiploma(Request $request): RedirectResponse
     {
         $request->validate([
-            'diploma' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'diplomas' => 'required|array',
+            'diplomas.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
         ]);
 
         $user = auth()->user();
-        $file = $request->file('diploma');
 
         try {
-            $user->coachProfile->addMediaFromRequest('diploma')
-                ->toMediaCollection('diplomas');
+            if (!$user->coachProfile) {
+                throw new \Exception('Coach profile not found');
+            }
 
-            Log::info('Diploma uploaded', [
-                'user_id' => $user->id,
-                'role' => $user->role,
-                'profile_type' => 'coach',
-                'file_type' => $file->getMimeType(),
-                'file_size' => $file->getSize(),
-            ]);
+            $files = $request->file('diplomas');
+            foreach ($files as $file) {
+                $user->coachProfile
+                    ->addMedia($file)
+                    ->toMediaCollection('diplomas');
 
-            return redirect()->route('coach.profile')->with('success', 'Диплом загружен');
+                Log::info('Diploma uploaded', [
+                    'user_id' => $user->id,
+                    'role' => $user->role,
+                    'profile_type' => 'coach',
+                    'file_type' => $file->getMimeType(),
+                    'file_size' => $file->getSize(),
+                ]);
+            }
+
+            return redirect()->route('coach.profile')->with('success', 'Дипломы загружены');
         } catch (\Exception $e) {
             Log::error('Diploma upload failed', [
+                'user_id' => $user->id,
+                'role' => $user->role,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()->route('coach.profile')
+                ->withErrors(['diplomas' => 'Не удалось загрузить дипломы. Попробуйте ещё раз.']);
+        }
+    }
+
+    public function uploadCertificate(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'certificates' => 'required|array',
+            'certificates.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
+        ]);
+
+        $user = auth()->user();
+
+        try {
+            if (!$user->coachProfile) {
+                throw new \Exception('Coach profile not found');
+            }
+
+            $files = $request->file('certificates');
+            foreach ($files as $file) {
+                $user->coachProfile
+                    ->addMedia($file)
+                    ->toMediaCollection('certificates');
+
+                Log::info('Certificate uploaded', [
+                    'user_id' => $user->id,
+                    'role' => $user->role,
+                    'profile_type' => 'coach',
+                    'file_type' => $file->getMimeType(),
+                    'file_size' => $file->getSize(),
+                ]);
+            }
+
+            return redirect()->route('coach.profile')->with('success', 'Справки загружены');
+        } catch (\Exception $e) {
+            Log::error('Certificate upload failed', [
+                'user_id' => $user->id,
+                'role' => $user->role,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()->route('coach.profile')
+                ->withErrors(['certificates' => 'Не удалось загрузить справки. Попробуйте ещё раз.']);
+        }
+    }
+
+    public function deleteAvatar(): RedirectResponse
+    {
+        $user = auth()->user();
+
+        try {
+            $user->clearMediaCollection('avatar');
+
+            Log::info('Avatar removed', [
+                'user_id' => $user->id,
+                'role' => $user->role,
+            ]);
+
+            return redirect()->route('coach.profile')->with('success', 'Фото удалено');
+        } catch (\Exception $e) {
+            Log::error('Avatar removal failed', [
                 'user_id' => $user->id,
                 'role' => $user->role,
                 'error' => $e->getMessage(),
             ]);
 
             return redirect()->route('coach.profile')
-                ->withErrors(['diploma' => 'Не удалось загрузить диплом. Попробуйте ещё раз.']);
+                ->withErrors(['avatar' => 'Не удалось удалить фото.']);
+        }
+    }
+
+    public function deleteDiploma(int $mediaId): RedirectResponse
+    {
+        $user = auth()->user();
+
+        try {
+            $media = $user->coachProfile->getMedia('diplomas')->find($mediaId);
+
+            if (!$media) {
+                return redirect()->route('coach.profile')
+                    ->withErrors(['diploma' => 'Файл не найден.']);
+            }
+
+            $media->delete();
+
+            Log::info('Diploma removed', [
+                'user_id' => $user->id,
+                'role' => $user->role,
+                'media_id' => $mediaId,
+            ]);
+
+            return redirect()->route('coach.profile')->with('success', 'Диплом удалён');
+        } catch (\Exception $e) {
+            Log::error('Diploma removal failed', [
+                'user_id' => $user->id,
+                'role' => $user->role,
+                'media_id' => $mediaId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('coach.profile')
+                ->withErrors(['diploma' => 'Не удалось удалить диплом.']);
+        }
+    }
+
+    public function deleteCertificate(int $mediaId): RedirectResponse
+    {
+        $user = auth()->user();
+
+        try {
+            $media = $user->coachProfile->getMedia('certificates')->find($mediaId);
+
+            if (!$media) {
+                return redirect()->route('coach.profile')
+                    ->withErrors(['certificate' => 'Файл не найден.']);
+            }
+
+            $media->delete();
+
+            Log::info('Certificate removed', [
+                'user_id' => $user->id,
+                'role' => $user->role,
+                'media_id' => $mediaId,
+            ]);
+
+            return redirect()->route('coach.profile')->with('success', 'Справка удалена');
+        } catch (\Exception $e) {
+            Log::error('Certificate removal failed', [
+                'user_id' => $user->id,
+                'role' => $user->role,
+                'media_id' => $mediaId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('coach.profile')
+                ->withErrors(['certificate' => 'Не удалось удалить справку.']);
         }
     }
 }

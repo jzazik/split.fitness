@@ -1,7 +1,9 @@
 <script setup>
 import CoachLayout from '@/Layouts/CoachLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import AvatarUploader from '@/Components/UI/AvatarUploader.vue';
+import FileUploader from '@/Components/UI/FileUploader.vue';
+import MultiSelect from '@/Components/UI/MultiSelect.vue';
 
 const props = defineProps({
     user: Object,
@@ -20,33 +22,76 @@ const form = useForm({
     experience_years: props.profile?.experience_years || null,
 });
 
-const avatarPreview = ref(props.user?.avatar_url || null);
-const avatarFile = ref(null);
+const handleAvatarUpload = (file) => {
+    const formData = new FormData();
+    formData.append('avatar', file);
 
-const handleAvatarChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-        avatarFile.value = file;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            avatarPreview.value = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-};
-
-const uploadAvatar = () => {
-    if (!avatarFile.value) return;
-
-    const avatarForm = new FormData();
-    avatarForm.append('avatar', avatarFile.value);
-
-    window.axios.post(route('coach.profile.uploadAvatar'), avatarForm)
-        .then(() => {
-            avatarFile.value = null;
+    window.axios.post(route('coach.profile.uploadAvatar'), formData)
+        .then(response => {
+            console.log('Avatar uploaded successfully');
         })
         .catch(error => {
             console.error('Avatar upload failed:', error);
+        });
+};
+
+const handleAvatarRemove = () => {
+    window.axios.delete(route('coach.profile.deleteAvatar'))
+        .then(() => {
+            console.log('Avatar removed successfully');
+        })
+        .catch(error => {
+            console.error('Avatar removal failed:', error);
+        });
+};
+
+const handleDiplomaUpload = (files) => {
+    const formData = new FormData();
+    files.forEach(file => {
+        formData.append('diplomas[]', file);
+    });
+
+    window.axios.post(route('coach.profile.uploadDiploma'), formData)
+        .then(() => {
+            console.log('Diplomas uploaded successfully');
+        })
+        .catch(error => {
+            console.error('Diploma upload failed:', error);
+        });
+};
+
+const handleDiplomaRemove = (file) => {
+    window.axios.delete(route('coach.profile.deleteDiploma', file.id))
+        .then(() => {
+            console.log('Diploma removed successfully');
+        })
+        .catch(error => {
+            console.error('Diploma removal failed:', error);
+        });
+};
+
+const handleCertificateUpload = (files) => {
+    const formData = new FormData();
+    files.forEach(file => {
+        formData.append('certificates[]', file);
+    });
+
+    window.axios.post(route('coach.profile.uploadCertificate'), formData)
+        .then(() => {
+            console.log('Certificates uploaded successfully');
+        })
+        .catch(error => {
+            console.error('Certificate upload failed:', error);
+        });
+};
+
+const handleCertificateRemove = (file) => {
+    window.axios.delete(route('coach.profile.deleteCertificate', file.id))
+        .then(() => {
+            console.log('Certificate removed successfully');
+        })
+        .catch(error => {
+            console.error('Certificate removal failed:', error);
         });
 };
 
@@ -54,15 +99,6 @@ const submit = () => {
     form.patch(route('coach.profile.update'), {
         preserveScroll: true,
     });
-};
-
-const toggleSport = (sportId) => {
-    const index = form.sports.indexOf(sportId);
-    if (index > -1) {
-        form.sports.splice(index, 1);
-    } else {
-        form.sports.push(sportId);
-    }
 };
 </script>
 
@@ -86,39 +122,12 @@ const toggleSport = (sportId) => {
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Фото профиля
                                 </label>
-                                <div class="flex items-center space-x-4">
-                                    <div class="w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-                                        <img v-if="avatarPreview" :src="avatarPreview" alt="Avatar" class="w-full h-full object-cover">
-                                        <svg v-else class="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <input
-                                            type="file"
-                                            @change="handleAvatarChange"
-                                            accept="image/*"
-                                            class="hidden"
-                                            ref="avatarInput"
-                                        >
-                                        <button
-                                            type="button"
-                                            @click="$refs.avatarInput.click()"
-                                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-                                        >
-                                            Выбрать фото
-                                        </button>
-                                        <button
-                                            v-if="avatarFile"
-                                            type="button"
-                                            @click="uploadAvatar"
-                                            class="ml-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                                        >
-                                            Загрузить
-                                        </button>
-                                        <p class="mt-1 text-xs text-gray-500">Максимум 5 МБ, только изображения</p>
-                                    </div>
-                                </div>
+                                <AvatarUploader
+                                    :current-url="user?.avatar_url"
+                                    :max-size-mb="5"
+                                    @upload="handleAvatarUpload"
+                                    @remove="handleAvatarRemove"
+                                />
                             </div>
 
                             <!-- Personal Info -->
@@ -222,24 +231,15 @@ const toggleSport = (sportId) => {
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Виды спорта <span class="text-red-500">*</span>
                                 </label>
-                                <div class="space-y-2 max-h-60 overflow-y-auto border border-gray-300 rounded-md p-3">
-                                    <label
-                                        v-for="sport in sports"
-                                        :key="sport.id"
-                                        class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            :value="sport.id"
-                                            :checked="form.sports.includes(sport.id)"
-                                            @change="toggleSport(sport.id)"
-                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                        >
-                                        <span class="text-sm text-gray-700">{{ sport.name }}</span>
-                                    </label>
-                                </div>
+                                <MultiSelect
+                                    v-model="form.sports"
+                                    :options="sports"
+                                    label="Выберите виды спорта"
+                                    placeholder="Поиск видов спорта..."
+                                    value-key="id"
+                                    label-key="name"
+                                />
                                 <p v-if="form.errors.sports" class="mt-1 text-sm text-red-600">{{ form.errors.sports }}</p>
-                                <p class="mt-1 text-sm text-gray-500">Выбрано: {{ form.sports.length }}</p>
                             </div>
 
                             <!-- Diplomas Section -->
@@ -247,19 +247,15 @@ const toggleSport = (sportId) => {
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Дипломы и сертификаты
                                 </label>
-                                <div v-if="profile?.diplomas?.length" class="mb-3 space-y-2">
-                                    <div
-                                        v-for="diploma in profile.diplomas"
-                                        :key="diploma.id"
-                                        class="flex items-center justify-between p-2 border border-gray-200 rounded"
-                                    >
-                                        <span class="text-sm text-gray-700">{{ diploma.name }}</span>
-                                        <a :href="diploma.url" target="_blank" class="text-sm text-blue-600 hover:underline">
-                                            Открыть
-                                        </a>
-                                    </div>
-                                </div>
-                                <p class="text-sm text-gray-500">Загрузка дипломов будет доступна после создания UI компонентов (Task 5)</p>
+                                <FileUploader
+                                    :existing-files="profile?.diplomas || []"
+                                    :max-size-mb="10"
+                                    accept="image/*,.pdf"
+                                    :multiple="true"
+                                    label="Добавить диплом"
+                                    @upload="handleDiplomaUpload"
+                                    @remove="handleDiplomaRemove"
+                                />
                             </div>
 
                             <!-- Certificates Section -->
@@ -267,19 +263,15 @@ const toggleSport = (sportId) => {
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Справки СМЗ
                                 </label>
-                                <div v-if="profile?.certificates?.length" class="mb-3 space-y-2">
-                                    <div
-                                        v-for="cert in profile.certificates"
-                                        :key="cert.id"
-                                        class="flex items-center justify-between p-2 border border-gray-200 rounded"
-                                    >
-                                        <span class="text-sm text-gray-700">{{ cert.name }}</span>
-                                        <a :href="cert.url" target="_blank" class="text-sm text-blue-600 hover:underline">
-                                            Открыть
-                                        </a>
-                                    </div>
-                                </div>
-                                <p class="text-sm text-gray-500">Загрузка справок будет доступна после создания UI компонентов (Task 5)</p>
+                                <FileUploader
+                                    :existing-files="profile?.certificates || []"
+                                    :max-size-mb="10"
+                                    accept="image/*,.pdf"
+                                    :multiple="true"
+                                    label="Добавить справку"
+                                    @upload="handleCertificateUpload"
+                                    @remove="handleCertificateRemove"
+                                />
                             </div>
 
                             <!-- Submit Button -->

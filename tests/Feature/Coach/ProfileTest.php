@@ -212,4 +212,139 @@ class ProfileTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    public function test_coach_can_upload_diplomas(): void
+    {
+        $coach = User::factory()->coach()->create();
+        $coachProfile = CoachProfile::factory()->create(['user_id' => $coach->id]);
+
+        $file1 = UploadedFile::fake()->create('diploma1.pdf', 1000);
+        $file2 = UploadedFile::fake()->create('diploma2.pdf', 1000);
+
+        $response = $this
+            ->actingAs($coach)
+            ->post(route('coach.profile.uploadDiploma'), [
+                'diplomas' => [$file1, $file2],
+            ]);
+
+        $response->assertRedirect(route('coach.profile'));
+        $response->assertSessionHas('success');
+
+        $coachProfile->refresh();
+        $this->assertEquals(2, $coachProfile->getMedia('diplomas')->count());
+    }
+
+    public function test_coach_can_upload_certificates(): void
+    {
+        $coach = User::factory()->coach()->create();
+        $coachProfile = CoachProfile::factory()->create(['user_id' => $coach->id]);
+
+        $file = UploadedFile::fake()->create('certificate.pdf', 1000);
+
+        $response = $this
+            ->actingAs($coach)
+            ->post(route('coach.profile.uploadCertificate'), [
+                'certificates' => [$file],
+            ]);
+
+        $response->assertRedirect(route('coach.profile'));
+        $response->assertSessionHas('success');
+
+        $this->assertEquals(1, $coachProfile->getMedia('certificates')->count());
+    }
+
+    public function test_coach_can_delete_avatar(): void
+    {
+        $coach = User::factory()->coach()->create();
+        CoachProfile::factory()->create(['user_id' => $coach->id]);
+
+        $file = UploadedFile::fake()->image('avatar.jpg');
+        $coach->addMedia($file)->toMediaCollection('avatar');
+
+        $this->assertEquals(1, $coach->getMedia('avatar')->count());
+
+        $response = $this
+            ->actingAs($coach)
+            ->delete(route('coach.profile.deleteAvatar'));
+
+        $response->assertRedirect(route('coach.profile'));
+        $response->assertSessionHas('success');
+
+        $coach->refresh();
+        $this->assertEquals(0, $coach->getMedia('avatar')->count());
+    }
+
+    public function test_coach_can_delete_diploma(): void
+    {
+        $coach = User::factory()->coach()->create();
+        $coachProfile = CoachProfile::factory()->create(['user_id' => $coach->id]);
+
+        $file = UploadedFile::fake()->image('diploma.jpg');
+        $media = $coachProfile->addMedia($file)->toMediaCollection('diplomas');
+
+        $this->assertEquals(1, $coachProfile->getMedia('diplomas')->count());
+
+        $response = $this
+            ->actingAs($coach)
+            ->delete(route('coach.profile.deleteDiploma', $media->id));
+
+        $response->assertRedirect(route('coach.profile'));
+        $response->assertSessionHas('success');
+
+        $coachProfile->refresh();
+        $this->assertEquals(0, $coachProfile->getMedia('diplomas')->count());
+    }
+
+    public function test_coach_can_delete_certificate(): void
+    {
+        $coach = User::factory()->coach()->create();
+        $coachProfile = CoachProfile::factory()->create(['user_id' => $coach->id]);
+
+        $file = UploadedFile::fake()->create('certificate.pdf', 1000);
+        $media = $coachProfile->addMedia($file)->toMediaCollection('certificates');
+
+        $this->assertEquals(1, $coachProfile->getMedia('certificates')->count());
+
+        $response = $this
+            ->actingAs($coach)
+            ->delete(route('coach.profile.deleteCertificate', $media->id));
+
+        $response->assertRedirect(route('coach.profile'));
+        $response->assertSessionHas('success');
+
+        $coachProfile->refresh();
+        $this->assertEquals(0, $coachProfile->getMedia('certificates')->count());
+    }
+
+    public function test_diploma_upload_validates_file_type(): void
+    {
+        $coach = User::factory()->coach()->create();
+        CoachProfile::factory()->create(['user_id' => $coach->id]);
+
+        $file = UploadedFile::fake()->create('document.txt', 100);
+
+        $response = $this
+            ->actingAs($coach)
+            ->post(route('coach.profile.uploadDiploma'), [
+                'diplomas' => [$file],
+            ]);
+
+        $response->assertSessionHasErrors('diplomas.0');
+    }
+
+    public function test_diploma_upload_validates_file_size(): void
+    {
+        $coach = User::factory()->coach()->create();
+        CoachProfile::factory()->create(['user_id' => $coach->id]);
+
+        $file = UploadedFile::fake()->image('diploma.jpg')->size(11000);
+
+        $response = $this
+            ->actingAs($coach)
+            ->post(route('coach.profile.uploadDiploma'), [
+                'diplomas' => [$file],
+            ]);
+
+        $response->assertSessionHasErrors('diplomas.0');
+    }
 }

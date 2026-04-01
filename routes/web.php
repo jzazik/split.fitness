@@ -46,7 +46,11 @@ Route::middleware(['auth', 'role:coach'])->prefix('coach')->name('coach.')->grou
     Route::get('/profile', [CoachProfileController::class, 'edit'])->name('profile');
     Route::patch('/profile', [CoachProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/avatar', [CoachProfileController::class, 'uploadAvatar'])->name('profile.uploadAvatar');
+    Route::delete('/profile/avatar', [CoachProfileController::class, 'deleteAvatar'])->name('profile.deleteAvatar');
     Route::post('/profile/diploma', [CoachProfileController::class, 'uploadDiploma'])->name('profile.uploadDiploma');
+    Route::delete('/profile/diploma/{mediaId}', [CoachProfileController::class, 'deleteDiploma'])->name('profile.deleteDiploma');
+    Route::post('/profile/certificate', [CoachProfileController::class, 'uploadCertificate'])->name('profile.uploadCertificate');
+    Route::delete('/profile/certificate/{mediaId}', [CoachProfileController::class, 'deleteCertificate'])->name('profile.deleteCertificate');
     Route::get('/payments', [PaymentsController::class, 'index'])->name('payments');
 });
 

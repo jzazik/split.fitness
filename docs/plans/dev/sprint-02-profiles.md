@@ -211,25 +211,25 @@ php artisan tinker
 - Create: `resources/js/Components/UI/MultiSelect.vue`
 
 **Steps:**
-- [ ] Создать AvatarUploader:
+- [x] Создать AvatarUploader:
   - Круглый preview фото
   - Кнопка "Загрузить фото"
   - Drag & drop support
   - Валидация: только image, max 5MB
   - Emit uploaded file URL
-- [ ] Создать FileUploader:
+- [x] Создать FileUploader:
   - Список загруженных файлов
   - Кнопка "Добавить файл"
   - Поддержка multiple files
   - Показывать иконку по типу файла (pdf/image)
   - Кнопка удаления файла
-- [ ] Создать MultiSelect:
+- [x] Создать MultiSelect:
   - Dropdown с чекбоксами
   - Поиск по списку
   - Показывать выбранные badges
   - v-model support
-- [ ] Использовать компоненты в Coach/Profile/Edit.vue
-- [ ] Mark completed
+- [x] Использовать компоненты в Coach/Profile/Edit.vue
+- [x] Mark completed
 
 ---
 
