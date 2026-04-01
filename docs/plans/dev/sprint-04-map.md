@@ -234,15 +234,15 @@ curl "http://localhost/api/workouts/map?city_id=1&sport_id=2"
 - Create: `tests/Feature/Api/MapApiTest.php`
 
 **Steps:**
-- [ ] Создать MapApiTest:
+- [x] Создать MapApiTest:
   - Тест получения workouts без фильтров
   - Тест фильтрации по city_id
   - Тест фильтрации по sport_id
   - Тест bbox фильтрации
   - Тест что draft и cancelled не возвращаются
   - Тест что прошедшие тренировки не возвращаются
-- [ ] Запустить тесты
-- [ ] Mark completed
+- [x] Запустить тесты
+- [x] Mark completed
 
 ---
 
