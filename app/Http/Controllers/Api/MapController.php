@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MapWorkoutsRequest;
 use App\Http\Resources\WorkoutMapResource;
 use App\Models\Workout;
+use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Support\Facades\Log;
 
@@ -46,11 +47,11 @@ class MapController extends Controller
 
         // Filter by date range
         if ($request->filled('date_from')) {
-            $query->whereDate('starts_at', '>=', $validated['date_from']);
+            $query->where('starts_at', '>=', Carbon::parse($validated['date_from'])->startOfDay());
         }
 
         if ($request->filled('date_to')) {
-            $query->whereDate('starts_at', '<=', $validated['date_to']);
+            $query->where('starts_at', '<=', Carbon::parse($validated['date_to'])->endOfDay());
         }
 
         // Bounding box filter (viewport optimization)

@@ -172,6 +172,9 @@ onBeforeUnmount(() => {
   if (map) {
     if (debouncedLoadWorkouts) {
       map.off('moveend', debouncedLoadWorkouts);
+      if (typeof debouncedLoadWorkouts.cancel === 'function') {
+        debouncedLoadWorkouts.cancel();
+      }
       debouncedLoadWorkouts = null;
     }
     map.remove();
@@ -305,7 +308,15 @@ const escapeHtml = (text) => {
 };
 
 const addWorkoutMarker = (workout) => {
-  const marker = L.marker([workout.lat, workout.lng]);
+  const lat = parseFloat(workout.lat);
+  const lng = parseFloat(workout.lng);
+
+  if (isNaN(lat) || isNaN(lng)) {
+    console.warn('Invalid coordinates for workout:', workout.id);
+    return;
+  }
+
+  const marker = L.marker([lat, lng]);
 
   // Create popup content with escaped HTML
   const popupContent = `
@@ -324,7 +335,7 @@ const addWorkoutMarker = (workout) => {
         ${escapeHtml(workout.coach_name || 'Тренер')}
       </div>
       <div class="text-xs font-semibold mt-1">
-        ${workout.slot_price} ₽
+        ${escapeHtml(String(workout.slot_price))} ₽
       </div>
     </div>
   `;

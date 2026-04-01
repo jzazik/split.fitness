@@ -9,10 +9,16 @@
 export function debounce(func, wait) {
   let timeout;
 
-  return function executedFunction(...args) {
+  const executedFunction = function(...args) {
     clearTimeout(timeout);
     timeout = setTimeout(() => {
       func(...args);
     }, wait);
   };
+
+  executedFunction.cancel = function() {
+    clearTimeout(timeout);
+  };
+
+  return executedFunction;
 }
