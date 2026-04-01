@@ -31,7 +31,6 @@ class Workout extends Model
         'total_price',
         'slot_price',
         'slots_total',
-        'slots_booked',
         'status',
         'published_at',
         'cancelled_at',

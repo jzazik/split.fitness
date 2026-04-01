@@ -27,7 +27,7 @@ class UpdateWorkoutRequest extends FormRequest
             'address' => ['nullable', 'string', 'max:500'],
             'lat' => ['required', 'numeric', 'between:-90,90'],
             'lng' => ['required', 'numeric', 'between:-180,180'],
-            'starts_at' => ['required', 'date', 'after:now', 'before:+3 months', function ($attribute, $value, $fail) {
+            'starts_at' => ['required', 'date', 'after:1 hour', 'before:+3 months', function ($attribute, $value, $fail) {
                 $timestamp = strtotime($value);
                 $minutes = (int) date('i', $timestamp);
                 if ($minutes % 15 !== 0) {
