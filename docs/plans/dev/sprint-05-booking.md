@@ -149,15 +149,15 @@ php artisan schedule:test
 - Modify: `routes/web.php`
 
 **Steps:**
-- [ ] Создать BookingsController:
+- [x] Создать BookingsController:
   - index() — bookings текущего атлета, eager load workout.sport.coach
   - Разделить на: upcoming, past, cancelled
-- [ ] Создать Index.vue:
+- [x] Создать Index.vue:
   - Tabs: Ближайшие | Прошедшие | Отменённые
   - Карточка брони: дата, время, место, тренер, статус, цена
   - Кнопка "Отменить" (если >24 часа, pending оплаты нет)
-- [ ] Добавить роут: `GET /athlete/bookings` → index
-- [ ] Mark completed
+- [x] Добавить роут: `GET /athlete/bookings` → index
+- [x] Mark completed
 
 ---
 
