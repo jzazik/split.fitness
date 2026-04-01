@@ -1,10 +1,11 @@
-import L from 'leaflet';
-import 'leaflet.markercluster';
-
 /**
  * Composable for marker clustering functionality
+ * SSR-safe: expects L (leaflet) to be passed as parameter after dynamic import
  */
-export function useMarkerCluster() {
+export function useMarkerCluster(L) {
+  if (!L) {
+    throw new Error('useMarkerCluster: Leaflet instance is required');
+  }
   /**
    * Create a marker cluster group with custom cluster icon
    * @param {Object} options - Additional options for markerClusterGroup

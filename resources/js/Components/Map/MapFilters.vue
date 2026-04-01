@@ -93,7 +93,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, watch } from 'vue';
 
 const props = defineProps({
   cities: {
@@ -124,6 +124,14 @@ const localFilters = reactive({
   dateFrom: props.modelValue.dateFrom,
   dateTo: props.modelValue.dateTo,
 });
+
+// Watch for external prop changes and sync to localFilters
+watch(() => props.modelValue, (newValue) => {
+  localFilters.cityId = newValue.cityId;
+  localFilters.sportIds = [...(newValue.sportIds || [])];
+  localFilters.dateFrom = newValue.dateFrom;
+  localFilters.dateTo = newValue.dateTo;
+}, { deep: true });
 
 // Date presets
 const datePresets = [
@@ -164,9 +172,14 @@ const selectDatePreset = (preset) => {
       localFilters.dateTo = formatDate(tomorrow);
       break;
     case 'week':
-      const weekEnd = new Date(today);
-      weekEnd.setDate(weekEnd.getDate() + 7);
-      localFilters.dateFrom = formatDate(today);
+      // Calculate start of week (Monday) and end of week (Sunday)
+      const dayOfWeek = today.getDay();
+      const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Sunday is 0, Monday is 1
+      const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() + daysToMonday);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6); // Sunday is 6 days after Monday
+      localFilters.dateFrom = formatDate(weekStart);
       localFilters.dateTo = formatDate(weekEnd);
       break;
   }

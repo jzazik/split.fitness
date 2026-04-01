@@ -71,7 +71,7 @@
           </p>
           <button
             v-if="hasError"
-            @click="loadWorkouts"
+            @click="retryAfterError"
             class="mt-4 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             Повторить попытку
@@ -112,10 +112,11 @@ import MapFilters from '@/Components/Map/MapFilters.vue';
 import WorkoutBottomCard from '@/Components/Map/WorkoutBottomCard.vue';
 import LoadingSpinner from '@/Components/UI/LoadingSpinner.vue';
 import Toast from '@/Components/UI/Toast.vue';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { useMarkerCluster } from '@/composables/useMarkerCluster';
 import { debounce } from '@/utils/debounce';
+
+// SSR-safe: leaflet will be dynamically imported in onMounted
+let L = null;
+let useMarkerCluster = null;
 
 const props = defineProps({
   cities: {
@@ -138,11 +139,12 @@ let map = null;
 let markerClusterGroup = null;
 let toastTimeout = null;
 let isInitialLoad = true;
+let currentRequestController = null;
+let isMounted = false;
 
-// Initialize filters from URL query parameters
-const urlParams = new URLSearchParams(window.location.search);
+// Initialize filters (URL params will be parsed in onMounted for SSR safety)
 const filters = reactive({
-  cityId: urlParams.get('city_id') ? parseInt(urlParams.get('city_id')) : null,
+  cityId: null,
   sportIds: [],
   dateFrom: null,
   dateTo: null,
@@ -155,14 +157,6 @@ const toast = reactive({
   message: '',
 });
 
-// Fix for default marker icon not showing in production builds
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
-
 // Watch for city filter changes and recenter map
 watch(() => filters.cityId, (newCityId) => {
   if (map && newCityId) {
@@ -173,18 +167,76 @@ watch(() => filters.cityId, (newCityId) => {
   }
 });
 
-onMounted(() => {
-  if (typeof window !== 'undefined' && mapContainer.value) {
+const initBootstrap = async () => {
+  if (typeof window === 'undefined' || !mapContainer.value) {
+    return;
+  }
+
+  try {
+    // Dynamic import for SSR safety
+    const leafletModule = await import('leaflet');
+    L = leafletModule.default;
+    await import('leaflet/dist/leaflet.css');
+    await import('leaflet.markercluster');
+    await import('leaflet.markercluster/dist/MarkerCluster.css');
+    await import('leaflet.markercluster/dist/MarkerCluster.Default.css');
+
+    const markerClusterModule = await import('@/composables/useMarkerCluster');
+    useMarkerCluster = markerClusterModule.useMarkerCluster;
+
+    // Check if component was unmounted during async imports
+    if (!isMounted) {
+      return;
+    }
+
+    // Fix for default marker icon not showing in production builds
+    delete L.Icon.Default.prototype._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    });
+
+    // Parse URL parameters safely (SSR-safe)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('city_id')) {
+      filters.cityId = parseInt(urlParams.get('city_id'));
+    }
+
     initMap();
     loadWorkouts();
+  } catch (error) {
+    console.error('Failed to initialize map bootstrap:', error);
+    hasError.value = true;
+    workouts.value = [];
+    showToast('error', 'Не удалось загрузить компоненты карты. Попробуйте обновить страницу.');
   }
+};
+
+onMounted(async () => {
+  isMounted = true;
+  await initBootstrap();
 });
 
 onBeforeUnmount(() => {
+  // Mark component as unmounted to prevent late async continuations
+  isMounted = false;
+
+  // Abort any in-flight requests
+  if (currentRequestController) {
+    currentRequestController.abort();
+    currentRequestController = null;
+  }
+
   // Clear toast timeout
   if (toastTimeout) {
     clearTimeout(toastTimeout);
     toastTimeout = null;
+  }
+
+  // Cancel filter debounce to prevent post-unmount race
+  if (typeof handleFilterChange.cancel === 'function') {
+    handleFilterChange.cancel();
   }
 
   // Clean up marker cluster group
@@ -211,52 +263,59 @@ onBeforeUnmount(() => {
 let debouncedLoadWorkouts = null;
 
 const initMap = () => {
-  try {
-    // Determine initial map center
-    let initialCenter = [55.7558, 37.6173]; // Default: Moscow
-    let initialZoom = 11;
+  // Determine initial map center
+  let initialCenter = [55.7558, 37.6173]; // Default: Moscow
+  let initialZoom = 11;
 
-    // If city is selected via URL param, center on that city
-    if (filters.cityId) {
-      const selectedCity = props.cities.find(city => city.id === filters.cityId);
-      if (selectedCity && selectedCity.lat && selectedCity.lng) {
-        initialCenter = [selectedCity.lat, selectedCity.lng];
-        initialZoom = 12;
-      }
+  // If city is selected via URL param, center on that city
+  if (filters.cityId) {
+    const selectedCity = props.cities.find(city => city.id === filters.cityId);
+    if (selectedCity && selectedCity.lat && selectedCity.lng) {
+      initialCenter = [selectedCity.lat, selectedCity.lng];
+      initialZoom = 12;
     }
-
-    // Create map instance
-    map = L.map(mapContainer.value).setView(initialCenter, initialZoom);
-
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    }).addTo(map);
-
-    // Create cluster group using composable
-    const { createClusterGroup } = useMarkerCluster();
-    markerClusterGroup = createClusterGroup();
-    map.addLayer(markerClusterGroup);
-
-    // Add debounced viewport change listener for bbox optimization
-    debouncedLoadWorkouts = debounce(() => {
-      // Skip the first moveend event (fired right after initialization)
-      if (isInitialLoad) {
-        isInitialLoad = false;
-        return;
-      }
-      loadWorkouts();
-    }, 500);
-
-    map.on('moveend', debouncedLoadWorkouts);
-  } catch (error) {
-    console.error('Failed to initialize map:', error);
-    showToast('error', 'Не удалось загрузить карту. Попробуйте обновить страницу.');
   }
+
+  // Create map instance
+  map = L.map(mapContainer.value).setView(initialCenter, initialZoom);
+
+  // Add OpenStreetMap tiles
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  }).addTo(map);
+
+  // Create cluster group using composable (pass L for SSR safety)
+  const { createClusterGroup } = useMarkerCluster(L);
+  markerClusterGroup = createClusterGroup();
+  map.addLayer(markerClusterGroup);
+
+  // Add debounced viewport change listener for bbox optimization
+  debouncedLoadWorkouts = debounce(() => {
+    // Skip the first moveend event (fired right after initialization)
+    if (isInitialLoad) {
+      isInitialLoad = false;
+      return;
+    }
+    loadWorkouts();
+  }, 500);
+
+  map.on('moveend', debouncedLoadWorkouts);
 };
 
 const loadWorkouts = async () => {
+  // Guard: bail if component is unmounted or map primitives not ready
+  if (!isMounted || !L || !markerClusterGroup) {
+    return;
+  }
+
+  // Cancel previous request if still in flight
+  if (currentRequestController) {
+    currentRequestController.abort();
+  }
+  const controller = new AbortController();
+  currentRequestController = controller;
+
   loading.value = true;
   hasError.value = false;
 
@@ -292,7 +351,16 @@ const loadWorkouts = async () => {
       params.sw_lng = southWest.lng;
     }
 
-    const response = await window.axios.get('/api/workouts/map', { params });
+    const response = await window.axios.get('/api/workouts/map', {
+      params,
+      signal: controller.signal
+    });
+
+    // Check if results were truncated (API returns meta.truncated flag)
+    if (response.data.meta?.truncated) {
+      showToast('warning', 'Показано максимум 200 тренировок. Приблизьте карту для детального просмотра.');
+    }
+
     workouts.value = response.data.data;
 
     // Clear existing markers
@@ -302,17 +370,32 @@ const loadWorkouts = async () => {
 
     // Add markers for each workout
     workouts.value.forEach(workout => {
-      if (workout.lat && workout.lng) {
+      if (workout.lat != null && workout.lng != null) {
         addWorkoutMarker(workout);
       }
     });
 
   } catch (error) {
+    if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') {
+      // Request was cancelled, ignore
+      return;
+    }
     console.error('Failed to load workouts:', error);
     hasError.value = true;
+    workouts.value = [];
+
+    // Clear existing markers to show true empty state
+    if (markerClusterGroup) {
+      markerClusterGroup.clearLayers();
+    }
+
     showToast('error', 'Не удалось загрузить тренировки.');
   } finally {
-    loading.value = false;
+    // Only clear loading and controller if this request is still the current one
+    if (currentRequestController === controller) {
+      loading.value = false;
+      currentRequestController = null;
+    }
   }
 };
 
@@ -392,10 +475,11 @@ const showToast = (type, message) => {
   toast.type = type;
   toast.message = message;
 
-  // Auto-dismiss after 5 seconds
+  // Auto-dismiss after 5 seconds (8 seconds for warnings)
+  const dismissTime = type === 'warning' ? 8000 : 5000;
   toastTimeout = setTimeout(() => {
     closeToast();
-  }, 5000);
+  }, dismissTime);
 };
 
 const closeToast = () => {
@@ -403,6 +487,27 @@ const closeToast = () => {
   if (toastTimeout) {
     clearTimeout(toastTimeout);
     toastTimeout = null;
+  }
+};
+
+const retryAfterError = async () => {
+  // If bootstrap incomplete (L, useMarkerCluster, or map missing), retry full bootstrap
+  if (!L || !useMarkerCluster || !map || !markerClusterGroup) {
+    // Clean up partial state before retry
+    if (map) {
+      map.remove();
+      map = null;
+    }
+    if (markerClusterGroup) {
+      markerClusterGroup.clearLayers();
+      markerClusterGroup = null;
+    }
+    L = null;
+    useMarkerCluster = null;
+    await initBootstrap();
+  } else {
+    // Otherwise just retry loading workouts
+    await loadWorkouts();
   }
 };
 </script>

@@ -84,14 +84,24 @@ class MapController extends Controller
         }
 
         // Limit results to prevent overload
+        // Query for limit+1 to detect truncation
         $limit = 200;
-        $workouts = $query->limit($limit)->get();
+        $workouts = $query->limit($limit + 1)->get();
         $resultCount = $workouts->count();
+        $wasTruncated = $resultCount > $limit;
+
+        // If truncated, slice to limit
+        if ($wasTruncated) {
+            $workouts = $workouts->slice(0, $limit);
+            $resultCount = $limit;
+        }
+
         $requestDuration = round((microtime(true) - $startTime) * 1000, 2);
 
         // Log successful request with monitoring data
         $logContext = [
             'result_count' => $resultCount,
+            'truncated' => $wasTruncated,
             'request_duration' => $requestDuration,
         ];
 
@@ -110,7 +120,7 @@ class MapController extends Controller
         Log::info('Map API: workouts loaded', $logContext);
 
         // Log performance warnings
-        if ($resultCount >= $limit) {
+        if ($wasTruncated) {
             Log::warning('Map API: result limit reached', $logContext);
         }
 
@@ -118,6 +128,11 @@ class MapController extends Controller
             Log::warning('Map API: slow query detected', $logContext);
         }
 
-        return WorkoutMapResource::collection($workouts);
+        return WorkoutMapResource::collection($workouts)->additional([
+            'meta' => [
+                'truncated' => $wasTruncated,
+                'limit' => $limit,
+            ],
+        ]);
     }
 }
