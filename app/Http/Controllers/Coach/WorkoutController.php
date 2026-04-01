@@ -6,6 +6,7 @@ use App\Actions\Workout\CalculateSlotPriceAction;
 use App\Actions\Workout\PublishWorkoutAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Coach\StoreWorkoutRequest;
+use App\Http\Requests\Coach\UpdateWorkoutRequest;
 use App\Models\City;
 use App\Models\Sport;
 use App\Models\Workout;
@@ -106,6 +107,69 @@ class WorkoutController extends Controller
 
         return redirect()->route('coach.workouts.index')
             ->with('success', 'Тренировка создана как черновик');
+    }
+
+    /**
+     * Show the form for editing a workout.
+     */
+    public function edit(Workout $workout): Response
+    {
+        $this->authorize('update', $workout);
+
+        $cities = City::orderBy('name')->get(['id', 'name']);
+        $sports = Sport::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug']);
+
+        return Inertia::render('Coach/Workouts/Edit', [
+            'workout' => $workout->load(['sport', 'city']),
+            'cities' => $cities,
+            'sports' => $sports,
+        ]);
+    }
+
+    /**
+     * Update the specified workout in storage.
+     */
+    public function update(UpdateWorkoutRequest $request, Workout $workout, CalculateSlotPriceAction $calculateSlotPrice): RedirectResponse
+    {
+        $this->authorize('update', $workout);
+
+        $validated = $request->validated();
+
+        // Recalculate slot price using Action
+        $slotPrice = $calculateSlotPrice->execute(
+            $validated['total_price'],
+            $validated['slots_total']
+        );
+
+        $workout->update([
+            'sport_id' => $validated['sport_id'],
+            'city_id' => $validated['city_id'],
+            'title' => $validated['title'] ?? null,
+            'description' => $validated['description'] ?? null,
+            'location_name' => $validated['location_name'],
+            'address' => $validated['address'] ?? null,
+            'lat' => $validated['lat'],
+            'lng' => $validated['lng'],
+            'starts_at' => $validated['starts_at'],
+            'duration_minutes' => $validated['duration_minutes'],
+            'total_price' => $validated['total_price'],
+            'slot_price' => $slotPrice,
+            'slots_total' => $validated['slots_total'],
+        ]);
+
+        Log::info('Workout updated', [
+            'workout_id' => $workout->id,
+            'coach_id' => $workout->coach_id,
+            'status' => $workout->status,
+            'starts_at' => $workout->starts_at->toIso8601String(),
+            'slots_total' => $workout->slots_total,
+            'slot_price' => $slotPrice,
+        ]);
+
+        return redirect()->route('coach.workouts.index')
+            ->with('success', 'Тренировка обновлена');
     }
 
     /**

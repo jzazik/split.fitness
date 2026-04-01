@@ -571,4 +571,142 @@ class WorkoutTest extends TestCase
         $workout->refresh();
         $this->assertEquals('draft', $workout->status);
     }
+
+    public function test_coach_can_view_edit_workout_form(): void
+    {
+        $workout = Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+        ]);
+
+        $response = $this
+            ->actingAs($this->coach)
+            ->get(route('coach.workouts.edit', $workout));
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->component('Coach/Workouts/Edit')
+            ->has('workout')
+            ->has('cities')
+            ->has('sports')
+        );
+    }
+
+    public function test_coach_can_update_own_workout(): void
+    {
+        $workout = Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'draft',
+            'starts_at' => Carbon::now()->addDays(2),
+            'location_name' => 'Old Location',
+            'total_price' => 1000,
+            'slots_total' => 3,
+        ]);
+
+        $startsAt = Carbon::now()->addDays(5)->format('Y-m-d H:i:s');
+
+        $response = $this
+            ->actingAs($this->coach)
+            ->patch(route('coach.workouts.update', $workout), [
+                'sport_id' => $this->sport->id,
+                'city_id' => $this->city->id,
+                'title' => 'Updated Title',
+                'description' => 'Updated description',
+                'location_name' => 'New Location',
+                'address' => 'New Address',
+                'lat' => 55.731076,
+                'lng' => 37.601224,
+                'starts_at' => $startsAt,
+                'duration_minutes' => 90,
+                'total_price' => 1500,
+                'slots_total' => 5,
+            ]);
+
+        $response->assertRedirect(route('coach.workouts.index'));
+        $response->assertSessionHas('success');
+
+        $workout->refresh();
+        $this->assertEquals('Updated Title', $workout->title);
+        $this->assertEquals('Updated description', $workout->description);
+        $this->assertEquals('New Location', $workout->location_name);
+        $this->assertEquals('New Address', $workout->address);
+        $this->assertEquals(90, $workout->duration_minutes);
+        $this->assertEquals(1500, $workout->total_price);
+        $this->assertEquals(5, $workout->slots_total);
+        $this->assertEquals(300, $workout->slot_price); // ceil(1500 / 5) = 300
+    }
+
+    public function test_coach_cannot_update_another_coach_workout(): void
+    {
+        $otherCoach = User::factory()->coach()->create([
+            'city_id' => $this->city->id,
+        ]);
+
+        CoachProfile::factory()->create([
+            'user_id' => $otherCoach->id,
+            'moderation_status' => 'approved',
+        ]);
+
+        $workout = Workout::factory()->create([
+            'coach_id' => $otherCoach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'location_name' => 'Original Location',
+        ]);
+
+        $startsAt = Carbon::now()->addDays(5)->format('Y-m-d H:i:s');
+
+        $response = $this
+            ->actingAs($this->coach)
+            ->patch(route('coach.workouts.update', $workout), [
+                'sport_id' => $this->sport->id,
+                'city_id' => $this->city->id,
+                'location_name' => 'Hacked Location',
+                'lat' => 55.731076,
+                'lng' => 37.601224,
+                'starts_at' => $startsAt,
+                'duration_minutes' => 60,
+                'total_price' => 1000,
+                'slots_total' => 3,
+            ]);
+
+        $response->assertForbidden();
+
+        $workout->refresh();
+        $this->assertEquals('Original Location', $workout->location_name);
+    }
+
+    public function test_updating_workout_recalculates_slot_price(): void
+    {
+        $workout = Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'total_price' => 1000,
+            'slots_total' => 3,
+            'slot_price' => 334,
+        ]);
+
+        $startsAt = Carbon::now()->addDays(5)->format('Y-m-d H:i:s');
+
+        $this
+            ->actingAs($this->coach)
+            ->patch(route('coach.workouts.update', $workout), [
+                'sport_id' => $this->sport->id,
+                'city_id' => $this->city->id,
+                'location_name' => 'Location',
+                'lat' => 55.731076,
+                'lng' => 37.601224,
+                'starts_at' => $startsAt,
+                'duration_minutes' => 60,
+                'total_price' => 700,
+                'slots_total' => 4,
+            ]);
+
+        $workout->refresh();
+        $this->assertEquals(175, $workout->slot_price); // ceil(700 / 4) = 175
+    }
 }

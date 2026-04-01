@@ -254,19 +254,19 @@ php artisan tinker
 - Modify: `routes/web.php`
 
 **Steps:**
-- [ ] В WorkoutController добавить:
+- [x] В WorkoutController добавить:
   - edit(Workout $workout) → authorize, вернуть форму
   - update(UpdateWorkoutRequest, Workout $workout) → authorize, сохранить
-- [ ] Создать UpdateWorkoutRequest (валидация как в StoreWorkoutRequest)
-- [ ] Создать Edit.vue:
+- [x] Создать UpdateWorkoutRequest (валидация как в StoreWorkoutRequest)
+- [x] Создать Edit.vue:
   - Такая же форма, как Create.vue
   - Поля заполнены текущими данными
   - Кнопка "Сохранить изменения"
   - Если статус published → показать warning "Изменения видны атлетам сразу"
-- [ ] Добавить роуты:
+- [x] Добавить роуты:
   - `GET /coach/workouts/{workout}/edit` → edit
   - `PATCH /coach/workouts/{workout}` → update
-- [ ] Mark completed
+- [x] Mark completed
 
 ---
 
