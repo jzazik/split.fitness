@@ -224,24 +224,24 @@ php artisan tinker
 - Modify: `routes/web.php`
 
 **Steps:**
-- [ ] Создать PublishWorkoutAction:
+- [x] Создать PublishWorkoutAction:
   - Проверить: тренер approved (moderation_status)
   - Проверить: starts_at в будущем
   - Обновить: status = 'published', published_at = now()
   - Если ошибка → throw ValidationException
-- [ ] Создать WorkoutPolicy:
+- [x] Создать WorkoutPolicy:
   - publish(User $user, Workout $workout):
     - return $user->id === $workout->coach_id
       && $user->coachProfile->moderation_status === 'approved';
   - update(User $user, Workout $workout):
     - return $user->id === $workout->coach_id;
-- [ ] В WorkoutController добавить метод:
+- [x] В WorkoutController добавить метод:
   - publish(Workout $workout) → вызвать PublishWorkoutAction, редирект с сообщением
-- [ ] Добавить роут: `POST /coach/workouts/{workout}/publish` → publish
-- [ ] Во фронте Index.vue:
+- [x] Добавить роут: `POST /coach/workouts/{workout}/publish` → publish
+- [x] Во фронте Index.vue:
   - Кнопка "Опубликовать" видна только если draft
   - Если moderation_status !== 'approved' → кнопка disabled с tooltip "Дождитесь модерации"
-- [ ] Mark completed
+- [x] Mark completed
 
 ---
 

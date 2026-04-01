@@ -7,6 +7,7 @@ import Button from '@/Components/UI/Button.vue';
 const props = defineProps({
     workouts: Object,
     filters: Object,
+    coachModerationStatus: String,
 });
 
 const selectedStatus = ref(props.filters?.status || '');
@@ -61,6 +62,22 @@ const formatTime = (dateString) => {
         hour: '2-digit',
         minute: '2-digit',
     }).format(date);
+};
+
+const canPublish = computed(() => {
+    return props.coachModerationStatus === 'approved';
+});
+
+const publishWorkout = (workoutId) => {
+    if (!canPublish.value) {
+        return;
+    }
+
+    if (confirm('Вы уверены, что хотите опубликовать эту тренировку?')) {
+        router.post(route('coach.workouts.publish', workoutId), {}, {
+            preserveScroll: true,
+        });
+    }
 };
 </script>
 
@@ -217,7 +234,14 @@ const formatTime = (dateString) => {
                                         </Link>
                                         <button
                                             v-if="workout.status === 'draft'"
-                                            class="text-green-600 hover:text-green-900"
+                                            @click="publishWorkout(workout.id)"
+                                            :disabled="!canPublish"
+                                            :title="!canPublish ? 'Дождитесь модерации профиля' : ''"
+                                            :class="[
+                                                canPublish
+                                                    ? 'text-green-600 hover:text-green-900 cursor-pointer'
+                                                    : 'text-gray-400 cursor-not-allowed'
+                                            ]"
                                         >
                                             Опубликовать
                                         </button>

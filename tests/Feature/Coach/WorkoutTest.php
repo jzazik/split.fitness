@@ -469,4 +469,106 @@ class WorkoutTest extends TestCase
             ->has('workouts.links')
         );
     }
+
+    public function test_approved_coach_can_publish_draft_workout(): void
+    {
+        $workout = Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'draft',
+            'starts_at' => Carbon::now()->addDays(2),
+        ]);
+
+        $response = $this
+            ->actingAs($this->coach)
+            ->post(route('coach.workouts.publish', $workout));
+
+        $response->assertRedirect(route('coach.workouts.index'));
+        $response->assertSessionHas('success');
+
+        $workout->refresh();
+        $this->assertEquals('published', $workout->status);
+        $this->assertNotNull($workout->published_at);
+    }
+
+    public function test_pending_coach_cannot_publish_workout(): void
+    {
+        // Create a pending coach
+        $pendingCoach = User::factory()->coach()->create([
+            'city_id' => $this->city->id,
+        ]);
+
+        $profile = CoachProfile::factory()->create([
+            'user_id' => $pendingCoach->id,
+            'moderation_status' => 'pending',
+        ]);
+
+        $workout = Workout::factory()->create([
+            'coach_id' => $pendingCoach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'draft',
+            'starts_at' => Carbon::now()->addDays(2),
+        ]);
+
+        $response = $this
+            ->actingAs($pendingCoach)
+            ->post(route('coach.workouts.publish', $workout));
+
+        // For web routes, authorization failures redirect instead of returning 403
+        $response->assertRedirect();
+
+        $workout->refresh();
+        $this->assertEquals('draft', $workout->status);
+    }
+
+    public function test_cannot_publish_workout_with_past_date(): void
+    {
+        $workout = Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'draft',
+            'starts_at' => Carbon::now()->subDay(),
+        ]);
+
+        $response = $this
+            ->actingAs($this->coach)
+            ->post(route('coach.workouts.publish', $workout));
+
+        $response->assertSessionHasErrors('starts_at');
+
+        $workout->refresh();
+        $this->assertEquals('draft', $workout->status);
+    }
+
+    public function test_coach_cannot_publish_another_coach_workout(): void
+    {
+        $otherCoach = User::factory()->coach()->create([
+            'city_id' => $this->city->id,
+        ]);
+
+        CoachProfile::factory()->create([
+            'user_id' => $otherCoach->id,
+            'moderation_status' => 'approved',
+        ]);
+
+        $workout = Workout::factory()->create([
+            'coach_id' => $otherCoach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'draft',
+            'starts_at' => Carbon::now()->addDays(2),
+        ]);
+
+        $response = $this
+            ->actingAs($this->coach)
+            ->post(route('coach.workouts.publish', $workout));
+
+        $response->assertForbidden();
+
+        $workout->refresh();
+        $this->assertEquals('draft', $workout->status);
+    }
 }

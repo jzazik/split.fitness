@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Coach;
 
 use App\Actions\Workout\CalculateSlotPriceAction;
+use App\Actions\Workout\PublishWorkoutAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Coach\StoreWorkoutRequest;
 use App\Models\City;
@@ -10,6 +11,7 @@ use App\Models\Sport;
 use App\Models\Workout;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -40,6 +42,7 @@ class WorkoutController extends Controller
             'filters' => [
                 'status' => $status,
             ],
+            'coachModerationStatus' => $user->coachProfile?->moderation_status,
         ]);
     }
 
@@ -103,5 +106,24 @@ class WorkoutController extends Controller
 
         return redirect()->route('coach.workouts.index')
             ->with('success', 'Тренировка создана как черновик');
+    }
+
+    /**
+     * Publish a workout.
+     */
+    public function publish(Workout $workout, PublishWorkoutAction $publishWorkoutAction): RedirectResponse
+    {
+        $this->authorize('publish', $workout);
+
+        try {
+            $publishWorkoutAction->execute($workout);
+
+            return redirect()->route('coach.workouts.index')
+                ->with('success', 'Тренировка успешно опубликована');
+        } catch (ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->with('error', $e->getMessage());
+        }
     }
 }

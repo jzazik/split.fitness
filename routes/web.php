@@ -71,6 +71,7 @@ Route::middleware(['auth', 'role:coach', 'ensure.profile.completed'])->prefix('c
     Route::get('/workouts', [WorkoutController::class, 'index'])->name('workouts.index');
     Route::get('/workouts/create', [WorkoutController::class, 'create'])->name('workouts.create');
     Route::post('/workouts', [WorkoutController::class, 'store'])->name('workouts.store');
+    Route::post('/workouts/{workout}/publish', [WorkoutController::class, 'publish'])->name('workouts.publish');
 });
 
 // Admin routes (stub for future)
