@@ -44,7 +44,8 @@ class WorkoutPolicy
      */
     public function update(User $user, Workout $workout): bool
     {
-        return $user->id === $workout->coach_id;
+        return $user->id === $workout->coach_id
+            && $workout->status === 'draft';
     }
 
     /**
@@ -52,6 +53,7 @@ class WorkoutPolicy
      */
     public function cancel(User $user, Workout $workout): bool
     {
-        return $user->id === $workout->coach_id;
+        return $user->id === $workout->coach_id
+            && in_array($workout->status, ['draft', 'published']);
     }
 }

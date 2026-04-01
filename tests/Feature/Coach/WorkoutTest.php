@@ -810,8 +810,7 @@ class WorkoutTest extends TestCase
         $response = $this->actingAs($this->coach)
             ->post(route('coach.workouts.cancel', $workout));
 
-        $response->assertRedirect();
-        $response->assertSessionHasErrors(['status']);
+        $response->assertForbidden();
     }
 
     public function test_cannot_reduce_slots_total_below_slots_booked(): void

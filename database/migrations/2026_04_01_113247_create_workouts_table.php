@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('coach_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('sport_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('city_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('sport_id')->constrained()->restrictOnDelete();
+            $table->foreignId('city_id')->constrained()->restrictOnDelete();
 
             $table->string('title')->nullable();
             $table->text('description')->nullable();
