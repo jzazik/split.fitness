@@ -31,6 +31,7 @@ class WorkoutController extends Controller
         $this->authorize('viewAny', Workout::class);
 
         $user = auth()->user();
+        $user->load('coachProfile');
 
         $query = Workout::where('coach_id', $user->id)
             ->with(['sport', 'city']);

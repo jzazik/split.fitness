@@ -38,6 +38,15 @@ class Workout extends Model
     ];
 
     /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var list<string>
+     */
+    protected $hidden = [
+        'status_for_unique_check',
+    ];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
