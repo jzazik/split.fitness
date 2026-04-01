@@ -104,18 +104,18 @@ php artisan schedule:test
 - Create: `app/Actions/Booking/ReserveSlotAction.php`
 
 **Steps:**
-- [ ] Создать ReserveSlotAction:
+- [x] Создать ReserveSlotAction:
   - DB::transaction
   - $workout->lockForUpdate()
   - Проверить: slots_booked < slots_total
   - Если нет мест → throw ValidationException
   - Increment slots_booked
   - Commit
-- [ ] Создать CreateBookingAction:
+- [x] Создать CreateBookingAction:
   - Вызвать ReserveSlotAction
   - Создать booking (pending_payment, slot_price, total_amount)
   - Return booking
-- [ ] Mark completed
+- [x] Mark completed
 
 ---
 
