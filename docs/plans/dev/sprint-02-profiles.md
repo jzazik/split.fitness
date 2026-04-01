@@ -356,24 +356,24 @@ php artisan tinker
 - Create: `tests/Feature/MediaUploadTest.php`
 
 **Steps:**
-- [ ] Создать Coach/ProfileTest:
+- [x] Создать Coach/ProfileTest:
   - Тест обновления профиля с валидными данными
   - Тест валидации (bio required, sports required)
   - Тест загрузки avatar
   - Тест привязки видов спорта
-- [ ] Создать Athlete/ProfileTest:
+- [x] Создать Athlete/ProfileTest:
   - Тест обновления профиля
   - Тест валидации phone unique
-- [ ] Создать OnboardingTest:
+- [x] Создать OnboardingTest:
   - Новый тренер без профиля → редирект на /onboarding
   - После заполнения onboarding → редирект на dashboard
   - Тренер с заполненным профилем → доступ к dashboard
-- [ ] Создать MediaUploadTest:
+- [x] Создать MediaUploadTest:
   - Тест загрузки avatar (проверка в storage)
   - Тест валидации размера файла (>5MB → ошибка)
   - Тест удаления файла
-- [ ] Запустить `php artisan test`
-- [ ] Mark completed
+- [x] Запустить `php artisan test`
+- [x] Mark completed
 
 ---
 
