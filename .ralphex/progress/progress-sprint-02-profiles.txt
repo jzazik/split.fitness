@@ -783,3 +783,18 @@ all tasks completed, starting code review...
 [26-04-01 13:17:27] agent "quality": model=default, subagent=general-purpose
 [26-04-01 13:17:27] agent "implementation": model=default, subagent=general-purpose
 [26-04-01 13:17:39] I'll perform the second code review pass. Let me start by checking for uncommitted changes.
+[26-04-01 13:17:58] Now let me get the branch context:
+[26-04-01 13:18:08] Now I'll launch both review agents in parallel:
+[26-04-01 13:23:01] Both agents have completed. Let me verify the critical findings by reading the actual code:
+[26-04-01 13:23:16] Let me verify the authorization issue more carefully:
+[26-04-01 13:23:28] After verifying the code, I've identified the following REAL issues that need fixing:
+[26-04-01 13:23:28] **Issue 1: Missing index on moderation_status** (HIGH priority - performance issue at scale)
+[26-04-01 13:23:28]   - Location: database/migrations/2026_04_01_080144_create_coach_profiles_table.php:21
+[26-04-01 13:23:28]   - Impact: Queries filtering by moderation status will be slow as data grows
+[26-04-01 13:23:28] **Issue 2: Onboarding accessible to completed profiles** (MEDIUM priority - UX issue)
+[26-04-01 13:23:28]   - Location: app/Http/Controllers/OnboardingController.php:17-71
+[26-04-01 13:23:28]   - Impact: Users with completed profiles can re-submit and change their moderation status
+[26-04-01 13:23:28] The authorization issue in media delete is a FALSE POSITIVE - `getMedia()` only returns media belonging to that specific model instance, so it's already secure.
+[26-04-01 13:23:28] Let me fix these issues:
+[26-04-01 13:23:38] Now I need to refresh the migration and run tests:
+[26-04-01 13:24:36] Now let me run tests to verify everything still works:

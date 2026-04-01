@@ -18,6 +18,15 @@ class OnboardingController extends Controller
     {
         $user = auth()->user();
 
+        // Redirect if profile is already completed
+        if ($user->isCoach() && $user->coachProfile && $this->isProfileCompleted($user)) {
+            return redirect()->route('coach.dashboard');
+        }
+
+        if ($user->isAthlete() && $user->athleteProfile && $this->isProfileCompleted($user)) {
+            return redirect()->route('athlete.bookings');
+        }
+
         $cities = City::orderBy('name')->get(['id', 'name']);
         $sports = Sport::where('is_active', true)
             ->orderBy('name')
