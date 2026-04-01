@@ -24,7 +24,7 @@ class MapWorkoutsRequest extends FormRequest
     {
         $rules = [
             'city_id' => 'nullable|integer|exists:cities,id',
-            'date_from' => 'nullable|date',
+            'date_from' => 'nullable|date|after_or_equal:today',
             'date_to' => 'nullable|date|after_or_equal:date_from',
             'ne_lat' => 'required_with_all:ne_lng,sw_lat,sw_lng|nullable|numeric|between:-90,90|regex:/^-?\d+(\.\d{1,8})?$/',
             'ne_lng' => 'required_with_all:ne_lat,sw_lat,sw_lng|nullable|numeric|between:-180,180|regex:/^-?\d+(\.\d{1,8})?$/',
