@@ -142,7 +142,7 @@ class ProfileController extends Controller
         $user = auth()->user();
 
         try {
-            if (!$user->coachProfile) {
+            if (! $user->coachProfile) {
                 throw new \Exception('Coach profile not found');
             }
 
@@ -185,7 +185,7 @@ class ProfileController extends Controller
         $user = auth()->user();
 
         try {
-            if (!$user->coachProfile) {
+            if (! $user->coachProfile) {
                 throw new \Exception('Coach profile not found');
             }
 
@@ -247,10 +247,15 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
 
+        if (! $user->coachProfile) {
+            return redirect()->route('coach.profile')
+                ->withErrors(['diploma' => 'Профиль не найден.']);
+        }
+
         try {
             $media = $user->coachProfile->getMedia('diplomas')->find($mediaId);
 
-            if (!$media) {
+            if (! $media) {
                 return redirect()->route('coach.profile')
                     ->withErrors(['diploma' => 'Файл не найден.']);
             }
@@ -281,10 +286,15 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
 
+        if (! $user->coachProfile) {
+            return redirect()->route('coach.profile')
+                ->withErrors(['certificate' => 'Профиль не найден.']);
+        }
+
         try {
             $media = $user->coachProfile->getMedia('certificates')->find($mediaId);
 
-            if (!$media) {
+            if (! $media) {
                 return redirect()->route('coach.profile')
                     ->withErrors(['certificate' => 'Файл не найден.']);
             }
@@ -316,7 +326,7 @@ class ProfileController extends Controller
         $user = auth()->user();
         $profile = $user->coachProfile;
 
-        if (!$profile) {
+        if (! $profile) {
             return redirect()->route('coach.dashboard')
                 ->withErrors(['profile' => 'Профиль не найден.']);
         }

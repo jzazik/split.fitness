@@ -12,6 +12,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class CoachProfile extends Model implements HasMedia
 {
     use HasFactory, InteractsWithMedia;
+
     protected $fillable = [
         'user_id',
         'bio',

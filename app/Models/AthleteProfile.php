@@ -11,6 +11,7 @@ class AthleteProfile extends Model
 {
     /** @use HasFactory<AthleteProfileFactory> */
     use HasFactory;
+
     protected $fillable = [
         'user_id',
         'emergency_contact',

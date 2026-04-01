@@ -12,13 +12,13 @@ class EnsureProfileCompleted
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return $next($request);
         }
 
@@ -26,11 +26,11 @@ class EnsureProfileCompleted
             return $next($request);
         }
 
-        if (!$this->isProfileCompleted($user)) {
+        if (! $this->isProfileCompleted($user)) {
             $redirectCount = session()->get('onboarding_redirect_count', 0);
 
             if ($redirectCount > 3) {
-                Log::error('Onboarding redirect loop detected - profile incomplete but cannot redirect', [
+                Log::warning('Onboarding redirect loop detected - profile incomplete but cannot redirect', [
                     'user_id' => $user->id,
                     'role' => $user->role,
                     'redirect_count' => $redirectCount,
@@ -83,25 +83,25 @@ class EnsureProfileCompleted
     protected function isProfileCompleted($user): bool
     {
         if ($user->isCoach()) {
-            $profile = $user->coachProfile;
+            $profile = $user->load('coachProfile.sports')->coachProfile;
 
-            if (!$profile) {
+            if (! $profile) {
                 return false;
             }
 
-            return !empty($profile->bio)
-                && $profile->sports()->count() > 0
-                && !empty($user->city_id);
+            return ! empty($profile->bio)
+                && $profile->sports->count() > 0
+                && ! empty($user->city_id);
         }
 
         if ($user->isAthlete()) {
             $profile = $user->athleteProfile;
 
-            if (!$profile) {
+            if (! $profile) {
                 return false;
             }
 
-            return !empty($user->first_name) && !empty($user->last_name);
+            return ! empty($user->first_name) && ! empty($user->last_name);
         }
 
         return true;

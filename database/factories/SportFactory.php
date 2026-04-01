@@ -12,7 +12,7 @@ class SportFactory extends Factory
     public function definition(): array
     {
         $name = $this->faker->unique()->word();
-        $slug = strtolower($name) . '-' . $this->faker->unique()->numberBetween(1, 10000);
+        $slug = strtolower($name).'-'.$this->faker->unique()->numberBetween(1, 10000);
 
         return [
             'slug' => $slug,

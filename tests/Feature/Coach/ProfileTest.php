@@ -105,7 +105,7 @@ class ProfileTest extends TestCase
             ->patch(route('coach.profile.update'), [
                 'first_name' => 'Иван',
                 'last_name' => 'Петров',
-                'bio' => 'Тренер',
+                'bio' => 'Опытный тренер',
                 'city_id' => $city->id,
                 'sports' => [],
             ]);
@@ -124,7 +124,7 @@ class ProfileTest extends TestCase
             ->patch(route('coach.profile.update'), [
                 'first_name' => 'Иван',
                 'last_name' => 'Петров',
-                'bio' => 'Тренер',
+                'bio' => 'Опытный тренер',
                 'city_id' => 99999,
                 'sports' => [$sport->id],
             ]);
@@ -189,7 +189,7 @@ class ProfileTest extends TestCase
             ->patch(route('coach.profile.update'), [
                 'first_name' => $coach->first_name,
                 'last_name' => $coach->last_name,
-                'bio' => 'Тренер',
+                'bio' => 'Опытный тренер',
                 'city_id' => $city->id,
                 'sports' => $sports->pluck('id')->toArray(),
             ]);

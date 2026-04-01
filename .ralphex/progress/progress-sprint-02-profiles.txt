@@ -331,3 +331,39 @@ all tasks completed, starting code review...
 [26-04-01 12:09:54]   6. Unnecessary profile creation fallback in onboarding
 [26-04-01 12:09:54]   7. Two incomplete avatar upload tests
 [26-04-01 12:09:54] Let me fix all confirmed issues:
+[26-04-01 12:14:09] Review iteration complete. I identified and fixed the following confirmed issues:
+[26-04-01 12:14:09] CRITICAL FIXES:
+[26-04-01 12:14:09]   1. Added DB transactions to Coach and Athlete profile update methods - prevents data inconsistency if sports sync or profile update fails
+[26-04-01 12:14:09]   2. Fixed redirect loop bypass vulnerability - now logs out users instead of allowing incomplete profiles through after 3 redirects
+[26-04-01 12:14:09]   3. Strengthened athlete profile completion check - now requires athleteProfile existence and both first_name and last_name
+[26-04-01 12:14:09]   4. Added timestamps to coach_sports pivot table and withTimestamps() to relationships
+[26-04-01 12:14:09] VALIDATION IMPROVEMENTS:
+[26-04-01 12:14:09]   5. Added sport activeness validation - only active sports (is_active=1) can be selected
+[26-04-01 12:14:09]   6. Removed unnecessary profile creation fallbacks in onboarding - profiles are already created by UserRegistered event listener
+[26-04-01 12:14:09] All 127 tests passing. Changes committed.
+[26-04-01 12:14:09] The external review loop will run another iteration to verify these fixes.
+[26-04-01 12:14:09] warning: first review pass did not complete cleanly, continuing...
+
+--- claude review 1: critical/major ---
+[26-04-01 12:14:09] agent "quality": model=default, subagent=general-purpose
+[26-04-01 12:14:09] agent "implementation": model=default, subagent=general-purpose
+[26-04-01 12:14:20] ## Step 1: Get Branch Context
+[26-04-01 12:14:36] ## Step 2: Launch Review Agents IN PARALLEL
+[26-04-01 12:18:44] ## Step 3: Verify and Evaluate Findings
+[26-04-01 12:18:44] Let me verify the critical issues reported by both agents:
+[26-04-01 12:19:46] I've verified the findings. Here are the REAL issues that need fixing:
+[26-04-01 12:19:46] CRITICAL ISSUES:
+[26-04-01 12:19:46]   1. Missing null check before accessing coachProfile in deleteDiploma (line 251)
+[26-04-01 12:19:46]   2. Missing null check before accessing coachProfile in deleteCertificate (line 285)
+[26-04-01 12:19:46]   3. Bio validation missing minimum length - middleware checks !empty() but validation allows empty strings (line 87 OnboardingController.php)
+[26-04-01 12:19:46] PERFORMANCE ISSUES:
+[26-04-01 12:19:46]   4. N+1 query in middleware - sports()->count() without eager loading (line 93 EnsureProfileCompleted.php)
+[26-04-01 12:19:46]   5. Missing eager loading in HandleInertiaRequests (line 36)
+[26-04-01 12:19:46] MINOR ISSUES:
+[26-04-01 12:19:46]   6. Logging level should be warning not error per dev plan (line 33 EnsureProfileCompleted.php)
+[26-04-01 12:19:46] Fixing these now:
+[26-04-01 12:20:20] Now running tests and linter to verify all changes:
+[26-04-01 12:20:38] Linter has issues. Fixing them:
+[26-04-01 12:20:46] Now checking the failing test:
+[26-04-01 12:21:16] Now running tests again:
+[26-04-01 12:21:31] All tests passing. Committing fixes:

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Sport extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'slug',
         'name',

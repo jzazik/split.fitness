@@ -84,7 +84,7 @@ class OnboardingController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
-            'bio' => 'required|string|max:1000',
+            'bio' => 'required|string|min:10|max:1000',
             'city_id' => 'required|exists:cities,id',
             'sports' => 'required|array|min:1',
             'sports.*' => 'exists:sports,id,is_active,1',

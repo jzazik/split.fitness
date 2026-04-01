@@ -3,7 +3,6 @@
 namespace Tests\Feature\Models;
 
 use App\Models\AthleteProfile;
-use App\Models\City;
 use App\Models\CoachProfile;
 use App\Models\Sport;
 use App\Models\User;
