@@ -26,11 +26,10 @@ class RegisterRequest extends FormRequest
         return [
             'role' => ['required', 'string', 'in:athlete,coach'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
-            'phone' => ['nullable', 'string', 'regex:/^\+?[1-9]\d{6,19}$/', 'max:20', 'unique:users,phone'],
+            'phone' => ['nullable', 'string', 'regex:/^\+?[\d\s\-\(\)]{7,20}$/', 'max:20', 'unique:users,phone'],
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'password' => ['required', 'confirmed', Password::defaults()],
-            'city_id' => ['nullable', 'integer', 'exists:cities,id'],
         ];
     }
 

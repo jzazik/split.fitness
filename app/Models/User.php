@@ -75,11 +75,14 @@ class User extends Authenticatable
     {
         return Attribute::make(
             get: fn () => implode(' ', array_filter(
-                array_map('trim', [
-                    $this->last_name,
-                    $this->first_name,
-                    $this->middle_name,
-                ]),
+                array_map(
+                    fn ($value) => $value !== null ? trim($value) : '',
+                    [
+                        $this->last_name,
+                        $this->first_name,
+                        $this->middle_name,
+                    ]
+                ),
                 fn ($value) => ! empty($value)
             ))
         );
