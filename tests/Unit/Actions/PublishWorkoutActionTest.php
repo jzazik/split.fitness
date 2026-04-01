@@ -3,9 +3,7 @@
 namespace Tests\Unit\Actions;
 
 use App\Actions\Workout\PublishWorkoutAction;
-use App\Models\City;
 use App\Models\CoachProfile;
-use App\Models\Sport;
 use App\Models\User;
 use App\Models\Workout;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -21,7 +19,7 @@ class PublishWorkoutActionTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->action = new PublishWorkoutAction();
+        $this->action = new PublishWorkoutAction;
     }
 
     public function test_successfully_publishes_draft_workout(): void

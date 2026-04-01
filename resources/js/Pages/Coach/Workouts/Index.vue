@@ -311,7 +311,8 @@ const cancelWorkout = (workoutId) => {
                                                 index === 0 ? 'rounded-l-md' : '',
                                                 index === workouts.links.length - 1 ? 'rounded-r-md' : '',
                                             ]"
-                                            v-html="link.label"
+                                        >
+                                            {{ link.label }}
                                         />
                                     </nav>
                                 </div>

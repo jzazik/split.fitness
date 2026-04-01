@@ -18,7 +18,7 @@ class CancelWorkoutActionTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->action = new CancelWorkoutAction();
+        $this->action = new CancelWorkoutAction;
     }
 
     public function test_successfully_cancels_workout(): void

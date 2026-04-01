@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Workout extends Model
 {
     use HasFactory;
+
     /**
      * The attributes that are mass assignable.
      *
@@ -30,7 +31,6 @@ class Workout extends Model
         'total_price',
         'slot_price',
         'slots_total',
-        'slots_booked',
         'status',
         'published_at',
         'cancelled_at',

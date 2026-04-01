@@ -60,7 +60,7 @@ class UpdateWorkoutRequest extends FormRequest
             'slots_total.required' => 'Укажите количество мест',
             'slots_total.integer' => 'Количество мест должно быть целым числом',
             'slots_total.min' => $this->route('workout') && $this->route('workout')->slots_booked > 0
-                ? 'Нельзя уменьшить количество мест ниже текущего количества бронирований (' . $this->route('workout')->slots_booked . ')'
+                ? 'Нельзя уменьшить количество мест ниже текущего количества бронирований ('.$this->route('workout')->slots_booked.')'
                 : 'Минимум 1 место',
             'slots_total.max' => 'Максимум 100 мест',
         ];

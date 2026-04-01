@@ -13,7 +13,7 @@ class CalculateSlotPriceActionTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->action = new CalculateSlotPriceAction();
+        $this->action = new CalculateSlotPriceAction;
     }
 
     public function test_calculates_slot_price_with_even_division(): void

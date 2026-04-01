@@ -11,8 +11,6 @@ class PublishWorkoutAction
     /**
      * Publish a workout.
      *
-     * @param Workout $workout
-     * @return void
      * @throws ValidationException
      */
     public function execute(Workout $workout): void
@@ -26,7 +24,7 @@ class PublishWorkoutAction
 
         // Check if coach is approved
         $coach = $workout->coach;
-        if (!$coach->coachProfile || $coach->coachProfile->moderation_status !== 'approved') {
+        if (! $coach->coachProfile || $coach->coachProfile->moderation_status !== 'approved') {
             Log::error('Attempted to publish workout with non-approved coach', [
                 'workout_id' => $workout->id,
                 'coach_id' => $coach->id,

@@ -5,10 +5,11 @@ namespace Database\Factories;
 use App\Models\City;
 use App\Models\Sport;
 use App\Models\User;
+use App\Models\Workout;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Workout>
+ * @extends Factory<Workout>
  */
 class WorkoutFactory extends Factory
 {

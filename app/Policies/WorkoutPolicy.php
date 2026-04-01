@@ -8,11 +8,23 @@ use App\Models\Workout;
 class WorkoutPolicy
 {
     /**
+     * Determine whether the user can view any workouts.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->isCoach();
+    }
+
+    /**
+     * Determine whether the user can create workouts.
+     */
+    public function create(User $user): bool
+    {
+        return $user->isCoach();
+    }
+
+    /**
      * Determine whether the user can publish the workout.
-     *
-     * @param User $user
-     * @param Workout $workout
-     * @return bool
      */
     public function publish(User $user, Workout $workout): bool
     {
@@ -29,10 +41,6 @@ class WorkoutPolicy
 
     /**
      * Determine whether the user can update the workout.
-     *
-     * @param User $user
-     * @param Workout $workout
-     * @return bool
      */
     public function update(User $user, Workout $workout): bool
     {
@@ -41,10 +49,6 @@ class WorkoutPolicy
 
     /**
      * Determine whether the user can cancel the workout.
-     *
-     * @param User $user
-     * @param Workout $workout
-     * @return bool
      */
     public function cancel(User $user, Workout $workout): bool
     {

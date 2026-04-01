@@ -2,6 +2,7 @@
 
 namespace App\Actions\Workout;
 
+use App\Models\Booking;
 use App\Models\Workout;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -11,8 +12,6 @@ class CancelWorkoutAction
     /**
      * Cancel a workout.
      *
-     * @param Workout $workout
-     * @return void
      * @throws ValidationException
      */
     public function execute(Workout $workout): void
@@ -26,7 +25,7 @@ class CancelWorkoutAction
 
         // Check if there are any paid bookings
         // Note: Skip check if Booking model doesn't exist yet (will be added in Sprint 4)
-        if (class_exists(\App\Models\Booking::class)) {
+        if (class_exists(Booking::class) && method_exists($workout, 'bookings')) {
             $paidBookingsCount = $workout->bookings()
                 ->where('payment_status', 'paid')
                 ->count();

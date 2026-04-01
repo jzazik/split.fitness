@@ -24,6 +24,8 @@ class WorkoutController extends Controller
      */
     public function index(): Response
     {
+        $this->authorize('viewAny', Workout::class);
+
         $user = auth()->user();
 
         $query = Workout::where('coach_id', $user->id)
@@ -53,6 +55,8 @@ class WorkoutController extends Controller
      */
     public function create(): Response
     {
+        $this->authorize('create', Workout::class);
+
         $cities = City::orderBy('name')->get(['id', 'name']);
         $sports = Sport::where('is_active', true)
             ->orderBy('name')
