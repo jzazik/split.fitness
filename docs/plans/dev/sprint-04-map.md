@@ -205,12 +205,12 @@ curl "http://localhost/api/workouts/map?city_id=1&sport_id=2"
 - Modify: `routes/web.php`
 
 **Steps:**
-- [ ] Создать Welcome.vue (landing):
+- [x] Создать Welcome.vue (landing):
   - Заголовок "Найди тренировку рядом с тобой"
   - Select города или auto-detect location
   - Кнопка "Найти тренировки" → редирект на /map?city_id=X
-- [ ] Обновить роут `/` → Welcome.vue
-- [ ] Mark completed
+- [x] Обновить роут `/` → Welcome.vue
+- [x] Mark completed
 
 ---
 

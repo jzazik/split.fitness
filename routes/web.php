@@ -14,11 +14,14 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
+    $cities = \App\Models\City::select('id', 'name', 'lat', 'lng')
+        ->orderBy('name')
+        ->get();
+
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
+        'cities' => $cities,
     ]);
 });
 
