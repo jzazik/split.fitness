@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Coach;
 
+use App\Actions\Workout\CalculateSlotPriceAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Coach\StoreWorkoutRequest;
 use App\Models\City;
@@ -50,13 +51,16 @@ class WorkoutController extends Controller
     /**
      * Store a newly created workout in storage.
      */
-    public function store(StoreWorkoutRequest $request): RedirectResponse
+    public function store(StoreWorkoutRequest $request, CalculateSlotPriceAction $calculateSlotPrice): RedirectResponse
     {
         $user = auth()->user();
         $validated = $request->validated();
 
-        // Calculate slot price: ceil(total_price / slots_total)
-        $slotPrice = ceil($validated['total_price'] / $validated['slots_total']);
+        // Calculate slot price using Action
+        $slotPrice = $calculateSlotPrice->execute(
+            $validated['total_price'],
+            $validated['slots_total']
+        );
 
         $workout = Workout::create([
             'coach_id' => $user->id,

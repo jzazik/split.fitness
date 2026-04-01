@@ -179,17 +179,17 @@ php artisan tinker
 - Modify: `app/Http/Controllers/Coach/WorkoutController.php`
 
 **Steps:**
-- [ ] Создать CalculateSlotPriceAction:
+- [x] Создать CalculateSlotPriceAction:
   - Метод execute($totalPrice, $slotsTotal)
   - Возвращает ceil($totalPrice / $slotsTotal)
-- [ ] В WorkoutController@store:
+- [x] В WorkoutController@store:
   - После валидации вызвать CalculateSlotPriceAction
   - Сохранить slot_price в workout
-- [ ] Во фронте Create.vue:
+- [x] Во фронте Create.vue:
   - Computed property slotPrice: Math.ceil(form.total_price / form.slots_total)
   - Показывать: "Атлет будет платить {slotPrice} ₽ за место"
   - Показывать: "Вы получите {slotPrice * slots_total} ₽" (может быть чуть больше total_price)
-- [ ] Mark completed
+- [x] Mark completed
 
 ---
 
