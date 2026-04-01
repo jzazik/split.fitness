@@ -110,12 +110,12 @@ curl "http://localhost/api/workouts/map?city_id=1&sport_id=2"
 - Create: `resources/js/composables/useMarkerCluster.js`
 
 **Steps:**
-- [ ] Установить: `npm install leaflet.markercluster`
-- [ ] Импортировать CSS в app.css
-- [ ] Создать composable useMarkerCluster:
+- [x] Установить: `npm install leaflet.markercluster`
+- [x] Импортировать CSS в app.css
+- [x] Создать composable useMarkerCluster:
   - Функция createClusterGroup() → возвращает L.markerClusterGroup()
   - Кастомная иконка кластера (показывать количество)
-- [ ] Mark completed
+- [x] Mark completed
 
 ---
 
