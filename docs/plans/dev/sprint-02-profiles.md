@@ -99,18 +99,18 @@ php artisan tinker
 - Create: `database/migrations/xxxx_create_coach_sports_table.php`
 
 **Steps:**
-- [ ] Создать миграцию coach_profiles:
+- [x] Создать миграцию coach_profiles:
   - id, user_id unique foreign, bio text, experience_years int nullable
   - rating_avg decimal(3,2) default 0, rating_count int default 0
   - moderation_status enum('pending','approved','rejected') default 'pending'
   - is_public boolean default false, timestamps
-- [ ] Создать миграцию athlete_profiles:
+- [x] Создать миграцию athlete_profiles:
   - id, user_id unique foreign, emergency_contact string nullable, timestamps
-- [ ] Создать миграцию coach_sports (pivot):
+- [x] Создать миграцию coach_sports (pivot):
   - id, coach_profile_id foreign, sport_id foreign
   - unique constraint (coach_profile_id, sport_id)
-- [ ] Запустить `php artisan migrate`
-- [ ] Mark completed
+- [x] Запустить `php artisan migrate`
+- [x] Mark completed
 
 ---
 
