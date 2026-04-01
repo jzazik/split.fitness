@@ -168,52 +168,63 @@ onBeforeUnmount(() => {
     markerClusterGroup = null;
   }
 
-  // Clean up map
+  // Clean up map and event listeners
   if (map) {
+    if (debouncedLoadWorkouts) {
+      map.off('moveend', debouncedLoadWorkouts);
+      debouncedLoadWorkouts = null;
+    }
     map.remove();
     map = null;
   }
 });
 
+let debouncedLoadWorkouts = null;
+
 const initMap = () => {
-  // Determine initial map center
-  let initialCenter = [55.7558, 37.6173]; // Default: Moscow
-  let initialZoom = 11;
+  try {
+    // Determine initial map center
+    let initialCenter = [55.7558, 37.6173]; // Default: Moscow
+    let initialZoom = 11;
 
-  // If city is selected via URL param, center on that city
-  if (filters.cityId) {
-    const selectedCity = props.cities.find(city => city.id === filters.cityId);
-    if (selectedCity && selectedCity.lat && selectedCity.lng) {
-      initialCenter = [selectedCity.lat, selectedCity.lng];
-      initialZoom = 12;
+    // If city is selected via URL param, center on that city
+    if (filters.cityId) {
+      const selectedCity = props.cities.find(city => city.id === filters.cityId);
+      if (selectedCity && selectedCity.lat && selectedCity.lng) {
+        initialCenter = [selectedCity.lat, selectedCity.lng];
+        initialZoom = 12;
+      }
     }
+
+    // Create map instance
+    map = L.map(mapContainer.value).setView(initialCenter, initialZoom);
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
+
+    // Create cluster group using composable
+    const { createClusterGroup } = useMarkerCluster();
+    markerClusterGroup = createClusterGroup();
+    map.addLayer(markerClusterGroup);
+
+    // Add debounced viewport change listener for bbox optimization
+    debouncedLoadWorkouts = debounce(() => {
+      // Skip the first moveend event (fired right after initialization)
+      if (isInitialLoad) {
+        isInitialLoad = false;
+        return;
+      }
+      loadWorkouts();
+    }, 500);
+
+    map.on('moveend', debouncedLoadWorkouts);
+  } catch (error) {
+    console.error('Failed to initialize map:', error);
+    showToast('error', 'Не удалось загрузить карту. Попробуйте обновить страницу.');
   }
-
-  // Create map instance
-  map = L.map(mapContainer.value).setView(initialCenter, initialZoom);
-
-  // Add OpenStreetMap tiles
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-  }).addTo(map);
-
-  // Create cluster group using composable
-  const { createClusterGroup } = useMarkerCluster();
-  markerClusterGroup = createClusterGroup();
-  map.addLayer(markerClusterGroup);
-
-  // Add debounced viewport change listener for bbox optimization
-  const debouncedLoadWorkouts = debounce(() => {
-    // Skip the first moveend event (fired right after initialization)
-    if (isInitialLoad) {
-      isInitialLoad = false;
-      return;
-    }
-    loadWorkouts();
-  }, 500);
-
-  map.on('moveend', debouncedLoadWorkouts);
 };
 
 const loadWorkouts = async () => {

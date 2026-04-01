@@ -16,23 +16,27 @@ class MapController extends Controller
      */
     public function index(MapWorkoutsRequest $request): ResourceCollection
     {
+        $startTime = microtime(true);
+        $validated = $request->validated();
+
         $query = Workout::query()
             ->where('status', 'published')
             ->where('starts_at', '>', now())
             ->with([
                 'sport',
                 'coach.coachProfile',
+                'coach.media',
                 'city',
             ]);
 
         // Filter by city
         if ($request->filled('city_id')) {
-            $query->where('city_id', $request->input('city_id'));
+            $query->where('city_id', $validated['city_id']);
         }
 
         // Filter by sport (supports single or multiple)
         if ($request->filled('sport_id')) {
-            $sportIds = $request->input('sport_id');
+            $sportIds = $validated['sport_id'];
             if (is_array($sportIds)) {
                 $query->whereIn('sport_id', $sportIds);
             } else {
@@ -42,19 +46,27 @@ class MapController extends Controller
 
         // Filter by date range
         if ($request->filled('date_from')) {
-            $query->whereDate('starts_at', '>=', $request->input('date_from'));
+            $query->whereDate('starts_at', '>=', $validated['date_from']);
         }
 
         if ($request->filled('date_to')) {
-            $query->whereDate('starts_at', '<=', $request->input('date_to'));
+            $query->whereDate('starts_at', '<=', $validated['date_to']);
         }
 
         // Bounding box filter (viewport optimization)
+        $bbox = null;
         if ($request->filled(['ne_lat', 'ne_lng', 'sw_lat', 'sw_lng'])) {
-            $neLat = $request->validated('ne_lat');
-            $neLng = $request->validated('ne_lng');
-            $swLat = $request->validated('sw_lat');
-            $swLng = $request->validated('sw_lng');
+            $neLat = $validated['ne_lat'];
+            $neLng = $validated['ne_lng'];
+            $swLat = $validated['sw_lat'];
+            $swLng = $validated['sw_lng'];
+
+            $bbox = [
+                'ne_lat' => $neLat,
+                'ne_lng' => $neLng,
+                'sw_lat' => $swLat,
+                'sw_lng' => $swLng,
+            ];
 
             $query->whereBetween('lat', [$swLat, $neLat]);
 
@@ -74,15 +86,35 @@ class MapController extends Controller
         $limit = 200;
         $workouts = $query->limit($limit)->get();
         $resultCount = $workouts->count();
+        $requestDuration = round((microtime(true) - $startTime) * 1000, 2);
 
-        // Log performance warning if result count is high
+        // Log successful request with monitoring data
+        $logContext = [
+            'result_count' => $resultCount,
+            'request_duration' => $requestDuration,
+        ];
+
+        if ($bbox) {
+            $logContext['bbox'] = $bbox;
+        }
+
+        if ($request->filled('city_id')) {
+            $logContext['city_id'] = $validated['city_id'];
+        }
+
+        if ($request->filled('sport_id')) {
+            $logContext['sport_id'] = $validated['sport_id'];
+        }
+
+        Log::info('Map API: workouts loaded', $logContext);
+
+        // Log performance warnings
         if ($resultCount >= $limit) {
-            Log::warning('Map API: result limit reached', [
-                'result_count' => $resultCount,
-                'limit' => $limit,
-                'city_id' => $request->validated('city_id'),
-                'sport_id' => $request->validated('sport_id'),
-            ]);
+            Log::warning('Map API: result limit reached', $logContext);
+        }
+
+        if ($requestDuration > 1000) {
+            Log::warning('Map API: slow query detected', $logContext);
         }
 
         return WorkoutMapResource::collection($workouts);
