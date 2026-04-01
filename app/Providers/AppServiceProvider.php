@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use App\Events\BookingCreated;
 use App\Listeners\NotifyCoachNewBooking;
+use App\Models\Booking;
 use App\Models\Workout;
+use App\Policies\BookingPolicy;
 use App\Policies\WorkoutPolicy;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -30,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Register policies
         Gate::policy(Workout::class, WorkoutPolicy::class);
+        Gate::policy(Booking::class, BookingPolicy::class);
 
         // Register event listeners
         Event::listen(

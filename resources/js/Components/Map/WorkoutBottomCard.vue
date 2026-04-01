@@ -211,7 +211,9 @@ const handleBooking = async () => {
     const bookingId = response.data.booking.id;
     router.visit(`/athlete/bookings`);
   } catch (error) {
-    if (error.response?.data?.message) {
+    if (error.response?.data?.errors?.workout_id) {
+      alert(error.response.data.errors.workout_id[0]);
+    } else if (error.response?.data?.message) {
       alert(error.response.data.message);
     } else {
       alert('Не удалось создать бронирование. Попробуйте позже.');

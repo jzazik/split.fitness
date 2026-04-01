@@ -13,8 +13,13 @@ class BookingsController extends Controller
     public function index(): Response
     {
         $user = auth()->user();
+        $now = Carbon::now();
 
-        $allBookings = Booking::where('athlete_id', $user->id)
+        $upcoming = Booking::where('athlete_id', $user->id)
+            ->whereIn('status', ['pending_payment', 'paid'])
+            ->whereHas('workout', function ($query) use ($now) {
+                $query->where('starts_at', '>', $now);
+            })
             ->with([
                 'workout.sport',
                 'workout.coach',
@@ -23,21 +28,28 @@ class BookingsController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $now = Carbon::now();
+        $past = Booking::where('athlete_id', $user->id)
+            ->where('status', 'paid')
+            ->whereHas('workout', function ($query) use ($now) {
+                $query->where('starts_at', '<=', $now);
+            })
+            ->with([
+                'workout.sport',
+                'workout.coach',
+                'workout.city',
+            ])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        $upcoming = $allBookings->filter(function ($booking) use ($now) {
-            return in_array($booking->status, ['pending_payment', 'paid']) &&
-                   $booking->workout->starts_at > $now;
-        })->values();
-
-        $past = $allBookings->filter(function ($booking) use ($now) {
-            return in_array($booking->status, ['paid']) &&
-                   $booking->workout->starts_at <= $now;
-        })->values();
-
-        $cancelled = $allBookings->filter(function ($booking) {
-            return in_array($booking->status, ['cancelled', 'expired', 'refunded']);
-        })->values();
+        $cancelled = Booking::where('athlete_id', $user->id)
+            ->whereIn('status', ['cancelled', 'expired', 'refunded'])
+            ->with([
+                'workout.sport',
+                'workout.coach',
+                'workout.city',
+            ])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return Inertia::render('Athlete/Bookings/Index', [
             'upcoming' => $upcoming,

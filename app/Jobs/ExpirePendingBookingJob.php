@@ -23,7 +23,6 @@ class ExpirePendingBookingJob implements ShouldQueue
         $expiredBookings = Booking::query()
             ->where('status', 'pending_payment')
             ->where('created_at', '<', now()->subMinutes(15))
-            ->lockForUpdate()
             ->with('workout')
             ->get();
 
@@ -32,6 +31,13 @@ class ExpirePendingBookingJob implements ShouldQueue
         foreach ($expiredBookings as $booking) {
             try {
                 DB::transaction(function () use ($booking) {
+                    // Re-lock and re-check booking status to prevent race conditions
+                    $booking = Booking::lockForUpdate()->find($booking->id);
+
+                    if (! $booking || $booking->status !== 'pending_payment') {
+                        return;
+                    }
+
                     // Lock the workout to prevent race conditions
                     $workout = $booking->workout()->lockForUpdate()->first();
 
@@ -51,7 +57,16 @@ class ExpirePendingBookingJob implements ShouldQueue
                     // Update booking status
                     $booking->update(['status' => 'expired']);
 
-                    // Release the slot(s) - prevent negative values
+                    // Release the slot(s) - log warning if data corruption detected
+                    if ($workout->slots_booked < $booking->slots_count) {
+                        Log::critical('Slot count data corruption detected during booking expiration', [
+                            'booking_id' => $booking->id,
+                            'workout_id' => $workout->id,
+                            'slots_booked' => $workout->slots_booked,
+                            'booking_slots_count' => $booking->slots_count,
+                        ]);
+                    }
+
                     $workout->slots_booked = max(0, $workout->slots_booked - $booking->slots_count);
                     $workout->save();
 
