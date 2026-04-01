@@ -762,11 +762,91 @@ class WorkoutTest extends TestCase
         $this->assertEquals('published', $workout->status);
     }
 
-    public function test_cannot_cancel_workout_with_paid_bookings(): void
+    public function test_cannot_republish_already_published_workout(): void
     {
-        // This test will be implemented in Sprint 4 when Booking model is available
-        // The CancelWorkoutAction already has the logic to prevent cancellation
-        // when paid bookings exist (see class_exists check in the action)
-        $this->markTestSkipped('Booking model not yet implemented - will be available in Sprint 4');
+        $originalPublishedAt = now()->subHour();
+        $workout = Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'published',
+            'published_at' => $originalPublishedAt,
+            'starts_at' => now()->addDay(),
+        ]);
+
+        $response = $this->actingAs($this->coach)
+            ->from(route('coach.workouts.index'))
+            ->post(route('coach.workouts.publish', $workout));
+
+        $workout->refresh();
+
+        // Workout should still be published with original timestamp (not updated)
+        $this->assertEquals('published', $workout->status);
+        $this->assertEquals($originalPublishedAt->timestamp, $workout->published_at->timestamp);
+
+        // Should redirect back with error
+        $response->assertRedirect();
+        $response->assertSessionHasErrors(['status']);
+    }
+
+    public function test_cannot_recancel_already_cancelled_workout(): void
+    {
+        $workout = Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'cancelled',
+            'cancelled_at' => now()->subHour(),
+        ]);
+
+        $response = $this->actingAs($this->coach)
+            ->post(route('coach.workouts.cancel', $workout));
+
+        $response->assertRedirect();
+        $response->assertSessionHasErrors(['status']);
+    }
+
+    public function test_cannot_reduce_slots_total_below_slots_booked(): void
+    {
+        $workout = Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'slots_total' => 10,
+            'slots_booked' => 5,
+        ]);
+
+        $response = $this->actingAs($this->coach)
+            ->patch(route('coach.workouts.update', $workout), [
+                'sport_id' => $this->sport->id,
+                'city_id' => $this->city->id,
+                'location_name' => 'Test Location',
+                'lat' => 55.7558,
+                'lng' => 37.6173,
+                'starts_at' => now()->addDays(2)->format('Y-m-d\TH:i'),
+                'duration_minutes' => 60,
+                'total_price' => 1000,
+                'slots_total' => 3, // Less than slots_booked (5)
+            ]);
+
+        $response->assertSessionHasErrors(['slots_total']);
+    }
+
+    public function test_cannot_create_workout_with_far_future_date(): void
+    {
+        $response = $this->actingAs($this->coach)
+            ->post(route('coach.workouts.store'), [
+                'sport_id' => $this->sport->id,
+                'city_id' => $this->city->id,
+                'location_name' => 'Test Location',
+                'lat' => 55.7558,
+                'lng' => 37.6173,
+                'starts_at' => now()->addYears(2)->format('Y-m-d\TH:i'),
+                'duration_minutes' => 60,
+                'total_price' => 1000,
+                'slots_total' => 10,
+            ]);
+
+        $response->assertSessionHasErrors(['starts_at']);
     }
 }

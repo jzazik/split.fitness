@@ -17,6 +17,13 @@ class PublishWorkoutAction
      */
     public function execute(Workout $workout): void
     {
+        // Check if already published
+        if ($workout->status === 'published') {
+            throw ValidationException::withMessages([
+                'status' => 'Тренировка уже опубликована.',
+            ]);
+        }
+
         // Check if coach is approved
         $coach = $workout->coach;
         if (!$coach->coachProfile || $coach->coachProfile->moderation_status !== 'approved') {

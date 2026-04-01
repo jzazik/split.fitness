@@ -13,6 +13,9 @@ class UpdateWorkoutRequest extends FormRequest
 
     public function rules(): array
     {
+        $workout = $this->route('workout');
+        $minSlots = $workout ? $workout->slots_booked : 1;
+
         return [
             'sport_id' => ['required', 'integer', 'exists:sports,id,is_active,1'],
             'city_id' => ['required', 'integer', 'exists:cities,id'],
@@ -22,10 +25,10 @@ class UpdateWorkoutRequest extends FormRequest
             'address' => ['nullable', 'string', 'max:500'],
             'lat' => ['required', 'numeric', 'between:-90,90'],
             'lng' => ['required', 'numeric', 'between:-180,180'],
-            'starts_at' => ['required', 'date', 'after:now'],
+            'starts_at' => ['required', 'date', 'after:now', 'before:+1 year'],
             'duration_minutes' => ['required', 'integer', 'min:1', 'max:480'],
             'total_price' => ['required', 'numeric', 'min:0.01'],
-            'slots_total' => ['required', 'integer', 'min:1', 'max:100'],
+            'slots_total' => ['required', 'integer', "min:{$minSlots}", 'max:100'],
         ];
     }
 
@@ -56,7 +59,9 @@ class UpdateWorkoutRequest extends FormRequest
             'total_price.min' => 'Минимальная стоимость - 0.01 ₽',
             'slots_total.required' => 'Укажите количество мест',
             'slots_total.integer' => 'Количество мест должно быть целым числом',
-            'slots_total.min' => 'Минимум 1 место',
+            'slots_total.min' => $this->route('workout') && $this->route('workout')->slots_booked > 0
+                ? 'Нельзя уменьшить количество мест ниже текущего количества бронирований (' . $this->route('workout')->slots_booked . ')'
+                : 'Минимум 1 место',
             'slots_total.max' => 'Максимум 100 мест',
         ];
     }

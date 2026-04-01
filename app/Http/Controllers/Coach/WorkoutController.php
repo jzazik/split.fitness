@@ -31,7 +31,7 @@ class WorkoutController extends Controller
 
         // Apply status filter if provided
         $status = request('status');
-        if ($status && in_array($status, ['draft', 'published', 'cancelled', 'completed'])) {
+        if ($status && in_array($status, ['draft', 'published', 'cancelled', 'completed'], true)) {
             $query->where('status', $status);
         }
 
@@ -197,7 +197,7 @@ class WorkoutController extends Controller
      */
     public function cancel(Workout $workout, CancelWorkoutAction $cancelWorkoutAction): RedirectResponse
     {
-        $this->authorize('update', $workout);
+        $this->authorize('cancel', $workout);
 
         try {
             $cancelWorkoutAction->execute($workout);

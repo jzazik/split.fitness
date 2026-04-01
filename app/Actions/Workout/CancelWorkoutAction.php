@@ -17,6 +17,13 @@ class CancelWorkoutAction
      */
     public function execute(Workout $workout): void
     {
+        // Check if already cancelled
+        if ($workout->status === 'cancelled') {
+            throw ValidationException::withMessages([
+                'status' => 'Тренировка уже отменена.',
+            ]);
+        }
+
         // Check if there are any paid bookings
         // Note: Skip check if Booking model doesn't exist yet (will be added in Sprint 4)
         if (class_exists(\App\Models\Booking::class)) {

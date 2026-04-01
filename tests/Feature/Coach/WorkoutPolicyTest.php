@@ -166,4 +166,34 @@ class WorkoutPolicyTest extends TestCase
 
         $this->assertFalse($canUpdate);
     }
+
+    public function test_coach_can_cancel_own_workout(): void
+    {
+        $workout = Workout::factory()->create([
+            'coach_id' => $this->approvedCoach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'published',
+            'starts_at' => Carbon::now()->addDays(2),
+        ]);
+
+        $canCancel = $this->policy->cancel($this->approvedCoach, $workout);
+
+        $this->assertTrue($canCancel);
+    }
+
+    public function test_coach_cannot_cancel_another_coach_workout(): void
+    {
+        $workout = Workout::factory()->create([
+            'coach_id' => $this->approvedCoach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'published',
+            'starts_at' => Carbon::now()->addDays(2),
+        ]);
+
+        $canCancel = $this->policy->cancel($this->pendingCoach, $workout);
+
+        $this->assertFalse($canCancel);
+    }
 }

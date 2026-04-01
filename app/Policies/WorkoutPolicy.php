@@ -38,4 +38,16 @@ class WorkoutPolicy
     {
         return $user->id === $workout->coach_id;
     }
+
+    /**
+     * Determine whether the user can cancel the workout.
+     *
+     * @param User $user
+     * @param Workout $workout
+     * @return bool
+     */
+    public function cancel(User $user, Workout $workout): bool
+    {
+        return $user->id === $workout->coach_id;
+    }
 }

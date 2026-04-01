@@ -81,11 +81,12 @@ class Workout extends Model
 
     /**
      * Get the bookings for the workout.
+     * Note: Booking model will be added in Sprint 4
      */
-    public function bookings(): HasMany
-    {
-        return $this->hasMany(Booking::class);
-    }
+    // public function bookings(): HasMany
+    // {
+    //     return $this->hasMany(Booking::class);
+    // }
 
     /**
      * Check if the workout is published.

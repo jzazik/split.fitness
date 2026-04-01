@@ -22,7 +22,7 @@ class StoreWorkoutRequest extends FormRequest
             'address' => ['nullable', 'string', 'max:500'],
             'lat' => ['required', 'numeric', 'between:-90,90'],
             'lng' => ['required', 'numeric', 'between:-180,180'],
-            'starts_at' => ['required', 'date', 'after:now'],
+            'starts_at' => ['required', 'date', 'after:now', 'before:+1 year'],
             'duration_minutes' => ['required', 'integer', 'min:1', 'max:480'],
             'total_price' => ['required', 'numeric', 'min:0.01'],
             'slots_total' => ['required', 'integer', 'min:1', 'max:100'],
