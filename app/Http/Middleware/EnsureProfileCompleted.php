@@ -90,6 +90,7 @@ class EnsureProfileCompleted
             }
 
             return ! empty($profile->bio)
+                && strlen($profile->bio) >= 10
                 && $profile->sports->count() > 0
                 && ! empty($user->city_id);
         }

@@ -58,7 +58,7 @@ const canProceedToStep3 = computed(() => {
 });
 
 const canProceedToStep4 = computed(() => {
-    return form.city_id && form.bio && form.bio.length >= 50;
+    return form.city_id && form.bio && form.bio.length >= 10;
 });
 
 const diplomaUploaderRef = ref(null);
