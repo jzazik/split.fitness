@@ -244,25 +244,25 @@ php artisan tinker
 - Modify: `routes/web.php`
 
 **Steps:**
-- [ ] Создать Athlete\ProfileController:
+- [x] Создать Athlete\ProfileController:
   - edit() — возвращает данные user + athleteProfile
   - update(UpdateProfileRequest) — сохраняет
   - uploadAvatar(Request)
-- [ ] Создать UpdateProfileRequest:
+- [x] Создать UpdateProfileRequest:
   - first_name, last_name required
   - phone nullable unique (игнорировать текущего user)
   - city_id nullable exists
   - emergency_contact nullable string
-- [ ] Создать Edit.vue:
+- [x] Создать Edit.vue:
   - Поля: first_name, last_name, phone
   - AvatarUploader
   - Select города (опционально)
   - emergency_contact (опционально)
   - Кнопка "Сохранить"
-- [ ] Добавить роуты:
+- [x] Добавить роуты:
   - `GET /athlete/profile` → Athlete\ProfileController@edit
   - `PATCH /athlete/profile` → Athlete\ProfileController@update
-- [ ] Mark completed
+- [x] Mark completed
 
 ---
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Athlete\BookingsController;
+use App\Http\Controllers\Athlete\ProfileController as AthleteProfileController;
 use App\Http\Controllers\Coach\DashboardController;
 use App\Http\Controllers\Coach\PaymentsController;
 use App\Http\Controllers\Coach\ProfileController as CoachProfileController;
@@ -38,6 +39,10 @@ Route::middleware('auth')->group(function () {
 // Athlete routes
 Route::middleware(['auth', 'role:athlete'])->prefix('athlete')->name('athlete.')->group(function () {
     Route::get('/bookings', [BookingsController::class, 'index'])->name('bookings');
+    Route::get('/profile', [AthleteProfileController::class, 'edit'])->name('profile');
+    Route::patch('/profile', [AthleteProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/avatar', [AthleteProfileController::class, 'uploadAvatar'])->name('profile.uploadAvatar');
+    Route::delete('/profile/avatar', [AthleteProfileController::class, 'deleteAvatar'])->name('profile.deleteAvatar');
 });
 
 // Coach routes
