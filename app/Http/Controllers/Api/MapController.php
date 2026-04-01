@@ -26,7 +26,9 @@ class MapController extends Controller
             ->with([
                 'sport',
                 'coach.coachProfile',
-                'coach.media',
+                'coach.media' => function ($query) {
+                    $query->where('collection_name', 'avatar');
+                },
                 'city',
             ]);
 
@@ -47,11 +49,15 @@ class MapController extends Controller
 
         // Filter by date range
         if ($request->filled('date_from')) {
-            $query->where('starts_at', '>=', Carbon::parse($validated['date_from'])->startOfDay());
+            $query->where('starts_at', '>=', Carbon::parse($validated['date_from'])
+                ->timezone(config('app.timezone'))
+                ->startOfDay());
         }
 
         if ($request->filled('date_to')) {
-            $query->where('starts_at', '<=', Carbon::parse($validated['date_to'])->endOfDay());
+            $query->where('starts_at', '<=', Carbon::parse($validated['date_to'])
+                ->timezone(config('app.timezone'))
+                ->endOfDay());
         }
 
         // Bounding box filter (viewport optimization)

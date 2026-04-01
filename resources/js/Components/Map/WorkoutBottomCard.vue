@@ -172,7 +172,10 @@ const page = usePage();
 
 const availableSlots = computed(() => {
   if (!props.workout) return 0;
-  return props.workout.slots_total - props.workout.slots_booked;
+  const total = props.workout.slots_total || 0;
+  const booked = props.workout.slots_booked || 0;
+  const available = total - booked;
+  return Math.max(0, available); // Never return negative
 });
 
 const close = () => {
