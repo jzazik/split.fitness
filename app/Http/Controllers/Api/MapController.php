@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\MapWorkoutsRequest;
 use App\Http\Resources\WorkoutMapResource;
 use App\Models\Workout;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Support\Facades\Log;
 
@@ -13,11 +13,8 @@ class MapController extends Controller
 {
     /**
      * Get workouts for map display.
-     *
-     * @param  Request  $request
-     * @return ResourceCollection
      */
-    public function index(Request $request): ResourceCollection
+    public function index(MapWorkoutsRequest $request): ResourceCollection
     {
         $query = Workout::query()
             ->where('status', 'published')
@@ -54,17 +51,23 @@ class MapController extends Controller
 
         // Bounding box filter (viewport optimization)
         if ($request->filled(['ne_lat', 'ne_lng', 'sw_lat', 'sw_lng'])) {
-            $neLat = $request->input('ne_lat');
-            $neLng = $request->input('ne_lng');
-            $swLat = $request->input('sw_lat');
-            $swLng = $request->input('sw_lng');
+            $neLat = $request->validated('ne_lat');
+            $neLng = $request->validated('ne_lng');
+            $swLat = $request->validated('sw_lat');
+            $swLng = $request->validated('sw_lng');
 
-            $query->whereBetween('lat', [$swLat, $neLat])
-                ->whereBetween('lng', [$swLng, $neLng]);
+            $query->whereBetween('lat', [$swLat, $neLat]);
 
-            Log::debug('Map API: bbox filter applied', [
-                'bbox' => compact('neLat', 'neLng', 'swLat', 'swLng'),
-            ]);
+            // Handle dateline wrapping for longitude
+            if ($swLng > $neLng) {
+                // Crosses dateline (e.g., eastern Russia, Pacific islands)
+                $query->where(function ($q) use ($swLng, $neLng) {
+                    $q->where('lng', '>=', $swLng)
+                        ->orWhere('lng', '<=', $neLng);
+                });
+            } else {
+                $query->whereBetween('lng', [$swLng, $neLng]);
+            }
         }
 
         // Limit results to prevent overload
@@ -77,18 +80,10 @@ class MapController extends Controller
             Log::warning('Map API: result limit reached', [
                 'result_count' => $resultCount,
                 'limit' => $limit,
-                'city_id' => $request->input('city_id'),
-                'sport_id' => $request->input('sport_id'),
+                'city_id' => $request->validated('city_id'),
+                'sport_id' => $request->validated('sport_id'),
             ]);
         }
-
-        // Log successful request
-        Log::info('Map API: workouts loaded', [
-            'result_count' => $resultCount,
-            'city_id' => $request->input('city_id'),
-            'sport_id' => $request->input('sport_id'),
-            'has_bbox' => $request->filled(['ne_lat', 'ne_lng', 'sw_lat', 'sw_lng']),
-        ]);
 
         return WorkoutMapResource::collection($workouts);
     }

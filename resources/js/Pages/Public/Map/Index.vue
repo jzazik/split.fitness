@@ -80,8 +80,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { ref, reactive, onMounted, onBeforeUnmount, watch } from 'vue';
+import { Head, usePage } from '@inertiajs/vue3';
 import PublicLayout from '@/Layouts/PublicLayout.vue';
 import MapFilters from '@/Components/Map/MapFilters.vue';
 import WorkoutBottomCard from '@/Components/Map/WorkoutBottomCard.vue';
@@ -90,6 +90,7 @@ import Toast from '@/Components/UI/Toast.vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useMarkerCluster } from '@/composables/useMarkerCluster';
+import { debounce } from '@/utils/debounce';
 
 const props = defineProps({
   cities: {
@@ -102,6 +103,7 @@ const props = defineProps({
   },
 });
 
+const page = usePage();
 const mapContainer = ref(null);
 const loading = ref(false);
 const workouts = ref([]);
@@ -109,10 +111,12 @@ const selectedWorkout = ref(null);
 let map = null;
 let markerClusterGroup = null;
 let toastTimeout = null;
+let isInitialLoad = true;
 
-// Filters state
+// Initialize filters from URL query parameters
+const urlParams = new URLSearchParams(window.location.search);
 const filters = reactive({
-  cityId: null,
+  cityId: urlParams.get('city_id') ? parseInt(urlParams.get('city_id')) : null,
   sportIds: [],
   dateFrom: null,
   dateTo: null,
@@ -133,6 +137,16 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
+// Watch for city filter changes and recenter map
+watch(() => filters.cityId, (newCityId) => {
+  if (map && newCityId) {
+    const selectedCity = props.cities.find(city => city.id === newCityId);
+    if (selectedCity && selectedCity.lat && selectedCity.lng) {
+      map.setView([selectedCity.lat, selectedCity.lng], 12);
+    }
+  }
+});
+
 onMounted(() => {
   if (typeof window !== 'undefined' && mapContainer.value) {
     initMap();
@@ -141,6 +155,20 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  // Clear toast timeout
+  if (toastTimeout) {
+    clearTimeout(toastTimeout);
+    toastTimeout = null;
+  }
+
+  // Clean up marker cluster group
+  if (markerClusterGroup) {
+    markerClusterGroup.clearLayers();
+    markerClusterGroup.remove();
+    markerClusterGroup = null;
+  }
+
+  // Clean up map
   if (map) {
     map.remove();
     map = null;
@@ -148,8 +176,21 @@ onBeforeUnmount(() => {
 });
 
 const initMap = () => {
-  // Create map instance with default center (Moscow)
-  map = L.map(mapContainer.value).setView([55.7558, 37.6173], 11);
+  // Determine initial map center
+  let initialCenter = [55.7558, 37.6173]; // Default: Moscow
+  let initialZoom = 11;
+
+  // If city is selected via URL param, center on that city
+  if (filters.cityId) {
+    const selectedCity = props.cities.find(city => city.id === filters.cityId);
+    if (selectedCity && selectedCity.lat && selectedCity.lng) {
+      initialCenter = [selectedCity.lat, selectedCity.lng];
+      initialZoom = 12;
+    }
+  }
+
+  // Create map instance
+  map = L.map(mapContainer.value).setView(initialCenter, initialZoom);
 
   // Add OpenStreetMap tiles
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -162,10 +203,17 @@ const initMap = () => {
   markerClusterGroup = createClusterGroup();
   map.addLayer(markerClusterGroup);
 
-  // Add viewport change listener for bbox optimization
-  map.on('moveend', () => {
+  // Add debounced viewport change listener for bbox optimization
+  const debouncedLoadWorkouts = debounce(() => {
+    // Skip the first moveend event (fired right after initialization)
+    if (isInitialLoad) {
+      isInitialLoad = false;
+      return;
+    }
     loadWorkouts();
-  });
+  }, 500);
+
+  map.on('moveend', debouncedLoadWorkouts);
 };
 
 const loadWorkouts = async () => {
@@ -220,24 +268,38 @@ const loadWorkouts = async () => {
 
   } catch (error) {
     console.error('Failed to load workouts:', error);
-    showToast('error', 'Не удалось загрузить тренировки. Попробуйте обновить страницу.');
+    const errorMessage = error.response?.data?.message || 'Не удалось загрузить тренировки. Попробуйте обновить страницу.';
+    showToast('error', errorMessage);
   } finally {
     loading.value = false;
   }
 };
 
-// Handle filter changes
-const handleFilterChange = () => {
+// Handle filter changes with debouncing
+const handleFilterChange = debounce(() => {
   loadWorkouts();
+}, 300);
+
+// Escape HTML to prevent XSS
+const escapeHtml = (text) => {
+  if (!text) return '';
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return String(text).replace(/[&<>"']/g, (m) => map[m]);
 };
 
 const addWorkoutMarker = (workout) => {
   const marker = L.marker([workout.lat, workout.lng]);
 
-  // Create popup content
+  // Create popup content with escaped HTML
   const popupContent = `
     <div class="p-2">
-      <div class="font-semibold text-sm">${workout.sport_name || 'Тренировка'}</div>
+      <div class="font-semibold text-sm">${escapeHtml(workout.sport_name || 'Тренировка')}</div>
       <div class="text-xs text-gray-600 mt-1">
         ${new Date(workout.starts_at).toLocaleString('ru-RU', {
           day: '2-digit',
@@ -248,7 +310,7 @@ const addWorkoutMarker = (workout) => {
         })}
       </div>
       <div class="text-xs text-gray-600 mt-1">
-        ${workout.coach_name || 'Тренер'}
+        ${escapeHtml(workout.coach_name || 'Тренер')}
       </div>
       <div class="text-xs font-semibold mt-1">
         ${workout.slot_price} ₽

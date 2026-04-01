@@ -9,12 +9,12 @@ use App\Http\Controllers\Coach\WorkoutController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicMapController;
-use Illuminate\Foundation\Application;
+use App\Models\City;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    $cities = \App\Models\City::select('id', 'name', 'lat', 'lng')
+    $cities = City::select('id', 'name', 'lat', 'lng')
         ->orderBy('name')
         ->get();
 
