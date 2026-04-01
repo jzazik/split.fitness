@@ -125,19 +125,19 @@ php artisan tinker
 - Modify: `app/Models/Sport.php`
 
 **Steps:**
-- [ ] Создать CoachProfile:
+- [x] Создать CoachProfile:
   - belongsTo User
   - belongsToMany Sports через coach_sports
   - casts: moderation_status, is_public, rating_avg
-- [ ] Создать AthleteProfile:
+- [x] Создать AthleteProfile:
   - belongsTo User
-- [ ] В User добавить relationships:
+- [x] В User добавить relationships:
   - hasOne CoachProfile
   - hasOne AthleteProfile
   - accessor isCoach(), isAthlete()
-- [ ] В Sport добавить:
+- [x] В Sport добавить:
   - belongsToMany CoachProfiles через coach_sports
-- [ ] Mark completed
+- [x] Mark completed
 
 ---
 

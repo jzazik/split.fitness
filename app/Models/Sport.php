@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Sport extends Model
 {
@@ -18,5 +19,10 @@ class Sport extends Model
         return [
             'is_active' => 'boolean',
         ];
+    }
+
+    public function coachProfiles(): BelongsToMany
+    {
+        return $this->belongsToMany(CoachProfile::class, 'coach_sports');
     }
 }

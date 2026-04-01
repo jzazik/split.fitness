@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -94,5 +95,37 @@ class User extends Authenticatable
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
+    }
+
+    /**
+     * Get the coach profile for the user.
+     */
+    public function coachProfile(): HasOne
+    {
+        return $this->hasOne(CoachProfile::class);
+    }
+
+    /**
+     * Get the athlete profile for the user.
+     */
+    public function athleteProfile(): HasOne
+    {
+        return $this->hasOne(AthleteProfile::class);
+    }
+
+    /**
+     * Check if the user is a coach.
+     */
+    public function isCoach(): bool
+    {
+        return $this->role === 'coach';
+    }
+
+    /**
+     * Check if the user is an athlete.
+     */
+    public function isAthlete(): bool
+    {
+        return $this->role === 'athlete';
     }
 }

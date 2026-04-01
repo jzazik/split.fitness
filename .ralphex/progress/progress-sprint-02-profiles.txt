@@ -18,3 +18,23 @@ starting task execution phase
 [26-04-01 11:01:30] The key files involved are three new migration files in database/migrations/ directory. After creating these migrations, I will run them to update the database schema and then mark the task checkboxes
 [26-04-01 11:01:30] as complete.
 [26-04-01 11:01:30] Let me start implementation.
+[26-04-01 11:03:20] Task 1 completed successfully. Created three database migration files for coach profiles, athlete profiles, and coach-sports pivot table. All migrations ran successfully and tables are now in the
+[26-04-01 11:03:20] database. Changes committed to git.
+[26-04-01 11:03:20] The remaining tasks (Task 2 through Task 10) still have uncompleted checkboxes and will be processed in subsequent iterations.
+
+--- task iteration 2 ---
+[26-04-01 11:03:29] I'll read the plan file to identify the first uncompleted task.
+[26-04-01 11:03:39] STEP 0 - ANNOUNCE:
+[26-04-01 11:03:39] I'm working on Task 2: Создать модели профилей (Create profile models).
+[26-04-01 11:03:39] This task will:
+[26-04-01 11:03:39]   - Create CoachProfile and AthleteProfile Eloquent models with proper relationships
+[26-04-01 11:03:39]   - Set up one-to-one relationships between User and both profile types
+[26-04-01 11:03:39]   - Establish many-to-many relationship between CoachProfile and Sports
+[26-04-01 11:03:39]   - Add convenient accessor methods (isCoach, isAthlete) to the User model
+[26-04-01 11:03:39]   - Configure proper casts for CoachProfile fields (moderation_status, is_public, rating_avg)
+[26-04-01 11:03:39] Key files involved:
+[26-04-01 11:03:39]   - app/Models/CoachProfile.php (new)
+[26-04-01 11:03:39]   - app/Models/AthleteProfile.php (new)
+[26-04-01 11:03:39]   - app/Models/User.php (modify)
+[26-04-01 11:03:39]   - app/Models/Sport.php (modify)
+[26-04-01 11:03:39] Starting implementation now.
