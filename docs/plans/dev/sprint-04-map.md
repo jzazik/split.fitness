@@ -221,10 +221,10 @@ curl "http://localhost/api/workouts/map?city_id=1&sport_id=2"
 - Create: `database/migrations/xxxx_add_spatial_index_to_workouts.php`
 
 **Steps:**
-- [ ] Добавить spatial index на (lat, lng) если MySQL 8+
-- [ ] Или composite index (['status', 'starts_at', 'city_id'])
-- [ ] Запустить миграцию
-- [ ] Mark completed
+- [x] Добавить spatial index на (lat, lng) если MySQL 8+
+- [x] Или composite index (['status', 'starts_at', 'city_id'])
+- [x] Запустить миграцию
+- [x] Mark completed
 
 ---
 
