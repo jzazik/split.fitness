@@ -8,6 +8,7 @@ use App\Http\Controllers\Coach\ProfileController as CoachProfileController;
 use App\Http\Controllers\Coach\WorkoutController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicMapController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -20,6 +21,9 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+
+// Public map route
+Route::get('/map', [PublicMapController::class, 'index'])->name('map');
 
 Route::get('/dashboard', function () {
     $user = auth()->user();

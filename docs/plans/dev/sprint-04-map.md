@@ -127,15 +127,15 @@ curl "http://localhost/api/workouts/map?city_id=1&sport_id=2"
 - Modify: `routes/web.php`
 
 **Steps:**
-- [ ] Создать PublicMapController:
+- [x] Создать PublicMapController:
   - index() — вернуть Inertia::render('Public/Map/Index', [cities, sports])
-- [ ] Создать Index.vue:
+- [x] Создать Index.vue:
   - Fullscreen карта Leaflet
   - Загрузить workouts через axios GET /api/workouts/map
   - Показать маркеры с кластеризацией
   - При клике на маркер → emit workoutId
-- [ ] Добавить роут: `GET /map` (публичный, без auth)
-- [ ] Mark completed
+- [x] Добавить роут: `GET /map` (публичный, без auth)
+- [x] Mark completed
 
 ---
 
