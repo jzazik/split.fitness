@@ -115,7 +115,7 @@ class WorkoutTest extends TestCase
 
     public function test_workout_creation_calculates_slot_price_correctly(): void
     {
-        $startsAt = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
+        $startsAt = $this->validWorkoutDate()->format('Y-m-d H:i:s');
 
         $this
             ->actingAs($this->coach)
@@ -137,7 +137,7 @@ class WorkoutTest extends TestCase
 
     public function test_workout_creation_requires_sport_id(): void
     {
-        $startsAt = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
+        $startsAt = $this->validWorkoutDate()->format('Y-m-d H:i:s');
 
         $response = $this
             ->actingAs($this->coach)
@@ -157,7 +157,7 @@ class WorkoutTest extends TestCase
 
     public function test_workout_creation_requires_city_id(): void
     {
-        $startsAt = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
+        $startsAt = $this->validWorkoutDate()->format('Y-m-d H:i:s');
 
         $response = $this
             ->actingAs($this->coach)
@@ -177,7 +177,7 @@ class WorkoutTest extends TestCase
 
     public function test_workout_creation_requires_location_name(): void
     {
-        $startsAt = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
+        $startsAt = $this->validWorkoutDate()->format('Y-m-d H:i:s');
 
         $response = $this
             ->actingAs($this->coach)
@@ -197,7 +197,7 @@ class WorkoutTest extends TestCase
 
     public function test_workout_creation_requires_valid_coordinates(): void
     {
-        $startsAt = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
+        $startsAt = $this->validWorkoutDate()->format('Y-m-d H:i:s');
 
         $response = $this
             ->actingAs($this->coach)
@@ -236,7 +236,7 @@ class WorkoutTest extends TestCase
 
     public function test_workout_creation_validates_duration_minutes(): void
     {
-        $startsAt = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
+        $startsAt = $this->validWorkoutDate()->format('Y-m-d H:i:s');
 
         $response = $this
             ->actingAs($this->coach)
@@ -257,7 +257,7 @@ class WorkoutTest extends TestCase
 
     public function test_workout_creation_validates_total_price(): void
     {
-        $startsAt = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
+        $startsAt = $this->validWorkoutDate()->format('Y-m-d H:i:s');
 
         $response = $this
             ->actingAs($this->coach)
@@ -278,7 +278,7 @@ class WorkoutTest extends TestCase
 
     public function test_workout_creation_validates_slots_total(): void
     {
-        $startsAt = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
+        $startsAt = $this->validWorkoutDate()->format('Y-m-d H:i:s');
 
         $response = $this
             ->actingAs($this->coach)
@@ -300,7 +300,7 @@ class WorkoutTest extends TestCase
     public function test_non_coach_cannot_create_workout(): void
     {
         $athlete = User::factory()->athlete()->create();
-        $startsAt = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
+        $startsAt = $this->validWorkoutDate()->format('Y-m-d H:i:s');
 
         $response = $this
             ->actingAs($athlete)
@@ -614,7 +614,7 @@ class WorkoutTest extends TestCase
             'slots_total' => 3,
         ]);
 
-        $startsAt = Carbon::now()->addDays(5)->format('Y-m-d H:i:s');
+        $startsAt = $this->validWorkoutDate(5)->format('Y-m-d H:i:s');
 
         $response = $this
             ->actingAs($this->coach)
@@ -665,7 +665,7 @@ class WorkoutTest extends TestCase
             'location_name' => 'Original Location',
         ]);
 
-        $startsAt = Carbon::now()->addDays(5)->format('Y-m-d H:i:s');
+        $startsAt = $this->validWorkoutDate(5)->format('Y-m-d H:i:s');
 
         $response = $this
             ->actingAs($this->coach)
@@ -698,14 +698,14 @@ class WorkoutTest extends TestCase
             'slot_price' => 334,
         ]);
 
-        $startsAt = Carbon::now()->addDays(5)->format('Y-m-d H:i:s');
+        $startsAt = $this->validWorkoutDate(5)->format('Y-m-d H:i:s');
 
         $this
             ->actingAs($this->coach)
             ->patch(route('coach.workouts.update', $workout), [
                 'sport_id' => $this->sport->id,
                 'city_id' => $this->city->id,
-                'location_name' => 'Location',
+                'location_name' => 'Test Location Name',
                 'lat' => 55.731076,
                 'lng' => 37.601224,
                 'starts_at' => $startsAt,

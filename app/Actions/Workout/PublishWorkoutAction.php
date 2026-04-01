@@ -28,7 +28,7 @@ class PublishWorkoutAction
             Log::error('Attempted to publish workout with non-approved coach', [
                 'workout_id' => $workout->id,
                 'coach_id' => $coach->id,
-                'moderation_status' => $coach->coachProfile->moderation_status ?? 'no_profile',
+                'moderation_status' => $coach->coachProfile?->moderation_status ?? 'no_profile',
             ]);
 
             throw ValidationException::withMessages([
@@ -37,7 +37,7 @@ class PublishWorkoutAction
         }
 
         // Check if starts_at is at least 1 hour in the future
-        if ($workout->starts_at->lessThanOrEqualTo(now()->addHour())) {
+        if ($workout->starts_at->lessThan(now()->addHour())) {
             throw ValidationException::withMessages([
                 'starts_at' => 'Тренировку можно публиковать только если она начинается минимум через 1 час.',
             ]);
