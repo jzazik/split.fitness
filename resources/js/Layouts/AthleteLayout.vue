@@ -152,7 +152,7 @@ const { user, fullName } = authStore;
                                 {{ fullName }}
                             </div>
                             <div class="text-sm font-medium text-gray-500">
-                                {{ user.email }}
+                                {{ user?.email }}
                             </div>
                         </div>
 

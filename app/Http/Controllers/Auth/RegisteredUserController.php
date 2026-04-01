@@ -41,7 +41,9 @@ class RegisteredUserController extends Controller
 
         // Mask email for logging (keep first char + domain, hide rest)
         $emailParts = explode('@', $user->email);
-        $maskedEmail = substr($emailParts[0], 0, 1).'***@'.$emailParts[1];
+        $maskedEmail = count($emailParts) === 2
+            ? substr($emailParts[0], 0, 1).'***@'.$emailParts[1]
+            : '***';
 
         Log::info('User registered successfully', [
             'user_id' => $user->id,
@@ -57,7 +59,6 @@ class RegisteredUserController extends Controller
         $redirectRoute = match ($user->role) {
             'athlete' => 'athlete.bookings',
             'coach' => 'coach.dashboard',
-            default => 'dashboard',
         };
 
         return redirect()->route($redirectRoute);

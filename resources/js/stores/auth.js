@@ -16,11 +16,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     const isAdmin = computed(() => user.value?.role === 'admin');
 
-    const fullName = computed(() => {
-        if (!user.value) return '';
-        const { first_name, last_name } = user.value;
-        return [first_name, last_name].filter(Boolean).join(' ');
-    });
+    const fullName = computed(() => user.value?.full_name || '');
 
     // Actions
     const logout = () => {

@@ -30,6 +30,7 @@ class RegisterRequest extends FormRequest
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'password' => ['required', 'confirmed', Password::defaults()],
+            'city_id' => ['nullable', 'integer', 'exists:cities,id'],
         ];
     }
 
