@@ -35,14 +35,14 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
-        $intended = match ($user->role) {
+        $defaultIntended = match ($user->role) {
             'athlete' => route('athlete.bookings', absolute: false),
             'coach' => route('coach.dashboard', absolute: false),
-            'admin' => '/admin',
+            'admin' => route('admin.dashboard', absolute: false),
             default => route('dashboard', absolute: false),
         };
 
-        return redirect()->intended($intended);
+        return redirect()->intended($defaultIntended);
     }
 
     /**

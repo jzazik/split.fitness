@@ -31,6 +31,7 @@ defineProps({
                     <UpdateProfileInformationForm
                         :must-verify-email="mustVerifyEmail"
                         :status="status"
+                        :update-route="'coach.profile.update'"
                         class="max-w-xl"
                     />
                 </div>

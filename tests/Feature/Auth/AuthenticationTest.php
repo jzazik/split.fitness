@@ -77,4 +77,41 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
         $response->assertRedirect('/');
     }
+
+    public function test_coach_redirects_to_intended_url_after_login(): void
+    {
+        $user = User::factory()->coach()->create();
+
+        // Attempt to access a protected page while not logged in
+        // This stores the intended URL in the session
+        $this->get('/coach/profile');
+
+        // Now login
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        // Should redirect to the originally requested URL, not the role home page
+        $response->assertRedirect(route('coach.profile', absolute: false));
+    }
+
+    public function test_athlete_redirects_to_intended_url_after_login(): void
+    {
+        $user = User::factory()->athlete()->create();
+
+        // Attempt to access a protected page while not logged in
+        $this->get('/athlete/bookings');
+
+        // Now login
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        // Should redirect to the originally requested URL
+        $response->assertRedirect(route('athlete.bookings', absolute: false));
+    }
 }

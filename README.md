@@ -20,10 +20,11 @@ This project includes Docker configuration for local development with PHP 8.3, M
 
 1. Clone the repository and navigate to the project directory
 
-2. Copy the Docker environment file and set a secure password:
+2. Copy the Docker environment file and configure database credentials:
 ```bash
 cp .env.docker.example .env.docker
-# Edit .env.docker and set DB_PASSWORD to a secure value
+# Edit .env.docker and set secure passwords for DB_PASSWORD, MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD
+# Optionally change DB_DATABASE, DB_USERNAME (keep DB_* and MYSQL_* values synchronized)
 # Generate secure password: openssl rand -base64 32
 ```
 

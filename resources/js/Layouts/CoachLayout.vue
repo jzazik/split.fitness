@@ -37,14 +37,14 @@ const { user, fullName } = authStore;
                                     Тренировки
                                 </NavLink>
                                 <NavLink
-                                    :href="route('profile.edit')"
-                                    :active="route().current('profile.edit')"
+                                    :href="route('coach.profile')"
+                                    :active="route().current('coach.profile')"
                                 >
                                     Профиль
                                 </NavLink>
                                 <NavLink
-                                    :href="route('coach.profile')"
-                                    :active="route().current('coach.profile')"
+                                    :href="route('coach.payments')"
+                                    :active="route().current('coach.payments')"
                                 >
                                     Выплаты
                                 </NavLink>
@@ -141,14 +141,14 @@ const { user, fullName } = authStore;
                             Тренировки
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
-                            :href="route('profile.edit')"
-                            :active="route().current('profile.edit')"
+                            :href="route('coach.profile')"
+                            :active="route().current('coach.profile')"
                         >
                             Профиль
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
-                            :href="route('coach.profile')"
-                            :active="route().current('coach.profile')"
+                            :href="route('coach.payments')"
+                            :active="route().current('coach.payments')"
                         >
                             Выплаты
                         </ResponsiveNavLink>

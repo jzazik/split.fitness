@@ -39,10 +39,14 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
+        // Mask email for logging (keep first char + domain, hide rest)
+        $emailParts = explode('@', $user->email);
+        $maskedEmail = substr($emailParts[0], 0, 1).'***@'.$emailParts[1];
+
         Log::info('User registered successfully', [
             'user_id' => $user->id,
             'role' => $user->role,
-            'email' => $user->email,
+            'email' => $maskedEmail,
         ]);
 
         event(new Registered($user));

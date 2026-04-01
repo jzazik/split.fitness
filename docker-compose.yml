@@ -8,15 +8,14 @@ services:
     container_name: split_fitness_app
     restart: unless-stopped
     working_dir: /var/www
+    env_file:
+      - .env.docker
     volumes:
       - ./:/var/www
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
     environment:
       - DB_HOST=mysql
       - DB_PORT=3306
-      - DB_DATABASE=${DB_DATABASE:-split_fitness}
-      - DB_USERNAME=${DB_USERNAME:-root}
-      - DB_PASSWORD=${DB_PASSWORD}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
     networks:
@@ -43,11 +42,9 @@ services:
     image: mysql:8.0
     container_name: split_fitness_mysql
     restart: unless-stopped
+    env_file:
+      - .env.docker
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-split_fitness}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_USER: ${DB_USERNAME:-split_fitness}
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
     volumes:
@@ -73,6 +70,8 @@ services:
     image: node:20-alpine
     container_name: split_fitness_node
     working_dir: /var/www
+    env_file:
+      - .env.docker
     volumes:
       - ./:/var/www
     command: npm run dev
