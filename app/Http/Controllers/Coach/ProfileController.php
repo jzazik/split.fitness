@@ -99,7 +99,7 @@ class ProfileController extends Controller
         return redirect()->route('coach.profile')->with('success', 'Профиль обновлён');
     }
 
-    public function uploadAvatar(Request $request): RedirectResponse
+    public function uploadAvatar(Request $request)
     {
         $request->validate([
             'avatar' => 'required|image|max:5120',
@@ -119,6 +119,10 @@ class ProfileController extends Controller
                 'file_size' => $file->getSize(),
             ]);
 
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Фото загружено']);
+            }
+
             return redirect()->route('coach.profile')->with('success', 'Фото загружено');
         } catch (\Exception $e) {
             Log::error('Avatar upload failed', [
@@ -127,12 +131,16 @@ class ProfileController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Не удалось загрузить фото. Попробуйте ещё раз.'], 422);
+            }
+
             return redirect()->route('coach.profile')
                 ->withErrors(['avatar' => 'Не удалось загрузить фото. Попробуйте ещё раз.']);
         }
     }
 
-    public function uploadDiploma(Request $request): RedirectResponse
+    public function uploadDiploma(Request $request)
     {
         $request->validate([
             'diplomas' => 'required|array',
@@ -161,6 +169,10 @@ class ProfileController extends Controller
                 ]);
             }
 
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Дипломы загружены']);
+            }
+
             return redirect()->route('coach.profile')->with('success', 'Дипломы загружены');
         } catch (\Exception $e) {
             Log::error('Diploma upload failed', [
@@ -170,12 +182,16 @@ class ProfileController extends Controller
                 'trace' => $e->getTraceAsString(),
             ]);
 
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Не удалось загрузить дипломы. Попробуйте ещё раз.'], 422);
+            }
+
             return redirect()->route('coach.profile')
                 ->withErrors(['diplomas' => 'Не удалось загрузить дипломы. Попробуйте ещё раз.']);
         }
     }
 
-    public function uploadCertificate(Request $request): RedirectResponse
+    public function uploadCertificate(Request $request)
     {
         $request->validate([
             'certificates' => 'required|array',
@@ -204,6 +220,10 @@ class ProfileController extends Controller
                 ]);
             }
 
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Справки загружены']);
+            }
+
             return redirect()->route('coach.profile')->with('success', 'Справки загружены');
         } catch (\Exception $e) {
             Log::error('Certificate upload failed', [
@@ -212,6 +232,10 @@ class ProfileController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Не удалось загрузить справки. Попробуйте ещё раз.'], 422);
+            }
 
             return redirect()->route('coach.profile')
                 ->withErrors(['certificates' => 'Не удалось загрузить справки. Попробуйте ещё раз.']);

@@ -37,6 +37,13 @@ class OnboardingController extends Controller
                     'bio' => $user->coachProfile->bio,
                     'experience_years' => $user->coachProfile->experience_years,
                     'sports' => $user->coachProfile->sports->pluck('id')->toArray(),
+                    'diplomas' => $user->coachProfile->getMedia('diplomas')->map(fn ($media) => [
+                        'id' => $media->id,
+                        'name' => $media->file_name,
+                        'url' => $media->getUrl(),
+                        'size' => $media->size,
+                        'mime_type' => $media->mime_type,
+                    ]),
                 ] : null,
                 'cities' => $cities,
                 'sports' => $sports,
@@ -101,6 +108,17 @@ class OnboardingController extends Controller
 
             $profile = $user->coachProfile;
 
+            if (! $profile) {
+                Log::warning('Coach profile was not auto-created, creating now', [
+                    'user_id' => $user->id,
+                    'role' => $user->role,
+                ]);
+
+                $profile = $user->coachProfile()->create([
+                    'moderation_status' => 'pending',
+                ]);
+            }
+
             $profile->update([
                 'bio' => $validated['bio'],
                 'experience_years' => $validated['experience_years'] ?? null,
@@ -142,11 +160,20 @@ class OnboardingController extends Controller
                 'city_id' => $validated['city_id'] ?? null,
             ]);
 
-            if ($user->athleteProfile) {
-                $user->athleteProfile->update([
-                    'emergency_contact' => $validated['emergency_contact'] ?? null,
+            $profile = $user->athleteProfile;
+
+            if (! $profile) {
+                Log::warning('Athlete profile was not auto-created, creating now', [
+                    'user_id' => $user->id,
+                    'role' => $user->role,
                 ]);
+
+                $profile = $user->athleteProfile()->create([]);
             }
+
+            $profile->update([
+                'emergency_contact' => $validated['emergency_contact'] ?? null,
+            ]);
 
             Log::info('Athlete profile completed via onboarding', [
                 'user_id' => $user->id,

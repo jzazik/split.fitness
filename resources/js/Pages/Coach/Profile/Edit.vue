@@ -1,6 +1,7 @@
 <script setup>
 import CoachLayout from '@/Layouts/CoachLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import AvatarUploader from '@/Components/UI/AvatarUploader.vue';
 import FileUploader from '@/Components/UI/FileUploader.vue';
 import MultiSelect from '@/Components/UI/MultiSelect.vue';
@@ -11,6 +12,9 @@ const props = defineProps({
     cities: Array,
     sports: Array,
 });
+
+const diplomaUploaderRef = ref(null);
+const certificateUploaderRef = ref(null);
 
 const form = useForm({
     first_name: props.user?.first_name || '',
@@ -29,6 +33,7 @@ const handleAvatarUpload = (file) => {
     window.axios.post(route('coach.profile.uploadAvatar'), formData)
         .then(response => {
             console.log('Avatar uploaded successfully');
+            router.reload({ preserveScroll: true });
         })
         .catch(error => {
             console.error('Avatar upload failed:', error);
@@ -39,6 +44,7 @@ const handleAvatarRemove = () => {
     window.axios.delete(route('coach.profile.deleteAvatar'))
         .then(() => {
             console.log('Avatar removed successfully');
+            router.reload({ preserveScroll: true });
         })
         .catch(error => {
             console.error('Avatar removal failed:', error);
@@ -54,9 +60,17 @@ const handleDiplomaUpload = (files) => {
     window.axios.post(route('coach.profile.uploadDiploma'), formData)
         .then(() => {
             console.log('Diplomas uploaded successfully');
+            if (diplomaUploaderRef.value) {
+                diplomaUploaderRef.value.clearSelectedFiles();
+            }
+            router.reload({ preserveScroll: true });
         })
         .catch(error => {
             console.error('Diploma upload failed:', error);
+            const errorMessage = error.response?.data?.message || 'Не удалось загрузить файлы. Попробуйте снова.';
+            if (diplomaUploaderRef.value) {
+                diplomaUploaderRef.value.showUploadError(errorMessage);
+            }
         });
 };
 
@@ -64,6 +78,7 @@ const handleDiplomaRemove = (file) => {
     window.axios.delete(route('coach.profile.deleteDiploma', file.id))
         .then(() => {
             console.log('Diploma removed successfully');
+            router.reload({ preserveScroll: true });
         })
         .catch(error => {
             console.error('Diploma removal failed:', error);
@@ -79,9 +94,17 @@ const handleCertificateUpload = (files) => {
     window.axios.post(route('coach.profile.uploadCertificate'), formData)
         .then(() => {
             console.log('Certificates uploaded successfully');
+            if (certificateUploaderRef.value) {
+                certificateUploaderRef.value.clearSelectedFiles();
+            }
+            router.reload({ preserveScroll: true });
         })
         .catch(error => {
             console.error('Certificate upload failed:', error);
+            const errorMessage = error.response?.data?.message || 'Не удалось загрузить файлы. Попробуйте снова.';
+            if (certificateUploaderRef.value) {
+                certificateUploaderRef.value.showUploadError(errorMessage);
+            }
         });
 };
 
@@ -89,6 +112,7 @@ const handleCertificateRemove = (file) => {
     window.axios.delete(route('coach.profile.deleteCertificate', file.id))
         .then(() => {
             console.log('Certificate removed successfully');
+            router.reload({ preserveScroll: true });
         })
         .catch(error => {
             console.error('Certificate removal failed:', error);
@@ -248,6 +272,7 @@ const submit = () => {
                                     Дипломы и сертификаты
                                 </label>
                                 <FileUploader
+                                    ref="diplomaUploaderRef"
                                     :existing-files="profile?.diplomas || []"
                                     :max-size-mb="10"
                                     accept="image/*,.pdf"
@@ -264,6 +289,7 @@ const submit = () => {
                                     Справки СМЗ
                                 </label>
                                 <FileUploader
+                                    ref="certificateUploaderRef"
                                     :existing-files="profile?.certificates || []"
                                     :max-size-mb="10"
                                     accept="image/*,.pdf"

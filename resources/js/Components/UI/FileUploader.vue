@@ -24,10 +24,12 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(['upload', 'remove']);
+const emit = defineEmits(['upload', 'remove', 'upload-error']);
 
 const selectedFiles = ref([]);
 const error = ref('');
+const uploadError = ref('');
+const fileInputId = `file-input-${Math.random().toString(36).substring(2, 11)}`;
 
 const maxSizeBytes = computed(() => props.maxSizeMb * 1024 * 1024);
 
@@ -97,10 +99,23 @@ const handleFileSelect = (event) => {
 
 const uploadFiles = () => {
     if (selectedFiles.value.length > 0) {
+        uploadError.value = '';
         emit('upload', selectedFiles.value);
-        selectedFiles.value = [];
     }
 };
+
+const clearSelectedFiles = () => {
+    selectedFiles.value = [];
+};
+
+const showUploadError = (message) => {
+    uploadError.value = message;
+};
+
+defineExpose({
+    clearSelectedFiles,
+    showUploadError,
+});
 
 const removeFile = (file) => {
     if (file.isExisting) {
@@ -114,7 +129,7 @@ const removeFile = (file) => {
 };
 
 const triggerFileInput = () => {
-    document.getElementById(`file-input-${Math.random()}`).click();
+    document.getElementById(fileInputId).click();
 };
 </script>
 
@@ -188,7 +203,7 @@ const triggerFileInput = () => {
         <!-- Add File Button -->
         <div class="flex items-center space-x-2">
             <input
-                :id="`file-input-${Math.random()}`"
+                :id="fileInputId"
                 type="file"
                 @change="handleFileSelect"
                 :accept="accept"
@@ -214,9 +229,12 @@ const triggerFileInput = () => {
             </button>
         </div>
 
-        <!-- Error Message -->
+        <!-- Error Messages -->
         <p v-if="error" class="text-xs text-red-600">
             {{ error }}
+        </p>
+        <p v-if="uploadError" class="text-xs text-red-600">
+            {{ uploadError }}
         </p>
 
         <!-- Help Text -->

@@ -1,9 +1,10 @@
 <script setup>
 import GuestLayout from '@/Layouts/GuestLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import AvatarUploader from '@/Components/UI/AvatarUploader.vue';
 import MultiSelect from '@/Components/UI/MultiSelect.vue';
+import FileUploader from '@/Components/UI/FileUploader.vue';
 
 const props = defineProps({
     user: Object,
@@ -13,7 +14,7 @@ const props = defineProps({
 });
 
 const currentStep = ref(1);
-const totalSteps = 4;
+const totalSteps = 5;
 
 const form = useForm({
     first_name: props.user?.first_name || '',
@@ -59,6 +60,42 @@ const canProceedToStep3 = computed(() => {
 const canProceedToStep4 = computed(() => {
     return form.city_id && form.bio && form.bio.length >= 50;
 });
+
+const diplomaUploaderRef = ref(null);
+
+const handleDiplomaUpload = (files) => {
+    const formData = new FormData();
+    files.forEach(file => {
+        formData.append('diplomas[]', file);
+    });
+
+    window.axios.post(route('coach.profile.uploadDiploma'), formData)
+        .then(() => {
+            console.log('Diplomas uploaded during onboarding');
+            if (diplomaUploaderRef.value) {
+                diplomaUploaderRef.value.clearSelectedFiles();
+            }
+            router.reload({ preserveScroll: true });
+        })
+        .catch(error => {
+            console.error('Diploma upload failed:', error);
+            const errorMessage = error.response?.data?.message || 'Не удалось загрузить файлы. Попробуйте снова.';
+            if (diplomaUploaderRef.value) {
+                diplomaUploaderRef.value.showUploadError(errorMessage);
+            }
+        });
+};
+
+const handleDiplomaRemove = (file) => {
+    window.axios.delete(route('coach.profile.deleteDiploma', file.id))
+        .then(() => {
+            console.log('Diploma removed during onboarding');
+            router.reload({ preserveScroll: true });
+        })
+        .catch(error => {
+            console.error('Diploma removal failed:', error);
+        });
+};
 
 const nextStep = () => {
     if (currentStep.value < totalSteps) {
@@ -285,6 +322,49 @@ const submit = async () => {
         </div>
 
         <div v-if="currentStep === 4" class="space-y-4">
+            <h3 class="text-lg font-semibold text-gray-900">Загрузите дипломы (необязательно)</h3>
+
+            <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
+                <p class="text-sm text-blue-900">
+                    Загрузите фотографии или сканы ваших дипломов, сертификатов и других документов, подтверждающих ваше образование и квалификацию. Этот шаг необязателен, но он повышает доверие к вашему профилю.
+                </p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Дипломы и сертификаты
+                </label>
+                <FileUploader
+                    ref="diplomaUploaderRef"
+                    :existing-files="profile?.diplomas || []"
+                    :max-size-mb="10"
+                    accept="image/*,.pdf"
+                    :multiple="true"
+                    label="Добавить диплом"
+                    @upload="handleDiplomaUpload"
+                    @remove="handleDiplomaRemove"
+                />
+            </div>
+
+            <div class="flex gap-2">
+                <button
+                    type="button"
+                    @click="prevStep"
+                    class="flex-1 rounded-md bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300"
+                >
+                    Назад
+                </button>
+                <button
+                    type="button"
+                    @click="nextStep"
+                    class="flex-1 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                >
+                    {{ (profile?.diplomas || []).length > 0 ? 'Далее' : 'Пропустить' }}
+                </button>
+            </div>
+        </div>
+
+        <div v-if="currentStep === 5" class="space-y-4">
             <h3 class="text-lg font-semibold text-gray-900">Готово!</h3>
 
             <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
