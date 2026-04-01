@@ -346,6 +346,6 @@ class MapApiTest extends TestCase
 
         $response->assertStatus(200);
 
-        $this->assertLessThanOrEqual(200, count($response->json('data')));
+        $this->assertEquals(200, count($response->json('data')));
     }
 }

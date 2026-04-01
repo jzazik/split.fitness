@@ -29,9 +29,9 @@ class PublicMapTest extends TestCase
 
     public function test_map_page_includes_cities(): void
     {
-        // Create some cities
-        City::factory()->create(['name' => 'Moscow']);
-        City::factory()->create(['name' => 'St. Petersburg']);
+        // Create some cities (use unique names to avoid seeder conflicts)
+        City::factory()->create(['name' => 'Test City 1', 'slug' => 'test-city-1']);
+        City::factory()->create(['name' => 'Test City 2', 'slug' => 'test-city-2']);
 
         $response = $this->get('/map');
 

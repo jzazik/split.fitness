@@ -26,10 +26,10 @@ class MapWorkoutsRequest extends FormRequest
             'city_id' => 'nullable|integer|exists:cities,id',
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
-            'ne_lat' => 'nullable|numeric|between:-90,90',
-            'ne_lng' => 'nullable|numeric|between:-180,180',
-            'sw_lat' => 'nullable|numeric|between:-90,90|lt:ne_lat',
-            'sw_lng' => 'nullable|numeric|between:-180,180',
+            'ne_lat' => 'required_with:ne_lng,sw_lat,sw_lng|nullable|numeric|between:-90,90',
+            'ne_lng' => 'required_with:ne_lat,sw_lat,sw_lng|nullable|numeric|between:-180,180',
+            'sw_lat' => 'required_with:ne_lat,ne_lng,sw_lng|nullable|numeric|between:-90,90|lt:ne_lat',
+            'sw_lng' => 'required_with:ne_lat,ne_lng,sw_lat|nullable|numeric|between:-180,180',
         ];
 
         // sport_id can be single integer or array of integers

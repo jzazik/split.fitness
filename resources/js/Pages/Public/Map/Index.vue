@@ -25,10 +25,12 @@
       <!-- Empty State -->
       <div
         v-if="!loading && workouts.length === 0"
-        class="absolute inset-0 flex items-center justify-center pointer-events-none z-[999]"
+        class="absolute inset-0 flex items-center justify-center z-[999]"
+        :class="hasError ? 'pointer-events-auto' : 'pointer-events-none'"
       >
         <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm text-center">
           <svg
+            v-if="!hasError"
             class="mx-auto h-12 w-12 text-gray-400"
             fill="none"
             viewBox="0 0 24 24"
@@ -47,10 +49,33 @@
               d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
             />
           </svg>
-          <h3 class="mt-2 text-sm font-semibold text-gray-900">Нет тренировок</h3>
+          <svg
+            v-else
+            class="mx-auto h-12 w-12 text-red-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+          <h3 class="mt-2 text-sm font-semibold text-gray-900">
+            {{ hasError ? 'Ошибка загрузки' : 'Нет тренировок' }}
+          </h3>
           <p class="mt-1 text-sm text-gray-500">
-            Нет тренировок по выбранным фильтрам. Попробуйте изменить параметры поиска.
+            {{ hasError ? 'Не удалось загрузить тренировки. Попробуйте снова.' : 'Нет тренировок по выбранным фильтрам. Попробуйте изменить параметры поиска.' }}
           </p>
+          <button
+            v-if="hasError"
+            @click="loadWorkouts"
+            class="mt-4 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >
+            Повторить попытку
+          </button>
         </div>
       </div>
 
@@ -106,6 +131,7 @@ const props = defineProps({
 const page = usePage();
 const mapContainer = ref(null);
 const loading = ref(false);
+const hasError = ref(false);
 const workouts = ref([]);
 const selectedWorkout = ref(null);
 let map = null;
@@ -232,6 +258,7 @@ const initMap = () => {
 
 const loadWorkouts = async () => {
   loading.value = true;
+  hasError.value = false;
 
   try {
     // Build query parameters from filters
@@ -282,7 +309,8 @@ const loadWorkouts = async () => {
 
   } catch (error) {
     console.error('Failed to load workouts:', error);
-    showToast('error', 'Не удалось загрузить тренировки. Попробуйте обновить страницу.');
+    hasError.value = true;
+    showToast('error', 'Не удалось загрузить тренировки.');
   } finally {
     loading.value = false;
   }

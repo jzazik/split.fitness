@@ -17,6 +17,9 @@ return new class extends Migration
 
             // Composite index for map queries combining status, date, and location
             $table->index(['status', 'starts_at', 'lat', 'lng'], 'workouts_map_query_idx');
+
+            // Composite index for city-filtered map queries (common use case)
+            $table->index(['city_id', 'status', 'starts_at'], 'workouts_city_map_idx');
         });
     }
 
@@ -28,6 +31,7 @@ return new class extends Migration
         Schema::table('workouts', function (Blueprint $table) {
             $table->dropIndex('workouts_lat_lng_idx');
             $table->dropIndex('workouts_map_query_idx');
+            $table->dropIndex('workouts_city_map_idx');
         });
     }
 };
