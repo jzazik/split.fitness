@@ -282,8 +282,7 @@ const loadWorkouts = async () => {
 
   } catch (error) {
     console.error('Failed to load workouts:', error);
-    const errorMessage = error.response?.data?.message || 'Не удалось загрузить тренировки. Попробуйте обновить страницу.';
-    showToast('error', errorMessage);
+    showToast('error', 'Не удалось загрузить тренировки. Попробуйте обновить страницу.');
   } finally {
     loading.value = false;
   }

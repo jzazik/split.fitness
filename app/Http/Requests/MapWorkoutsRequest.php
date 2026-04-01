@@ -28,7 +28,7 @@ class MapWorkoutsRequest extends FormRequest
             'date_to' => 'nullable|date|after_or_equal:date_from',
             'ne_lat' => 'nullable|numeric|between:-90,90',
             'ne_lng' => 'nullable|numeric|between:-180,180',
-            'sw_lat' => 'nullable|numeric|between:-90,90',
+            'sw_lat' => 'nullable|numeric|between:-90,90|lt:ne_lat',
             'sw_lng' => 'nullable|numeric|between:-180,180',
         ];
 
