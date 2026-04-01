@@ -42,6 +42,14 @@ class WorkoutTest extends TestCase
         $profile->sports()->attach($this->sport->id);
     }
 
+    /**
+     * Generate a valid workout start date (tomorrow+, rounded to 15-minute intervals)
+     */
+    private function validWorkoutDate(int $daysFromNow = 2, string $time = '09:00'): Carbon
+    {
+        return Carbon::parse("tomorrow +{$daysFromNow} days {$time}");
+    }
+
     public function test_coach_can_view_workouts_index(): void
     {
         $response = $this
@@ -71,7 +79,7 @@ class WorkoutTest extends TestCase
 
     public function test_coach_can_create_draft_workout(): void
     {
-        $startsAt = Carbon::now()->addDays(2)->format('Y-m-d H:i:s');
+        $startsAt = $this->validWorkoutDate()->format('Y-m-d H:i:s');
 
         $response = $this
             ->actingAs($this->coach)
@@ -80,7 +88,7 @@ class WorkoutTest extends TestCase
                 'city_id' => $this->city->id,
                 'title' => 'Утренняя тренировка',
                 'description' => 'Интенсивная кардио тренировка',
-                'location_name' => 'Парк Горького',
+                'location_name' => 'Парк Горького в центре',
                 'address' => 'Москва, Парк Горького, главная аллея',
                 'lat' => 55.731076,
                 'lng' => 37.601224,

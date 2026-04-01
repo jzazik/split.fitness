@@ -31,8 +31,8 @@ return new class extends Migration
 
             $table->decimal('total_price', 10, 2);
             $table->decimal('slot_price', 10, 2);
-            $table->integer('slots_total');
-            $table->integer('slots_booked')->default(0);
+            $table->unsignedInteger('slots_total');
+            $table->unsignedInteger('slots_booked')->default(0);
 
             $table->enum('status', ['draft', 'published', 'cancelled', 'completed'])->default('draft');
 

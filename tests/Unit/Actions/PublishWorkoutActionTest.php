@@ -131,11 +131,11 @@ class PublishWorkoutActionTest extends TestCase
         $workout = Workout::factory()->create([
             'coach_id' => $coach->id,
             'status' => 'draft',
-            'starts_at' => now()->subHour(),
+            'starts_at' => now()->addMinutes(30), // Less than 1 hour
         ]);
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Тренировку можно публиковать только если она начинается в будущем');
+        $this->expectExceptionMessage('Тренировку можно публиковать только если она начинается минимум через 1 час');
 
         $this->action->execute($workout);
     }

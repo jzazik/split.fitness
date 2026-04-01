@@ -36,10 +36,10 @@ class PublishWorkoutAction
             ]);
         }
 
-        // Check if starts_at is in the future
-        if ($workout->starts_at->isPast()) {
+        // Check if starts_at is at least 1 hour in the future
+        if ($workout->starts_at->lessThanOrEqualTo(now()->addHour())) {
             throw ValidationException::withMessages([
-                'starts_at' => 'Тренировку можно публиковать только если она начинается в будущем.',
+                'starts_at' => 'Тренировку можно публиковать только если она начинается минимум через 1 час.',
             ]);
         }
 
