@@ -45,6 +45,8 @@ Route::middleware(['auth', 'role:coach'])->prefix('coach')->name('coach.')->grou
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile', [CoachProfileController::class, 'edit'])->name('profile');
     Route::patch('/profile', [CoachProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/avatar', [CoachProfileController::class, 'uploadAvatar'])->name('profile.uploadAvatar');
+    Route::post('/profile/diploma', [CoachProfileController::class, 'uploadDiploma'])->name('profile.uploadDiploma');
     Route::get('/payments', [PaymentsController::class, 'index'])->name('payments');
 });
 

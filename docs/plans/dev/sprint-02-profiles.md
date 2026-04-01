@@ -176,18 +176,18 @@ php artisan tinker
 - Modify: `routes/web.php`
 
 **Steps:**
-- [ ] Создать ProfileController с методами:
+- [x] Создать ProfileController с методами:
   - edit() — возвращает Inertia::render с данными профиля
   - update(UpdateProfileRequest) — сохраняет данные
   - uploadAvatar(Request) — загружает фото
   - uploadDiploma(Request) — загружает диплом
-- [ ] Создать UpdateProfileRequest с валидацией:
+- [x] Создать UpdateProfileRequest с валидацией:
   - first_name, last_name required
   - bio required max:1000
   - city_id required exists:cities
   - sports required array min:1 (массив sport_id)
   - experience_years nullable integer
-- [ ] Создать Edit.vue:
+- [x] Создать Edit.vue:
   - Форма с полями: first_name, last_name, middle_name, bio
   - AvatarUploader компонент
   - MultiSelect для выбора видов спорта
@@ -195,9 +195,9 @@ php artisan tinker
   - FileUploader для дипломов (multiple)
   - FileUploader для справок СМЗ
   - Кнопка "Сохранить"
-- [ ] Добавить роут: `GET /coach/profile` → ProfileController@edit
-- [ ] Добавить роут: `PATCH /coach/profile` → ProfileController@update
-- [ ] Mark completed
+- [x] Добавить роут: `GET /coach/profile` → ProfileController@edit
+- [x] Добавить роут: `PATCH /coach/profile` → ProfileController@update
+- [x] Mark completed
 
 ---
 
