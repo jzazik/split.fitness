@@ -19,9 +19,38 @@
         v-if="loading"
         class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-[1000]"
       >
-        <div class="text-center">
-          <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-indigo-600 border-r-transparent"></div>
-          <p class="mt-2 text-sm text-gray-600">Загрузка тренировок...</p>
+        <LoadingSpinner size="md" message="Загрузка тренировок..." />
+      </div>
+
+      <!-- Empty State -->
+      <div
+        v-if="!loading && workouts.length === 0"
+        class="absolute inset-0 flex items-center justify-center pointer-events-none z-[999]"
+      >
+        <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm text-center">
+          <svg
+            class="mx-auto h-12 w-12 text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+            />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+            />
+          </svg>
+          <h3 class="mt-2 text-sm font-semibold text-gray-900">Нет тренировок</h3>
+          <p class="mt-1 text-sm text-gray-500">
+            Нет тренировок по выбранным фильтрам. Попробуйте изменить параметры поиска.
+          </p>
         </div>
       </div>
 
@@ -31,6 +60,21 @@
         :is-open="!!selectedWorkout"
         @close="closeWorkoutCard"
       />
+
+      <!-- Toast Notification -->
+      <div
+        aria-live="assertive"
+        class="pointer-events-none fixed inset-0 flex items-end px-4 py-6 sm:items-start sm:p-6 z-[1001]"
+      >
+        <div class="flex w-full flex-col items-center space-y-4 sm:items-end">
+          <Toast
+            :show="toast.show"
+            :type="toast.type"
+            :message="toast.message"
+            @close="closeToast"
+          />
+        </div>
+      </div>
     </div>
   </PublicLayout>
 </template>
@@ -41,6 +85,8 @@ import { Head } from '@inertiajs/vue3';
 import PublicLayout from '@/Layouts/PublicLayout.vue';
 import MapFilters from '@/Components/Map/MapFilters.vue';
 import WorkoutBottomCard from '@/Components/Map/WorkoutBottomCard.vue';
+import LoadingSpinner from '@/Components/UI/LoadingSpinner.vue';
+import Toast from '@/Components/UI/Toast.vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useMarkerCluster } from '@/composables/useMarkerCluster';
@@ -62,6 +108,7 @@ const workouts = ref([]);
 const selectedWorkout = ref(null);
 let map = null;
 let markerClusterGroup = null;
+let toastTimeout = null;
 
 // Filters state
 const filters = reactive({
@@ -69,6 +116,13 @@ const filters = reactive({
   sportIds: [],
   dateFrom: null,
   dateTo: null,
+});
+
+// Toast state
+const toast = reactive({
+  show: false,
+  type: 'info',
+  message: '',
 });
 
 // Fix for default marker icon not showing in production builds
@@ -166,6 +220,7 @@ const loadWorkouts = async () => {
 
   } catch (error) {
     console.error('Failed to load workouts:', error);
+    showToast('error', 'Не удалось загрузить тренировки. Попробуйте обновить страницу.');
   } finally {
     loading.value = false;
   }
@@ -214,6 +269,30 @@ const addWorkoutMarker = (workout) => {
 
 const closeWorkoutCard = () => {
   selectedWorkout.value = null;
+};
+
+const showToast = (type, message) => {
+  // Clear existing timeout
+  if (toastTimeout) {
+    clearTimeout(toastTimeout);
+  }
+
+  toast.show = true;
+  toast.type = type;
+  toast.message = message;
+
+  // Auto-dismiss after 5 seconds
+  toastTimeout = setTimeout(() => {
+    closeToast();
+  }, 5000);
+};
+
+const closeToast = () => {
+  toast.show = false;
+  if (toastTimeout) {
+    clearTimeout(toastTimeout);
+    toastTimeout = null;
+  }
 };
 </script>
 

@@ -253,12 +253,12 @@ curl "http://localhost/api/workouts/map?city_id=1&sport_id=2"
 - Create: `resources/js/Components/UI/LoadingSpinner.vue`
 
 **Steps:**
-- [ ] Создать LoadingSpinner.vue
-- [ ] В Index.vue:
+- [x] Создать LoadingSpinner.vue
+- [x] В Index.vue:
   - Показывать spinner при загрузке workouts
   - Обработать ошибку API (показать toast)
   - Empty state: "Нет тренировок по выбранным фильтрам"
-- [ ] Mark completed
+- [x] Mark completed
 
 ---
 
