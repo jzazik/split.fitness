@@ -142,11 +142,11 @@ php artisan tinker
 - Modify: `routes/web.php`
 
 **Steps:**
-- [ ] Создать WorkoutController с методами:
+- [x] Создать WorkoutController с методами:
   - index() — список тренировок тренера
   - create() — форма создания
   - store(StoreWorkoutRequest) — сохранение draft
-- [ ] Создать StoreWorkoutRequest:
+- [x] Создать StoreWorkoutRequest:
   - sport_id required exists
   - city_id required exists
   - lat, lng required numeric
@@ -155,7 +155,7 @@ php artisan tinker
   - duration_minutes required int >0
   - total_price required numeric >0
   - slots_total required int >0
-- [ ] Создать Create.vue:
+- [x] Создать Create.vue:
   - Поля: sport (select), city (select)
   - WorkoutMap (клик → выбор точки)
   - location_name (заполняется автоматически через reverseGeocode)
@@ -164,11 +164,11 @@ php artisan tinker
   - Input: duration_minutes, total_price, slots_total
   - Показывать preview: "Цена слота: {слот_price} ₽"
   - Кнопка "Сохранить черновик"
-- [ ] Добавить роуты:
+- [x] Добавить роуты:
   - `GET /coach/workouts` → index
   - `GET /coach/workouts/create` → create
   - `POST /coach/workouts` → store
-- [ ] Mark completed
+- [x] Mark completed
 
 ---
 

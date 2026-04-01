@@ -5,6 +5,7 @@ use App\Http\Controllers\Athlete\ProfileController as AthleteProfileController;
 use App\Http\Controllers\Coach\DashboardController;
 use App\Http\Controllers\Coach\PaymentsController;
 use App\Http\Controllers\Coach\ProfileController as CoachProfileController;
+use App\Http\Controllers\Coach\WorkoutController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
@@ -65,6 +66,11 @@ Route::middleware(['auth', 'role:coach', 'ensure.profile.completed'])->prefix('c
     Route::delete('/profile/certificate/{mediaId}', [CoachProfileController::class, 'deleteCertificate'])->name('profile.deleteCertificate');
     Route::post('/profile/resubmit', [CoachProfileController::class, 'resubmit'])->name('profile.resubmit');
     Route::get('/payments', [PaymentsController::class, 'index'])->name('payments');
+
+    // Workout routes
+    Route::get('/workouts', [WorkoutController::class, 'index'])->name('workouts.index');
+    Route::get('/workouts/create', [WorkoutController::class, 'create'])->name('workouts.create');
+    Route::post('/workouts', [WorkoutController::class, 'store'])->name('workouts.store');
 });
 
 // Admin routes (stub for future)
