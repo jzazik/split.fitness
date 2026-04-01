@@ -298,15 +298,15 @@ php artisan tinker
 - Create: `database/migrations/xxxx_add_indexes_to_workouts_table.php`
 
 **Steps:**
-- [ ] Создать миграцию с индексами:
+- [x] Создать миграцию с индексами:
   - index('coach_id')
   - index('city_id')
   - index('sport_id')
   - index('status')
   - index('starts_at')
   - composite index(['city_id', 'status', 'starts_at'])
-- [ ] Запустить миграцию
-- [ ] Mark completed
+- [x] Запустить миграцию
+- [x] Mark completed
 
 ---
 
