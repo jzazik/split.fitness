@@ -152,16 +152,16 @@ php artisan tinker
 - Modify: `app/Models/CoachProfile.php`
 
 **Steps:**
-- [ ] Установить: `composer require spatie/laravel-medialibrary`
-- [ ] Опубликовать конфиг: `php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider"`
-- [ ] Запустить миграцию медиа: `php artisan migrate`
-- [ ] Добавить trait `InteractsWithMedia` в User:
+- [x] Установить: `composer require spatie/laravel-medialibrary`
+- [x] Опубликовать конфиг: `php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider"`
+- [x] Запустить миграцию медиа: `php artisan migrate`
+- [x] Добавить trait `InteractsWithMedia` в User:
   - Регистрировать collection 'avatar' (single file, max 5MB, image)
-- [ ] Добавить trait в CoachProfile:
+- [x] Добавить trait в CoachProfile:
   - collection 'diplomas' (multiple, max 10MB per file, pdf/image)
   - collection 'certificates' (справки СМЗ, multiple, pdf/image)
-- [ ] Запустить `php artisan storage:link`
-- [ ] Mark completed
+- [x] Запустить `php artisan storage:link`
+- [x] Mark completed
 
 ---
 

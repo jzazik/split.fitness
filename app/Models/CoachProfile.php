@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class CoachProfile extends Model
+class CoachProfile extends Model implements HasMedia
 {
+    use HasFactory, InteractsWithMedia;
     protected $fillable = [
         'user_id',
         'bio',
@@ -37,5 +41,15 @@ class CoachProfile extends Model
     public function sports(): BelongsToMany
     {
         return $this->belongsToMany(Sport::class, 'coach_sports');
+    }
+
+    /**
+     * Register media collections for the coach profile.
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('diplomas');
+
+        $this->addMediaCollection('certificates');
     }
 }
