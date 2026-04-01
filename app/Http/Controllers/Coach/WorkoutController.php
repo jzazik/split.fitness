@@ -255,7 +255,7 @@ class WorkoutController extends Controller
                 // Re-validate slots_total >= slots_booked inside transaction with fresh data
                 if ($validated['slots_total'] < $workout->slots_booked) {
                     throw ValidationException::withMessages([
-                        'slots_total' => 'Нельзя уменьшить количество мест ниже текущего количества бронирований (' . $workout->slots_booked . ')',
+                        'slots_total' => 'Нельзя уменьшить количество мест ниже текущего количества бронирований ('.$workout->slots_booked.')',
                     ]);
                 }
 
