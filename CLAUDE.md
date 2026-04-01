@@ -74,10 +74,10 @@ Active skills for this project: `rubx-coder`, `rubx-git`, `rubx-reviewer-fast`, 
 - Completed plans can be moved to `docs/plans/completed/`.
 
 **Current state (as of 2026-04-01):**
-- Product plans directory (`docs/plans/product/`) is currently empty
-- All dev plans reference `docs/plans/plan-as-is.md` as the single source of requirements
-- This is acceptable for MVP development, but full product plans should be created before production launch
-- Each dev plan's `source:` frontmatter field points to the relevant section in plan-as-is.md
+- Product plans created for sprints 1-8 in `docs/plans/product/`
+- Dev plans reference both `docs/plans/plan-as-is.md` and corresponding product plans
+- Product plans describe WHAT/WHY, dev plans describe HOW
+- Each dev plan's `source:` frontmatter field points to relevant sources
 
 ## AI Proxy and Tooling Notes
 

@@ -49,11 +49,11 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        // Role-based redirect (fallback to dashboard if role routes don't exist yet)
+        // Role-based redirect
         $redirectRoute = match ($user->role) {
-            'athlete' => \Illuminate\Support\Facades\Route::has('athlete.bookings') ? 'athlete.bookings' : 'dashboard',
-            'coach' => \Illuminate\Support\Facades\Route::has('coach.dashboard') ? 'coach.dashboard' : 'dashboard',
-            'admin' => \Illuminate\Support\Facades\Route::has('filament.admin.pages.dashboard') ? 'filament.admin.pages.dashboard' : 'dashboard',
+            'athlete' => 'athlete.bookings',
+            'coach' => 'coach.dashboard',
+            'admin' => 'filament.admin.pages.dashboard',
             default => 'dashboard',
         };
 

@@ -12,7 +12,7 @@ class CityTest extends TestCase
 
     public function test_city_has_fillable_attributes(): void
     {
-        $city = new City();
+        $city = new City;
         $fillable = $city->getFillable();
 
         $this->assertContains('name', $fillable);

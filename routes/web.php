@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Athlete\BookingsController;
+use App\Http\Controllers\Coach\DashboardController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -26,13 +28,13 @@ Route::middleware('auth')->group(function () {
 
 // Athlete routes
 Route::middleware(['auth', 'role:athlete'])->prefix('athlete')->name('athlete.')->group(function () {
-    Route::get('/bookings', [\App\Http\Controllers\Athlete\BookingsController::class, 'index'])->name('bookings');
+    Route::get('/bookings', [BookingsController::class, 'index'])->name('bookings');
 });
 
 // Coach routes
 Route::middleware(['auth', 'role:coach'])->prefix('coach')->name('coach.')->group(function () {
-    Route::get('/dashboard', [\App\Http\Controllers\Coach\DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/profile', [\App\Http\Controllers\Coach\ProfileController::class, 'edit'])->name('profile');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/profile', [App\Http\Controllers\Coach\ProfileController::class, 'edit'])->name('profile');
 });
 
 // Admin routes (stub for future)

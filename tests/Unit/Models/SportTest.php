@@ -12,7 +12,7 @@ class SportTest extends TestCase
 
     public function test_sport_has_fillable_attributes(): void
     {
-        $sport = new Sport();
+        $sport = new Sport;
         $fillable = $sport->getFillable();
 
         $this->assertContains('slug', $fillable);

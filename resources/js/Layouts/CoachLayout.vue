@@ -43,8 +43,8 @@ const { user, fullName } = authStore;
                                     Профиль
                                 </NavLink>
                                 <NavLink
-                                    :href="route('coach.profile.edit')"
-                                    :active="route().current('coach.profile.*')"
+                                    :href="route('coach.profile')"
+                                    :active="route().current('coach.profile')"
                                 >
                                     Выплаты
                                 </NavLink>
@@ -150,8 +150,8 @@ const { user, fullName } = authStore;
                             Профиль
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
-                            :href="route('coach.profile.edit')"
-                            :active="route().current('coach.profile.*')"
+                            :href="route('coach.profile')"
+                            :active="route().current('coach.profile')"
                         >
                             Выплаты
                         </ResponsiveNavLink>
