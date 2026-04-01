@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Coach;
 
 use App\Actions\Workout\CalculateSlotPriceAction;
+use App\Actions\Workout\CancelWorkoutAction;
 use App\Actions\Workout\PublishWorkoutAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Coach\StoreWorkoutRequest;
@@ -184,6 +185,25 @@ class WorkoutController extends Controller
 
             return redirect()->route('coach.workouts.index')
                 ->with('success', 'Тренировка успешно опубликована');
+        } catch (ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Cancel a workout.
+     */
+    public function cancel(Workout $workout, CancelWorkoutAction $cancelWorkoutAction): RedirectResponse
+    {
+        $this->authorize('update', $workout);
+
+        try {
+            $cancelWorkoutAction->execute($workout);
+
+            return redirect()->route('coach.workouts.index')
+                ->with('success', 'Тренировка успешно отменена');
         } catch (ValidationException $e) {
             return redirect()->back()
                 ->withErrors($e->errors())

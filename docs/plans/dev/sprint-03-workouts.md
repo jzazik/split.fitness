@@ -278,17 +278,17 @@ php artisan tinker
 - Modify: `routes/web.php`
 
 **Steps:**
-- [ ] Создать CancelWorkoutAction:
+- [x] Создать CancelWorkoutAction:
   - Проверить: нет оплаченных броней (bookings.payment_status = 'paid')
   - Если есть оплаченные → throw ValidationException "Нельзя отменить, есть оплаченные записи"
   - Обновить: status = 'cancelled', cancelled_at = now()
-- [ ] В WorkoutController добавить:
+- [x] В WorkoutController добавить:
   - cancel(Workout $workout) → authorize, вызвать CancelWorkoutAction
-- [ ] Добавить роут: `POST /coach/workouts/{workout}/cancel` → cancel
-- [ ] Во фронте Index.vue:
+- [x] Добавить роут: `POST /coach/workouts/{workout}/cancel` → cancel
+- [x] Во фронте Index.vue:
   - Кнопка "Отменить" только для published
   - Подтверждающий диалог
-- [ ] Mark completed
+- [x] Mark completed
 
 ---
 

@@ -79,6 +79,14 @@ const publishWorkout = (workoutId) => {
         });
     }
 };
+
+const cancelWorkout = (workoutId) => {
+    if (confirm('Вы уверены, что хотите отменить эту тренировку? Это действие нельзя отменить.')) {
+        router.post(route('coach.workouts.cancel', workoutId), {}, {
+            preserveScroll: true,
+        });
+    }
+};
 </script>
 
 <template>
@@ -247,6 +255,7 @@ const publishWorkout = (workoutId) => {
                                         </button>
                                         <button
                                             v-if="workout.status === 'published'"
+                                            @click="cancelWorkout(workout.id)"
                                             class="text-red-600 hover:text-red-900"
                                         >
                                             Отменить

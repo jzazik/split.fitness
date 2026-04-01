@@ -709,4 +709,56 @@ class WorkoutTest extends TestCase
         $workout->refresh();
         $this->assertEquals(175, $workout->slot_price); // ceil(700 / 4) = 175
     }
+
+    public function test_coach_can_cancel_workout_without_bookings(): void
+    {
+        $workout = Workout::factory()->create([
+            'coach_id' => $this->coach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'published',
+            'published_at' => Carbon::now(),
+            'starts_at' => Carbon::now()->addDays(2),
+        ]);
+
+        $response = $this
+            ->actingAs($this->coach)
+            ->post(route('coach.workouts.cancel', $workout));
+
+        $response->assertRedirect(route('coach.workouts.index'));
+        $response->assertSessionHas('success');
+
+        $workout->refresh();
+        $this->assertEquals('cancelled', $workout->status);
+        $this->assertNotNull($workout->cancelled_at);
+    }
+
+    public function test_coach_cannot_cancel_another_coach_workout(): void
+    {
+        $otherCoach = User::factory()->coach()->create([
+            'city_id' => $this->city->id,
+        ]);
+
+        CoachProfile::factory()->create([
+            'user_id' => $otherCoach->id,
+            'moderation_status' => 'approved',
+        ]);
+
+        $workout = Workout::factory()->create([
+            'coach_id' => $otherCoach->id,
+            'sport_id' => $this->sport->id,
+            'city_id' => $this->city->id,
+            'status' => 'published',
+            'published_at' => Carbon::now(),
+        ]);
+
+        $response = $this
+            ->actingAs($this->coach)
+            ->post(route('coach.workouts.cancel', $workout));
+
+        $response->assertForbidden();
+
+        $workout->refresh();
+        $this->assertEquals('published', $workout->status);
+    }
 }

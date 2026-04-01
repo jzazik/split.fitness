@@ -74,6 +74,7 @@ Route::middleware(['auth', 'role:coach', 'ensure.profile.completed'])->prefix('c
     Route::get('/workouts/{workout}/edit', [WorkoutController::class, 'edit'])->name('workouts.edit');
     Route::patch('/workouts/{workout}', [WorkoutController::class, 'update'])->name('workouts.update');
     Route::post('/workouts/{workout}/publish', [WorkoutController::class, 'publish'])->name('workouts.publish');
+    Route::post('/workouts/{workout}/cancel', [WorkoutController::class, 'cancel'])->name('workouts.cancel');
 });
 
 // Admin routes (stub for future)
