@@ -253,14 +253,14 @@ php artisan schedule:test
 - Modify: `app/Http/Controllers/Athlete/BookingsController.php`
 
 **Steps:**
-- [ ] В BookingsController добавить:
+- [x] В BookingsController добавить:
   - show(Booking $booking) → authorize (только свои брони)
-- [ ] Создать Show.vue:
+- [x] Создать Show.vue:
   - Детали тренировки, тренер, место, время
   - Статус оплаты, чек (если paid)
   - Кнопка "Отменить" (если условия позволяют)
-- [ ] Добавить роут: `GET /athlete/bookings/{booking}`
-- [ ] Mark completed
+- [x] Добавить роут: `GET /athlete/bookings/{booking}`
+- [x] Mark completed
 
 ---
 

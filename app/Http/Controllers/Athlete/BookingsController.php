@@ -45,4 +45,23 @@ class BookingsController extends Controller
             'cancelled' => $cancelled,
         ]);
     }
+
+    public function show(Booking $booking): Response
+    {
+        // Authorize: only the booking owner can view it
+        if ($booking->athlete_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to booking');
+        }
+
+        // Load all necessary relationships
+        $booking->load([
+            'workout.sport',
+            'workout.coach',
+            'workout.city',
+        ]);
+
+        return Inertia::render('Athlete/Bookings/Show', [
+            'booking' => $booking,
+        ]);
+    }
 }

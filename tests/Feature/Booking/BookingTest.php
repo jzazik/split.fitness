@@ -7,7 +7,10 @@ use App\Actions\Booking\ReserveSlotAction;
 use App\Events\BookingCreated;
 use App\Jobs\ExpirePendingBookingJob;
 use App\Listeners\NotifyCoachNewBooking;
+use App\Models\AthleteProfile;
 use App\Models\Booking;
+use App\Models\City;
+use App\Models\CoachProfile;
 use App\Models\User;
 use App\Models\Workout;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -416,5 +419,93 @@ class BookingTest extends TestCase
             BookingCreated::class,
             NotifyCoachNewBooking::class
         );
+    }
+
+    public function test_athlete_can_view_own_booking_details(): void
+    {
+        $athlete = User::factory()->athlete()->create();
+        AthleteProfile::factory()->create(['user_id' => $athlete->id]);
+
+        $workout = Workout::factory()->published()->create();
+        $booking = Booking::factory()->create([
+            'workout_id' => $workout->id,
+            'athlete_id' => $athlete->id,
+        ]);
+
+        $response = $this->actingAs($athlete)
+            ->get(route('athlete.bookings.show', $booking->id));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('Athlete/Bookings/Show')
+            ->has('booking')
+            ->where('booking.id', $booking->id)
+        );
+    }
+
+    public function test_athlete_cannot_view_other_athlete_booking(): void
+    {
+        $athlete1 = User::factory()->athlete()->create();
+        AthleteProfile::factory()->create(['user_id' => $athlete1->id]);
+
+        $athlete2 = User::factory()->athlete()->create();
+        AthleteProfile::factory()->create(['user_id' => $athlete2->id]);
+
+        $workout = Workout::factory()->published()->create();
+
+        $booking = Booking::factory()->create([
+            'workout_id' => $workout->id,
+            'athlete_id' => $athlete1->id,
+        ]);
+
+        $response = $this->actingAs($athlete2)
+            ->get(route('athlete.bookings.show', $booking->id));
+
+        $response->assertStatus(403);
+    }
+
+    public function test_booking_show_page_loads_all_relationships(): void
+    {
+        $athlete = User::factory()->athlete()->create();
+        AthleteProfile::factory()->create(['user_id' => $athlete->id]);
+
+        $workout = Workout::factory()->published()->create();
+        $booking = Booking::factory()->create([
+            'workout_id' => $workout->id,
+            'athlete_id' => $athlete->id,
+        ]);
+
+        $response = $this->actingAs($athlete)
+            ->get(route('athlete.bookings.show', $booking->id));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->has('booking.workout.sport')
+            ->has('booking.workout.coach')
+            ->has('booking.workout.city')
+        );
+    }
+
+    public function test_coach_cannot_view_athlete_booking(): void
+    {
+        $city = City::factory()->create();
+        $coach = User::factory()->coach()->create(['city_id' => $city->id]);
+        CoachProfile::factory()->create(['user_id' => $coach->id]);
+
+        $athlete = User::factory()->athlete()->create();
+        AthleteProfile::factory()->create(['user_id' => $athlete->id]);
+
+        $workout = Workout::factory()->published()->create();
+
+        $booking = Booking::factory()->create([
+            'workout_id' => $workout->id,
+            'athlete_id' => $athlete->id,
+        ]);
+
+        $response = $this->actingAs($coach)
+            ->get(route('athlete.bookings.show', $booking->id));
+
+        // Coach doesn't have access to athlete routes - will get middleware error
+        $response->assertStatus(403);
     }
 }

@@ -164,10 +164,11 @@ const cancelBooking = (bookingId) => {
                 </div>
 
                 <div v-else class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <div
+                    <Link
                         v-for="booking in currentBookings"
                         :key="booking.id"
-                        class="bg-white shadow-sm sm:rounded-lg overflow-hidden border border-gray-200 hover:border-primary-300 transition"
+                        :href="route('athlete.bookings.show', booking.id)"
+                        class="bg-white shadow-sm sm:rounded-lg overflow-hidden border border-gray-200 hover:border-primary-300 transition cursor-pointer block"
                     >
                         <div class="p-6">
                             <div class="flex items-start justify-between mb-4">
@@ -217,14 +218,14 @@ const cancelBooking = (bookingId) => {
 
                             <div v-if="canCancelBooking(booking)" class="mt-4 pt-4 border-t">
                                 <button
-                                    @click="cancelBooking(booking.id)"
+                                    @click.prevent="cancelBooking(booking.id)"
                                     class="w-full text-center text-sm text-red-600 hover:text-red-800 font-medium"
                                 >
                                     Отменить запись
                                 </button>
                             </div>
                         </div>
-                    </div>
+                    </Link>
                 </div>
             </div>
         </div>

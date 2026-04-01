@@ -54,6 +54,7 @@ Route::middleware('auth')->group(function () {
 // Athlete routes
 Route::middleware(['auth', 'role:athlete', 'ensure.profile.completed'])->prefix('athlete')->name('athlete.')->group(function () {
     Route::get('/bookings', [BookingsController::class, 'index'])->name('bookings');
+    Route::get('/bookings/{booking}', [BookingsController::class, 'show'])->name('bookings.show');
     Route::get('/profile', [AthleteProfileController::class, 'edit'])->name('profile');
     Route::patch('/profile', [AthleteProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/avatar', [AthleteProfileController::class, 'uploadAvatar'])->name('profile.uploadAvatar');
