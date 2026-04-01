@@ -138,16 +138,10 @@ const { user, fullName } = authStore;
                             Тренировки
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
-                            :href="route('profile.edit')"
-                            :active="route().current('profile.edit')"
-                        >
-                            Профиль
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
                             :href="route('coach.profile')"
                             :active="route().current('coach.profile')"
                         >
-                            Профиль тренера
+                            Профиль
                         </ResponsiveNavLink>
                     </div>
 
