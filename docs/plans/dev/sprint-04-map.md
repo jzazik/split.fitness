@@ -86,20 +86,20 @@ curl "http://localhost/api/workouts/map?city_id=1&sport_id=2"
 - Modify: `bootstrap/app.php`
 
 **Steps:**
-- [ ] Создать MapController:
+- [x] Создать MapController:
   - Method: index(Request $request)
   - Query: workouts where status=published AND starts_at>now()
   - Фильтры: city_id, sport_id, date_from, date_to
   - Опционально bbox: northEastLat/Lng, southWestLat/Lng (для viewport)
   - Eager load: sport, coach.user, city
   - Return: WorkoutMapResource::collection
-- [ ] Создать WorkoutMapResource (lightweight):
+- [x] Создать WorkoutMapResource (lightweight):
   - id, lat, lng, sport_name, starts_at
   - slot_price, slots_total, slots_booked
   - coach_name, coach_avatar_url, coach_rating
-- [ ] В `bootstrap/app.php` подключить API routes (`api: __DIR__.'/../routes/api.php'`)
-- [ ] Добавить роут: `GET /api/workouts/map`
-- [ ] Mark completed
+- [x] В `bootstrap/app.php` подключить API routes (`api: __DIR__.'/../routes/api.php'`)
+- [x] Добавить роут: `GET /api/workouts/map`
+- [x] Mark completed
 
 ---
 
