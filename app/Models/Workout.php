@@ -58,8 +58,8 @@ class Workout extends Model
             'published_at' => 'datetime',
             'cancelled_at' => 'datetime',
             'status' => 'string',
-            'lat' => 'decimal:8',
-            'lng' => 'decimal:8',
+            'lat' => 'float',
+            'lng' => 'float',
             'total_price' => 'decimal:2',
             'slot_price' => 'decimal:2',
         ];

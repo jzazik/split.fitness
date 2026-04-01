@@ -14,10 +14,22 @@ class WorkoutMapResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        // Validate coordinates are within valid ranges
+        $lat = $this->lat;
+        $lng = $this->lng;
+
+        if ($lat !== null && ($lat < -90 || $lat > 90)) {
+            $lat = null;
+        }
+
+        if ($lng !== null && ($lng < -180 || $lng > 180)) {
+            $lng = null;
+        }
+
         return [
             'id' => $this->id,
-            'lat' => $this->lat,
-            'lng' => $this->lng,
+            'lat' => $lat,
+            'lng' => $lng,
             'sport_name' => $this->sport?->name,
             'location_name' => $this->location_name,
             'address' => $this->address,
