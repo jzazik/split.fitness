@@ -239,10 +239,10 @@ php artisan schedule:test
 - Modify: `app/Http/Requests/CreateBookingRequest.php`
 
 **Steps:**
-- [ ] В CreateBookingRequest добавить rule:
+- [x] В CreateBookingRequest добавить rule:
   - Проверить: нет активной брони (pending_payment или paid) у этого атлета на этот workout
   - Если есть → ValidationException "Вы уже записаны"
-- [ ] Mark completed
+- [x] Mark completed
 
 ---
 
