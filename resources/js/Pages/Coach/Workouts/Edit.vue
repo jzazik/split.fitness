@@ -17,23 +17,12 @@ const { reverseGeocode, isLoading: isGeocodingLoading } = useMap();
 
 // Format starts_at to datetime-local format (YYYY-MM-DDTHH:MM)
 // Convert UTC datetime from DB to browser's local timezone for display
-// During SSR, use UTC to match initial render, client will update to local time on mount
 const formatDatetimeLocal = (datetime) => {
     if (!datetime) return '';
     const date = new Date(datetime);
 
-    // During SSR, use UTC components to avoid hydration mismatch
-    // After mount, Vue will update the input value to local time via onMounted
-    if (typeof window === 'undefined') {
-        const year = date.getUTCFullYear();
-        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-        const day = String(date.getUTCDate()).padStart(2, '0');
-        const hours = String(date.getUTCHours()).padStart(2, '0');
-        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-        return `${year}-${month}-${day}T${hours}:${minutes}`;
-    }
-
-    // On client, use local timezone components for datetime-local input
+    // Always use local timezone components for datetime-local input
+    // Both SSR and client use the same logic to prevent hydration mismatch
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -60,20 +49,6 @@ const form = useForm({
 const coordinates = ref({
     lat: props.workout.lat,
     lng: props.workout.lng,
-});
-
-// After hydration, update the datetime input to local timezone
-// This avoids hydration mismatch while still showing local time to users
-onMounted(() => {
-    if (props.workout.starts_at) {
-        const date = new Date(props.workout.starts_at);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        form.starts_at = `${year}-${month}-${day}T${hours}:${minutes}`;
-    }
 });
 
 // Calculate slot price preview
