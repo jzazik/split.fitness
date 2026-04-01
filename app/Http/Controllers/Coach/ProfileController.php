@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Coach\UpdateProfileRequest;
 use App\Models\City;
 use App\Models\Sport;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -81,6 +82,18 @@ class ProfileController extends Controller
             ]);
 
             $profile = $user->coachProfile;
+
+            if (! $profile) {
+                Log::warning('Coach profile was not auto-created, creating now', [
+                    'user_id' => $user->id,
+                    'role' => $user->role,
+                ]);
+
+                $profile = $user->coachProfile()->create([
+                    'moderation_status' => 'pending',
+                ]);
+            }
+
             $profile->update([
                 'bio' => $validated['bio'],
                 'experience_years' => $validated['experience_years'] ?? null,
@@ -99,7 +112,7 @@ class ProfileController extends Controller
         return redirect()->route('coach.profile')->with('success', 'Профиль обновлён');
     }
 
-    public function uploadAvatar(Request $request)
+    public function uploadAvatar(Request $request): JsonResponse|RedirectResponse
     {
         $request->validate([
             'avatar' => 'required|image|max:5120',
@@ -277,7 +290,7 @@ class ProfileController extends Controller
         }
 
         try {
-            $media = $user->coachProfile->getMedia('diplomas')->find($mediaId);
+            $media = $user->coachProfile->getMedia('diplomas')->firstWhere('id', $mediaId);
 
             if (! $media) {
                 return redirect()->route('coach.profile')
@@ -316,7 +329,7 @@ class ProfileController extends Controller
         }
 
         try {
-            $media = $user->coachProfile->getMedia('certificates')->find($mediaId);
+            $media = $user->coachProfile->getMedia('certificates')->firstWhere('id', $mediaId);
 
             if (! $media) {
                 return redirect()->route('coach.profile')

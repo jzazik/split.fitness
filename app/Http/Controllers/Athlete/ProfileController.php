@@ -52,11 +52,20 @@ class ProfileController extends Controller
                 'city_id' => $validated['city_id'] ?? null,
             ]);
 
-            if ($user->athleteProfile) {
-                $user->athleteProfile->update([
-                    'emergency_contact' => $validated['emergency_contact'] ?? null,
+            $profile = $user->athleteProfile;
+
+            if (! $profile) {
+                Log::warning('Athlete profile was not auto-created, creating now', [
+                    'user_id' => $user->id,
+                    'role' => $user->role,
                 ]);
+
+                $profile = $user->athleteProfile()->create([]);
             }
+
+            $profile->update([
+                'emergency_contact' => $validated['emergency_contact'] ?? null,
+            ]);
 
             Log::info('Athlete profile updated', [
                 'user_id' => $user->id,
