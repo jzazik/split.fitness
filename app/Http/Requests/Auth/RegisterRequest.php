@@ -26,7 +26,7 @@ class RegisterRequest extends FormRequest
         return [
             'role' => ['required', 'string', 'in:athlete,coach'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
-            'phone' => ['nullable', 'string', 'max:20', 'unique:users,phone'],
+            'phone' => ['nullable', 'string', 'regex:/^\+?[0-9\s\-\(\)]+$/', 'max:20', 'unique:users,phone'],
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'password' => ['required', 'confirmed', Password::defaults()],
@@ -48,6 +48,7 @@ class RegisterRequest extends FormRequest
             'email.required' => 'Введите email',
             'email.email' => 'Введите корректный email',
             'email.unique' => 'Этот email уже зарегистрирован',
+            'phone.regex' => 'Введите корректный номер телефона',
             'phone.unique' => 'Этот телефон уже зарегистрирован',
             'password.required' => 'Введите пароль',
             'password.confirmed' => 'Пароли не совпадают',

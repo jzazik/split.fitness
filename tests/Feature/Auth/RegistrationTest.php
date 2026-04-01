@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -110,5 +111,46 @@ class RegistrationTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors('last_name');
+    }
+
+    public function test_phone_must_be_unique(): void
+    {
+        // Create first user with phone directly in database
+        User::create([
+            'role' => 'athlete',
+            'first_name' => 'First',
+            'last_name' => 'User',
+            'email' => 'first@example.com',
+            'phone' => '+7 (999) 123-45-67',
+            'password' => bcrypt('password'),
+        ]);
+
+        // Attempt to register second user with same phone
+        $response = $this->post('/register', [
+            'role' => 'coach',
+            'first_name' => 'Second',
+            'last_name' => 'User',
+            'email' => 'second@example.com',
+            'phone' => '+7 (999) 123-45-67',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $response->assertSessionHasErrors('phone');
+    }
+
+    public function test_phone_must_be_valid_format(): void
+    {
+        $response = $this->post('/register', [
+            'role' => 'athlete',
+            'first_name' => 'Test',
+            'last_name' => 'User',
+            'email' => 'test@example.com',
+            'phone' => 'invalid-phone-abc',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $response->assertSessionHasErrors('phone');
     }
 }
