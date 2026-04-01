@@ -63,6 +63,7 @@ Route::middleware(['auth', 'role:coach', 'ensure.profile.completed'])->prefix('c
     Route::delete('/profile/diploma/{mediaId}', [CoachProfileController::class, 'deleteDiploma'])->name('profile.deleteDiploma');
     Route::post('/profile/certificate', [CoachProfileController::class, 'uploadCertificate'])->name('profile.uploadCertificate');
     Route::delete('/profile/certificate/{mediaId}', [CoachProfileController::class, 'deleteCertificate'])->name('profile.deleteCertificate');
+    Route::post('/profile/resubmit', [CoachProfileController::class, 'resubmit'])->name('profile.resubmit');
     Route::get('/payments', [PaymentsController::class, 'index'])->name('payments');
 });
 

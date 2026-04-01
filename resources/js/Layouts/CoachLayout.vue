@@ -1,17 +1,22 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
+import { usePage } from '@inertiajs/vue3';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
+import ModerationBadge from '@/Components/UI/ModerationBadge.vue';
 import { Link } from '@inertiajs/vue3';
 import { useAuthStore } from '@/stores/auth';
 
 const showingNavigationDropdown = ref(false);
 const authStore = useAuthStore();
 const { user, fullName } = storeToRefs(authStore);
+
+const page = usePage();
+const coachProfile = computed(() => page.props.auth?.coachProfile || null);
 </script>
 
 <template>
@@ -53,6 +58,11 @@ const { user, fullName } = storeToRefs(authStore);
                         </div>
 
                         <div class="hidden sm:ms-6 sm:flex sm:items-center">
+                            <!-- Moderation Badge -->
+                            <div v-if="coachProfile" class="me-4">
+                                <ModerationBadge :status="coachProfile.moderation_status" />
+                            </div>
+
                             <!-- Settings Dropdown -->
                             <div class="relative ms-3">
                                 <Dropdown align="right" width="48">
@@ -163,6 +173,9 @@ const { user, fullName } = storeToRefs(authStore);
                             </div>
                             <div class="text-sm font-medium text-gray-500">
                                 {{ user?.email }}
+                            </div>
+                            <div v-if="coachProfile" class="mt-2">
+                                <ModerationBadge :status="coachProfile.moderation_status" />
                             </div>
                         </div>
 

@@ -310,15 +310,15 @@ php artisan tinker
 - Modify: `resources/js/Pages/Coach/Dashboard.vue`
 
 **Steps:**
-- [ ] В CoachLayout добавить badge под аватаром:
+- [x] В CoachLayout добавить badge под аватаром:
   - "На модерации" (pending) — жёлтый badge
   - "Одобрен" (approved) — зелёный badge
   - "Отклонён" (rejected) — красный badge с иконкой info
-- [ ] На Dashboard.vue показать сообщение если pending:
+- [x] На Dashboard.vue показать сообщение если pending:
   - "Ваш профиль на проверке. Вы сможете публиковать тренировки после одобрения администратором."
-- [ ] Если rejected — показать причину отклонения (если админ указал)
-- [ ] Кнопка "Отправить на повторную модерацию" (если rejected)
-- [ ] Mark completed
+- [x] Если rejected — показать причину отклонения (если админ указал)
+- [x] Кнопка "Отправить на повторную модерацию" (если rejected)
+- [x] Mark completed
 
 ---
 

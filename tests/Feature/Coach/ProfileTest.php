@@ -347,4 +347,103 @@ class ProfileTest extends TestCase
 
         $response->assertSessionHasErrors('diplomas.0');
     }
+
+    public function test_coach_can_resubmit_rejected_profile(): void
+    {
+        $coach = User::factory()->coach()->create();
+        $coachProfile = CoachProfile::factory()->create([
+            'user_id' => $coach->id,
+            'moderation_status' => 'rejected',
+            'rejection_reason' => 'Некорректные данные в профиле',
+        ]);
+
+        $response = $this
+            ->actingAs($coach)
+            ->post(route('coach.profile.resubmit'));
+
+        $response->assertRedirect(route('coach.dashboard'));
+        $response->assertSessionHas('success');
+
+        $coachProfile->refresh();
+        $this->assertEquals('pending', $coachProfile->moderation_status);
+        $this->assertNull($coachProfile->rejection_reason);
+    }
+
+    public function test_coach_cannot_resubmit_pending_profile(): void
+    {
+        $coach = User::factory()->coach()->create();
+        CoachProfile::factory()->create([
+            'user_id' => $coach->id,
+            'moderation_status' => 'pending',
+        ]);
+
+        $response = $this
+            ->actingAs($coach)
+            ->post(route('coach.profile.resubmit'));
+
+        $response->assertRedirect(route('coach.dashboard'));
+        $response->assertSessionHasErrors('profile');
+    }
+
+    public function test_coach_cannot_resubmit_approved_profile(): void
+    {
+        $coach = User::factory()->coach()->create();
+        CoachProfile::factory()->create([
+            'user_id' => $coach->id,
+            'moderation_status' => 'approved',
+        ]);
+
+        $response = $this
+            ->actingAs($coach)
+            ->post(route('coach.profile.resubmit'));
+
+        $response->assertRedirect(route('coach.dashboard'));
+        $response->assertSessionHasErrors('profile');
+    }
+
+    public function test_moderation_status_shared_with_coach_in_inertia(): void
+    {
+        $city = City::factory()->create();
+        $sport = Sport::factory()->create(['is_active' => true]);
+        $coach = User::factory()->coach()->create(['city_id' => $city->id]);
+        $coachProfile = CoachProfile::factory()->create([
+            'user_id' => $coach->id,
+            'bio' => 'Опытный тренер',
+            'moderation_status' => 'pending',
+        ]);
+        $coachProfile->sports()->attach($sport->id);
+
+        $response = $this
+            ->actingAs($coach)
+            ->get(route('coach.dashboard'));
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->where('auth.coachProfile.moderation_status', 'pending')
+        );
+    }
+
+    public function test_rejection_reason_shared_with_coach_when_rejected(): void
+    {
+        $city = City::factory()->create();
+        $sport = Sport::factory()->create(['is_active' => true]);
+        $coach = User::factory()->coach()->create(['city_id' => $city->id]);
+        $coachProfile = CoachProfile::factory()->create([
+            'user_id' => $coach->id,
+            'bio' => 'Опытный тренер',
+            'moderation_status' => 'rejected',
+            'rejection_reason' => 'Недостаточно данных',
+        ]);
+        $coachProfile->sports()->attach($sport->id);
+
+        $response = $this
+            ->actingAs($coach)
+            ->get(route('coach.dashboard'));
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->where('auth.coachProfile.moderation_status', 'rejected')
+            ->where('auth.coachProfile.rejection_reason', 'Недостаточно данных')
+        );
+    }
 }

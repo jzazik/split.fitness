@@ -19,6 +19,7 @@ class CoachProfile extends Model implements HasMedia
         'rating_avg',
         'rating_count',
         'moderation_status',
+        'rejection_reason',
         'is_public',
     ];
 

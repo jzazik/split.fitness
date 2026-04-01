@@ -307,4 +307,35 @@ class ProfileController extends Controller
                 ->withErrors(['certificate' => 'Не удалось удалить справку.']);
         }
     }
+
+    public function resubmit(): RedirectResponse
+    {
+        $user = auth()->user();
+        $profile = $user->coachProfile;
+
+        if (!$profile) {
+            return redirect()->route('coach.dashboard')
+                ->withErrors(['profile' => 'Профиль не найден.']);
+        }
+
+        if ($profile->moderation_status !== 'rejected') {
+            return redirect()->route('coach.dashboard')
+                ->withErrors(['profile' => 'Профиль не был отклонён.']);
+        }
+
+        $profile->update([
+            'moderation_status' => 'pending',
+            'rejection_reason' => null,
+        ]);
+
+        Log::info('Coach profile resubmitted for moderation', [
+            'user_id' => $user->id,
+            'role' => $user->role,
+            'profile_type' => 'coach',
+            'moderation_status' => 'pending',
+        ]);
+
+        return redirect()->route('coach.dashboard')
+            ->with('success', 'Профиль отправлен на повторную проверку.');
+    }
 }
