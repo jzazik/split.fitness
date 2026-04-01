@@ -105,7 +105,7 @@ class WorkoutTest extends TestCase
             'coach_id' => $this->coach->id,
             'sport_id' => $this->sport->id,
             'city_id' => $this->city->id,
-            'location_name' => 'Парк Горького',
+            'location_name' => 'Парк Горького в центре',
             'status' => 'draft',
             'slots_total' => 3,
             'slots_booked' => 0,
