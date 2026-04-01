@@ -185,7 +185,7 @@ php artisan schedule:test
 - Modify: `routes/console.php`
 
 **Steps:**
-- [ ] Создать ExpirePendingBookingJob:
+- [x] Создать ExpirePendingBookingJob:
   - Query: bookings where status=pending_payment AND created_at < now() - 15 minutes
   - Для каждой:
     - DB::transaction
@@ -193,9 +193,9 @@ php artisan schedule:test
     - booking->update(['status' => 'expired'])
     - workout->decrement('slots_booked', booking->slots_count)
     - commit
-- [ ] В `routes/console.php` добавить schedule:
+- [x] В `routes/console.php` добавить schedule:
   - `$schedule->job(ExpirePendingBookingJob::class)->everyMinute();`
-- [ ] Mark completed
+- [x] Mark completed
 
 ---
 
