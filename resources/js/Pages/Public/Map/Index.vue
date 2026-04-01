@@ -261,6 +261,11 @@ onBeforeUnmount(() => {
 let debouncedLoadWorkouts = null;
 
 const initMap = () => {
+  // Guard: bail if component is unmounted or map container not available
+  if (!isMounted || !mapContainer.value) {
+    return;
+  }
+
   // Determine initial map center
   let initialCenter = [55.7558, 37.6173]; // Default: Moscow
   let initialZoom = 11;

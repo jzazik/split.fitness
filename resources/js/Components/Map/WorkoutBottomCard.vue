@@ -196,12 +196,15 @@ const handleBooking = () => {
 };
 
 const getInitials = (name) => {
-  if (!name) return '??';
-  const parts = name.split(' ');
-  if (parts.length >= 2) {
-    return parts[0][0] + parts[1][0];
+  if (!name || !name.trim()) return '??';
+  const parts = name.trim().split(' ').filter(part => part.length > 0);
+  if (parts.length >= 2 && parts[0].length > 0 && parts[1].length > 0) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
   }
-  return name.substring(0, 2).toUpperCase();
+  if (parts.length > 0 && parts[0].length >= 2) {
+    return parts[0].substring(0, 2).toUpperCase();
+  }
+  return '??';
 };
 
 const formatDate = (dateString) => {

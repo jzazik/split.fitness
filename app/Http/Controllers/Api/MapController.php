@@ -49,14 +49,12 @@ class MapController extends Controller
 
         // Filter by date range
         if ($request->filled('date_from')) {
-            $query->where('starts_at', '>=', Carbon::parse($validated['date_from'])
-                ->timezone(config('app.timezone'))
+            $query->where('starts_at', '>=', Carbon::parse($validated['date_from'], config('app.timezone'))
                 ->startOfDay());
         }
 
         if ($request->filled('date_to')) {
-            $query->where('starts_at', '<=', Carbon::parse($validated['date_to'])
-                ->timezone(config('app.timezone'))
+            $query->where('starts_at', '<=', Carbon::parse($validated['date_to'], config('app.timezone'))
                 ->endOfDay());
         }
 
