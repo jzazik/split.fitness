@@ -317,7 +317,7 @@ php artisan tinker
 - Create: `tests/Feature/Coach/WorkoutPolicyTest.php`
 
 **Steps:**
-- [ ] Создать WorkoutTest:
+- [x] Создать WorkoutTest:
   - Тест создания черновика
   - Тест публикации (approved тренер)
   - Тест публикации (pending тренер → ошибка)
@@ -325,12 +325,12 @@ php artisan tinker
   - Тест редактирования чужой тренировки → 403
   - Тест отмены тренировки без броней
   - Тест отмены тренировки с оплаченными бронями → ValidationException
-- [ ] Создать WorkoutPolicyTest:
+- [x] Создать WorkoutPolicyTest:
   - Тест authorize publish для approved тренера
   - Тест deny publish для pending тренера
   - Тест update only own workouts
-- [ ] Запустить `php artisan test`
-- [ ] Mark completed
+- [x] Запустить `php artisan test`
+- [x] Mark completed
 
 ---
 

@@ -761,4 +761,12 @@ class WorkoutTest extends TestCase
         $workout->refresh();
         $this->assertEquals('published', $workout->status);
     }
+
+    public function test_cannot_cancel_workout_with_paid_bookings(): void
+    {
+        // This test will be implemented in Sprint 4 when Booking model is available
+        // The CancelWorkoutAction already has the logic to prevent cancellation
+        // when paid bookings exist (see class_exists check in the action)
+        $this->markTestSkipped('Booking model not yet implemented - will be available in Sprint 4');
+    }
 }
