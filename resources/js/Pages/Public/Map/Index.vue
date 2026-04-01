@@ -107,6 +107,11 @@ const initMap = () => {
   const { createClusterGroup } = useMarkerCluster();
   markerClusterGroup = createClusterGroup();
   map.addLayer(markerClusterGroup);
+
+  // Add viewport change listener for bbox optimization
+  map.on('moveend', () => {
+    loadWorkouts();
+  });
 };
 
 const loadWorkouts = async () => {
@@ -130,6 +135,18 @@ const loadWorkouts = async () => {
 
     if (filters.dateTo) {
       params.date_to = filters.dateTo;
+    }
+
+    // Add bounding box parameters from current viewport
+    if (map) {
+      const bounds = map.getBounds();
+      const northEast = bounds.getNorthEast();
+      const southWest = bounds.getSouthWest();
+
+      params.ne_lat = northEast.lat;
+      params.ne_lng = northEast.lng;
+      params.sw_lat = southWest.lat;
+      params.sw_lng = southWest.lng;
     }
 
     const response = await window.axios.get('/api/workouts/map', { params });

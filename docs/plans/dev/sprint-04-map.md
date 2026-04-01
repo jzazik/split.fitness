@@ -186,15 +186,15 @@ curl "http://localhost/api/workouts/map?city_id=1&sport_id=2"
 - Modify: `resources/js/Pages/Public/Map/Index.vue`
 
 **Steps:**
-- [ ] В MapController:
+- [x] В MapController:
   - Принимать параметры bbox (ne_lat, ne_lng, sw_lat, sw_lng)
   - Фильтровать: WHERE lat BETWEEN sw_lat AND ne_lat AND lng BETWEEN sw_lng AND ne_lng
-- [ ] Во фронте Index.vue:
+- [x] Во фронте Index.vue:
   - При moveend карты → получить viewport bounds
   - Отправить bbox в API запросе
   - Обновить маркеры
-- [ ] Limit результатов (max 200 workouts per request)
-- [ ] Mark completed
+- [x] Limit результатов (max 200 workouts per request)
+- [x] Mark completed
 
 ---
 
