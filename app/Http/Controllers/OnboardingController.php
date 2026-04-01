@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\City;
 use App\Models\Sport;
+use App\Traits\ChecksProfileCompletion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,8 @@ use Inertia\Response;
 
 class OnboardingController extends Controller
 {
+    use ChecksProfileCompletion;
+
     public function show(): Response
     {
         $user = auth()->user();
@@ -214,36 +217,5 @@ class OnboardingController extends Controller
                 ->withInput()
                 ->withErrors(['error' => 'Не удалось сохранить профиль. Пожалуйста, попробуйте снова.']);
         }
-    }
-
-    /**
-     * Check if the user's profile is completed.
-     */
-    protected function isProfileCompleted($user): bool
-    {
-        if ($user->isCoach()) {
-            $profile = $user->loadMissing('coachProfile.sports')->coachProfile;
-
-            if (! $profile) {
-                return false;
-            }
-
-            return ! empty($profile->bio)
-                && strlen($profile->bio) >= 10
-                && $profile->sports->count() > 0
-                && ! empty($user->city_id);
-        }
-
-        if ($user->isAthlete()) {
-            $profile = $user->athleteProfile;
-
-            if (! $profile) {
-                return false;
-            }
-
-            return ! empty($user->first_name) && ! empty($user->last_name);
-        }
-
-        return true;
     }
 }
