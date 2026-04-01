@@ -6,8 +6,6 @@ import { ref } from 'vue';
 export function useMap() {
   const isLoading = ref(false);
   const error = ref(null);
-
-  // Debounce helper to prevent excessive API calls
   let debounceTimer = null;
 
   /**

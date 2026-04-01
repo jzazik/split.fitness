@@ -262,12 +262,12 @@ class WorkoutController extends Controller
                 // Prevent changing core fields if workout has bookings
                 if ($workout->slots_booked > 0) {
                     $coreFieldsChanged = (
-                        $workout->lat != $validated['lat'] ||
-                        $workout->lng != $validated['lng'] ||
+                        bccomp((string) $workout->lat, (string) $validated['lat'], 8) !== 0 ||
+                        bccomp((string) $workout->lng, (string) $validated['lng'], 8) !== 0 ||
                         $workout->starts_at->toDateTimeString() != Carbon::parse($validated['starts_at'])->toDateTimeString() ||
                         $workout->duration_minutes != $validated['duration_minutes'] ||
-                        $workout->total_price != $validated['total_price'] ||
-                        $workout->slot_price != $calculateSlotPrice->execute($validated['total_price'], $validated['slots_total'])
+                        bccomp((string) $workout->total_price, (string) $validated['total_price'], 2) !== 0 ||
+                        bccomp((string) $workout->slot_price, (string) $calculateSlotPrice->execute($validated['total_price'], $validated['slots_total']), 2) !== 0
                     );
 
                     if ($coreFieldsChanged) {
