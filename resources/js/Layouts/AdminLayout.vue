@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import { storeToRefs } from 'pinia';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
@@ -10,7 +11,7 @@ import { useAuthStore } from '@/stores/auth';
 
 const showingNavigationDropdown = ref(false);
 const authStore = useAuthStore();
-const { user, fullName } = authStore;
+const { user, fullName } = storeToRefs(authStore);
 </script>
 
 <template>
@@ -23,7 +24,7 @@ const { user, fullName } = authStore;
                         <div class="flex">
                             <!-- Logo -->
                             <div class="flex shrink-0 items-center">
-                                <Link :href="route('dashboard')">
+                                <Link :href="route('admin.dashboard')">
                                     <ApplicationLogo class="block h-9 w-auto fill-current text-gray-800" />
                                 </Link>
                             </div>
@@ -31,8 +32,8 @@ const { user, fullName } = authStore;
                             <!-- Navigation Links -->
                             <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink
-                                    :href="route('dashboard')"
-                                    :active="route().current('dashboard')"
+                                    :href="route('admin.dashboard')"
+                                    :active="route().current('admin.dashboard')"
                                 >
                                     Панель управления
                                 </NavLink>
@@ -126,8 +127,8 @@ const { user, fullName } = authStore;
                 >
                     <div class="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink
-                            :href="route('dashboard')"
-                            :active="route().current('dashboard')"
+                            :href="route('admin.dashboard')"
+                            :active="route().current('admin.dashboard')"
                         >
                             Панель управления
                         </ResponsiveNavLink>

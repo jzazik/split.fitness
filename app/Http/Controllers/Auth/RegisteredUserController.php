@@ -36,6 +36,7 @@ class RegisteredUserController extends Controller
             'last_name' => $validated['last_name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? null,
+            'city_id' => $validated['city_id'] ?? null,
             'password' => Hash::make($validated['password']),
         ]);
 
@@ -59,6 +60,8 @@ class RegisteredUserController extends Controller
         $redirectRoute = match ($user->role) {
             'athlete' => 'athlete.bookings',
             'coach' => 'coach.dashboard',
+            'admin' => 'admin.dashboard',
+            default => 'dashboard',
         };
 
         return redirect()->route($redirectRoute);

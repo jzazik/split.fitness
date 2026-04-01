@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import { storeToRefs } from 'pinia';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
@@ -10,7 +11,7 @@ import { useAuthStore } from '@/stores/auth';
 
 const showingNavigationDropdown = ref(false);
 const authStore = useAuthStore();
-const { user, fullName } = authStore;
+const { user, fullName } = storeToRefs(authStore);
 </script>
 
 <template>
