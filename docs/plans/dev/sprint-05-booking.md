@@ -206,15 +206,15 @@ php artisan schedule:test
 - Create: `tests/Feature/Booking/BookingTest.php`
 
 **Steps:**
-- [ ] Создать OversellTest:
+- [x] Создать OversellTest:
   - Тест: workout с 1 местом, создать 2 брони параллельно → вторая ошибка
   - Тест: DB isolation levels работают
-- [ ] Создать BookingTest:
+- [x] Создать BookingTest:
   - Тест создания брони
   - Тест валидации (повторная запись)
   - Тест истечения (created_at - 20 minutes → job → expired)
-- [ ] Запустить тесты
-- [ ] Mark completed
+- [x] Запустить тесты
+- [x] Mark completed
 
 ---
 
