@@ -165,17 +165,17 @@ curl "http://localhost/api/workouts/map?city_id=1&sport_id=2"
 - Modify: `resources/js/Pages/Public/Map/Index.vue`
 
 **Steps:**
-- [ ] Создать WorkoutBottomCard.vue:
+- [x] Создать WorkoutBottomCard.vue:
   - Слайд-ап панель (Headless UI Transition)
   - Показывать: фото тренера, имя, рейтинг
   - Место, спорт (badge), время начала, длительность
   - Цена слота, "осталось X мест"
   - Кнопка "Записаться" → если не auth → редирект на /login
   - Кнопка закрытия (X)
-- [ ] В Index.vue:
+- [x] В Index.vue:
   - При клике на маркер → открыть bottom card с данными тренировки
   - Передать выбранную тренировку в WorkoutBottomCard
-- [ ] Mark completed
+- [x] Mark completed
 
 ---
 

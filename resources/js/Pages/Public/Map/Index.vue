@@ -24,6 +24,13 @@
           <p class="mt-2 text-sm text-gray-600">Загрузка тренировок...</p>
         </div>
       </div>
+
+      <!-- Workout Bottom Card -->
+      <WorkoutBottomCard
+        :workout="selectedWorkout"
+        :is-open="!!selectedWorkout"
+        @close="closeWorkoutCard"
+      />
     </div>
   </PublicLayout>
 </template>
@@ -33,6 +40,7 @@ import { ref, reactive, onMounted, onBeforeUnmount } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import PublicLayout from '@/Layouts/PublicLayout.vue';
 import MapFilters from '@/Components/Map/MapFilters.vue';
+import WorkoutBottomCard from '@/Components/Map/WorkoutBottomCard.vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useMarkerCluster } from '@/composables/useMarkerCluster';
@@ -48,11 +56,10 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['workout-selected']);
-
 const mapContainer = ref(null);
 const loading = ref(false);
 const workouts = ref([]);
+const selectedWorkout = ref(null);
 let map = null;
 let markerClusterGroup = null;
 
@@ -181,11 +188,15 @@ const addWorkoutMarker = (workout) => {
 
   // Handle marker click
   marker.on('click', () => {
-    emit('workout-selected', workout.id);
+    selectedWorkout.value = workout;
   });
 
   // Add marker to cluster group
   markerClusterGroup.addLayer(marker);
+};
+
+const closeWorkoutCard = () => {
+  selectedWorkout.value = null;
 };
 </script>
 
