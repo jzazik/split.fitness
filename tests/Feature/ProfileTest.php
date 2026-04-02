@@ -2,7 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Booking;
+use App\Models\CoachProfile;
 use App\Models\User;
+use App\Models\Workout;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -98,5 +101,42 @@ class ProfileTest extends TestCase
             ->assertRedirect('/profile');
 
         $this->assertNotNull($user->fresh());
+    }
+
+    public function test_athlete_cannot_delete_account_with_bookings(): void
+    {
+        $athlete = User::factory()->athlete()->create();
+        $coach = User::factory()->coach()->create();
+
+        CoachProfile::factory()->create([
+            'user_id' => $coach->id,
+            'moderation_status' => 'approved',
+        ]);
+
+        $workout = Workout::factory()->create([
+            'coach_id' => $coach->id,
+            'status' => 'published',
+        ]);
+
+        // Create a booking
+        Booking::factory()->create([
+            'workout_id' => $workout->id,
+            'athlete_id' => $athlete->id,
+        ]);
+
+        $response = $this
+            ->actingAs($athlete)
+            ->from('/profile')
+            ->delete('/profile', [
+                'password' => 'password',
+            ]);
+
+        $response
+            ->assertSessionHasErrors('account_deletion')
+            ->assertRedirect('/profile');
+
+        // User should still be authenticated and not deleted
+        $this->assertAuthenticated();
+        $this->assertNotNull($athlete->fresh());
     }
 }

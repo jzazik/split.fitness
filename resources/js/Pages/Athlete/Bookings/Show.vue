@@ -171,8 +171,8 @@ const cancelBooking = () => {
                                     <div>
                                         <p>{{ booking.workout.location_name }}</p>
                                         <p class="text-sm text-gray-600">{{ booking.workout.city?.name }}</p>
-                                        <p v-if="booking.workout.location_address" class="text-sm text-gray-600">
-                                            {{ booking.workout.location_address }}
+                                        <p v-if="booking.workout.address" class="text-sm text-gray-600">
+                                            {{ booking.workout.address }}
                                         </p>
                                     </div>
                                 </div>

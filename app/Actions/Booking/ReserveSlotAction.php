@@ -16,8 +16,8 @@ class ReserveSlotAction
      */
     public function execute(Workout $workout, int $slotsCount = 1, ?string $transactionId = null): void
     {
-        $workout->lockForUpdate();
-        $workout->refresh();
+        // Re-fetch the workout with a pessimistic lock to prevent race conditions
+        $workout = Workout::where('id', $workout->id)->lockForUpdate()->first();
 
         $slotsBefore = $workout->slots_booked;
         $slotsAfter = $slotsBefore + $slotsCount;

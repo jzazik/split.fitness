@@ -86,6 +86,7 @@ const closeModal = () => {
                     />
 
                     <InputError :message="form.errors.password" class="mt-2" />
+                    <InputError :message="form.errors.account_deletion" class="mt-2" />
                 </div>
 
                 <div class="mt-6 flex justify-end">

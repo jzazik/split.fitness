@@ -9,6 +9,13 @@ use Illuminate\Support\Facades\Log;
 class NotifyCoachNewBooking implements ShouldQueue
 {
     /**
+     * Indicates if the job should wait until database transactions have committed.
+     *
+     * @var bool
+     */
+    public $afterCommit = true;
+
+    /**
      * Handle the event.
      */
     public function handle(BookingCreated $event): void

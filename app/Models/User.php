@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -113,6 +114,22 @@ class User extends Authenticatable implements HasMedia
     public function athleteProfile(): HasOne
     {
         return $this->hasOne(AthleteProfile::class);
+    }
+
+    /**
+     * Get the bookings for the athlete.
+     */
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class, 'athlete_id');
+    }
+
+    /**
+     * Get the workouts created by the coach.
+     */
+    public function workouts(): HasMany
+    {
+        return $this->hasMany(Workout::class, 'coach_id');
     }
 
     /**

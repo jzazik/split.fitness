@@ -114,4 +114,57 @@ class AuthenticationTest extends TestCase
         // Should redirect to the originally requested URL
         $response->assertRedirect(route('athlete.bookings', absolute: false));
     }
+
+    public function test_login_accepts_local_redirect_parameter(): void
+    {
+        $user = User::factory()->athlete()->create();
+
+        // Visit login page with local redirect parameter
+        $this->get('/login?redirect=/athlete/bookings');
+
+        // Now login
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect('/athlete/bookings');
+    }
+
+    public function test_login_rejects_absolute_url_redirect_parameter(): void
+    {
+        $user = User::factory()->athlete()->create();
+
+        // Try to use an absolute URL as redirect
+        $this->get('/login?redirect=https://attacker.example');
+
+        // Now login
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        // Should redirect to role default, not the absolute URL
+        $response->assertRedirect(route('athlete.bookings', absolute: false));
+    }
+
+    public function test_login_rejects_protocol_relative_redirect_parameter(): void
+    {
+        $user = User::factory()->athlete()->create();
+
+        // Try to use a protocol-relative URL as redirect
+        $this->get('/login?redirect=//attacker.example');
+
+        // Now login
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        // Should redirect to role default, not the protocol-relative URL
+        $response->assertRedirect(route('athlete.bookings', absolute: false));
+    }
 }

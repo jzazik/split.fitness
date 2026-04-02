@@ -58,6 +58,16 @@ class CreateBookingRequest extends FormRequest
                 $validator->errors()->add('workout_id', 'Тренировка уже началась или завершилась');
             }
 
+            // Check for duplicate booking (also checked in action for TOCTOU protection)
+            $existingBooking = Booking::where('workout_id', $workoutId)
+                ->where('athlete_id', $this->user()->id)
+                ->whereIn('status', ['pending_payment', 'paid'])
+                ->exists();
+
+            if ($existingBooking) {
+                $validator->errors()->add('workout_id', 'Вы уже записаны на эту тренировку');
+            }
+
             // Check if requested slots fit available capacity
             $slotsCount = (int) $this->input('slots_count', 1);
             $availableSlots = $workout->slots_total - $workout->slots_booked;
@@ -65,8 +75,8 @@ class CreateBookingRequest extends FormRequest
                 $validator->errors()->add('slots_count', "Недостаточно свободных мест. Доступно: {$availableSlots}");
             }
 
-            // Note: Duplicate booking check moved to CreateBookingAction within transaction
-            // to prevent TOCTOU race condition
+            // Note: Critical checks are also performed in CreateBookingAction within transaction
+            // for final TOCTOU protection
         });
     }
 

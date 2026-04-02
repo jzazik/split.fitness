@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -53,7 +54,27 @@ class ProfileController extends Controller
 
         Auth::logout();
 
-        $user->delete();
+        try {
+            $user->delete();
+        } catch (QueryException $e) {
+            // Handle foreign key constraint violation gracefully
+            if ($e->getCode() === '23000') {
+                $errorMessage = match ($user->role) {
+                    'athlete' => 'Невозможно удалить аккаунт. У вас есть активные или прошлые записи на тренировки. Пожалуйста, свяжитесь с поддержкой для удаления аккаунта.',
+                    'coach' => 'Невозможно удалить аккаунт. У вас есть тренировки с записями атлетов. Пожалуйста, свяжитесь с поддержкой для удаления аккаунта.',
+                    default => 'Невозможно удалить аккаунт. Пожалуйста, свяжитесь с поддержкой.',
+                };
+
+                // Re-authenticate the user since we logged them out
+                Auth::login($user);
+
+                return Redirect::route('profile.edit')->withErrors([
+                    'account_deletion' => $errorMessage,
+                ]);
+            }
+
+            throw $e;
+        }
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
