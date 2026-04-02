@@ -19,8 +19,18 @@
       </button>
       <div class="bg-white rounded-2xl shadow-xl relative overflow-hidden">
 
-        <!-- Compact preview (always visible) -->
-        <div class="p-4">
+        <!-- Compact preview: condensed single-line when input form is shown on mobile -->
+        <div v-if="showsInputForm" class="px-4 py-3 flex items-center gap-3">
+          <p class="text-sm font-medium text-gray-900 truncate flex-1">
+            {{ workout.sport_name }} · {{ workout.location_name }}
+          </p>
+          <p class="text-sm font-bold text-primary-600 whitespace-nowrap shrink-0">
+            {{ formatPrice(workout.slot_price) }} ₽
+          </p>
+        </div>
+
+        <!-- Compact preview: full card when not in input mode -->
+        <div v-else class="p-4">
           <div class="flex gap-3">
             <!-- Coach avatar with rating -->
             <div class="flex flex-col items-center shrink-0">
@@ -108,26 +118,28 @@
         <!-- Expanded booking section -->
         <Transition name="expand">
           <div v-if="expanded" class="overflow-hidden">
-            <div class="border-t border-gray-100 px-4 pb-4 pt-3">
-              <!-- Extended info -->
-              <div class="flex items-center gap-4 text-sm text-gray-600 mb-4">
-                <div class="flex items-center gap-1.5">
-                  <svg class="size-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-                  </svg>
-                  <span>{{ workoutDate }}</span>
+            <div class="px-4 pb-4" :class="showsInputForm ? 'pt-0' : 'border-t border-gray-100 pt-3'">
+              <!-- Extended info (hidden when input form is shown on mobile) -->
+              <template v-if="!showsInputForm">
+                <div class="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                  <div class="flex items-center gap-1.5">
+                    <svg class="size-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                    </svg>
+                    <span>{{ workoutDate }}</span>
+                  </div>
+                  <div v-if="workout.coach_name" class="flex items-center gap-1.5">
+                    <svg class="size-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                    </svg>
+                    <span>{{ workout.coach_name }}</span>
+                  </div>
                 </div>
-                <div v-if="workout.coach_name" class="flex items-center gap-1.5">
-                  <svg class="size-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                  </svg>
-                  <span>{{ workout.coach_name }}</span>
-                </div>
-              </div>
 
-              <p v-if="workout.description" class="text-sm text-gray-500 mb-4 line-clamp-2">
-                {{ workout.description }}
-              </p>
+                <p v-if="workout.description" class="text-sm text-gray-500 mb-4 line-clamp-2">
+                  {{ workout.description }}
+                </p>
+              </template>
 
               <!-- Guest: inline SMS auth flow -->
               <div v-if="!isAuthenticated">

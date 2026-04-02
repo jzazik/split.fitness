@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'smscru' => [
+        'login' => env('SMSCRU_LOGIN'),
+        'password' => env('SMSCRU_PASSWORD'),
+        'sender' => env('SMSCRU_SENDER'),
+        'force' => env('SMSCRU_FORCE', false),
+    ],
+
 ];
