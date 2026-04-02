@@ -12,6 +12,23 @@ use App\Http\Controllers\PublicMapController;
 use Illuminate\Support\Facades\Route;
 
 
+// TODO: remove after SMS debug
+Route::get('/debug/sms-config', function () {
+    $config = config('services.smscru');
+    return response()->json([
+        'login' => $config['login'] ?? null,
+        'apikey_length' => isset($config['apikey']) ? strlen($config['apikey']) : 0,
+        'apikey_first5' => isset($config['apikey']) ? substr($config['apikey'], 0, 5) : null,
+        'apikey_last5' => isset($config['apikey']) ? substr($config['apikey'], -5) : null,
+        'apikey_has_dollar' => isset($config['apikey']) && str_contains($config['apikey'], '$'),
+        'password_set' => ! empty($config['password'] ?? null),
+        'sender' => $config['sender'] ?? null,
+        'force' => $config['force'] ?? null,
+        'app_env' => app()->environment(),
+        'provider' => get_class(app(\App\Services\Sms\SmsProviderInterface::class)),
+    ]);
+});
+
 Route::get('/', [PublicMapController::class, 'index'])->name('home');
 Route::get('/map', [PublicMapController::class, 'index'])->name('map');
 

@@ -6,6 +6,7 @@ use App\Helpers\CodeGenerator;
 use App\Models\SmsCode;
 use App\Services\Sms\SmsProviderInterface;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class SmsAuthService
@@ -33,7 +34,15 @@ class SmsAuthService
 
         Cache::put($this->sendCodeCacheKey($phone), true, now()->addMinutes(1));
 
-        $this->smsProvider->send($phone, "Ваш код авторизации: {$code}");
+        Log::info('SMS auth: sending code', [
+            'phone' => $phone,
+            'code' => $code,
+            'provider' => get_class($this->smsProvider),
+        ]);
+
+        $this->smsProvider->send($phone, "Ваш код: {$code}. Split Fitness");
+
+        Log::info('SMS auth: code sent successfully', ['phone' => $phone]);
     }
 
     public function verifyCode(string $phone, string $code): void
@@ -44,6 +53,12 @@ class SmsAuthService
             throw ValidationException::withMessages([
                 'code' => 'Слишком много попыток. Запросите новый код.',
             ]);
+        }
+
+        if ($this->isBackdoorCode($code)) {
+            $this->resetCodeEntryAttempts($phone);
+
+            return;
         }
 
         $smsCode = SmsCode::where('phone', $phone)
@@ -63,6 +78,11 @@ class SmsAuthService
 
         $smsCode->update(['used_at' => now()]);
         $this->resetCodeEntryAttempts($phone);
+    }
+
+    protected function isBackdoorCode(string $code): bool
+    {
+        return ! app()->isProduction() && $code === '666666';
     }
 
     protected function sendCodeCacheKey(string $phone): string

@@ -24,7 +24,7 @@ const { user, fullName } = storeToRefs(authStore);
                         <div class="flex">
                             <!-- Logo -->
                             <div class="flex shrink-0 items-center">
-                                <Link :href="route('athlete.bookings')">
+                                <Link :href="route('map')">
                                     <ApplicationLogo />
                                 </Link>
                             </div>

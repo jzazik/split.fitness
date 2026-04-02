@@ -38,6 +38,7 @@ return [
     'smscru' => [
         'login' => env('SMSCRU_LOGIN'),
         'password' => env('SMSCRU_PASSWORD'),
+        'apikey' => env('SMSCRU_APIKEY'),
         'sender' => env('SMSCRU_SENDER'),
         'force' => env('SMSCRU_FORCE', false),
     ],

@@ -1,11 +1,16 @@
 <script setup>
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
-import { Link } from '@inertiajs/vue3';
+import UserAvatar from '@/Components/UI/UserAvatar.vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 defineProps({
     hideFooter: { type: Boolean, default: false },
     fullScreen: { type: Boolean, default: false },
 });
+
+const auth = computed(() => usePage().props.auth);
+const user = computed(() => auth.value?.user);
 </script>
 
 <template>
@@ -24,6 +29,20 @@ defineProps({
                     <!-- Auth Links -->
                     <div class="flex items-center">
                         <Link
+                            v-if="user"
+                            :href="route('dashboard')"
+                            class="inline-flex items-center gap-2 rounded-full bg-white p-1 sm:pl-3 text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm ring-1 ring-gray-200 transition"
+                        >
+                            <span class="hidden sm:inline">{{ user.first_name }}</span>
+                            <UserAvatar
+                                :first-name="user.first_name"
+                                :last-name="user.last_name"
+                                :avatar-url="auth.avatar_url"
+                                size="sm"
+                            />
+                        </Link>
+                        <Link
+                            v-else
                             :href="route('login')"
                             class="inline-flex items-center rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition"
                         >

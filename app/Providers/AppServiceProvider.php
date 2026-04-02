@@ -8,6 +8,8 @@ use App\Models\Booking;
 use App\Models\Workout;
 use App\Policies\BookingPolicy;
 use App\Policies\WorkoutPolicy;
+use App\Services\Payment\CloudPaymentsService;
+use App\Services\Payment\PaymentServiceInterface;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Vite;
@@ -21,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(PaymentServiceInterface::class, CloudPaymentsService::class);
     }
 
     /**

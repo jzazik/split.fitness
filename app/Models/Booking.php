@@ -62,12 +62,8 @@ class Booking extends Model
         return $this->belongsTo(User::class, 'athlete_id');
     }
 
-    /**
-     * Get the payment for the booking.
-     * Note: Payment model will be added in Sprint 6
-     */
-    // public function payment(): HasOne
-    // {
-    //     return $this->hasOne(Payment::class);
-    // }
+    public function payment(): HasOne
+    {
+        return $this->hasOne(Payment::class);
+    }
 }

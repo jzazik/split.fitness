@@ -216,49 +216,6 @@
                     </button>
                   </div>
                 </div>
-
-                <!-- Step 3: Quick registration (new user) -->
-                <div v-else-if="authStep === 'register'">
-                  <p class="text-sm text-gray-600 mb-3">
-                    Номер подтверждён. Заполните данные для записи:
-                  </p>
-                  <div class="space-y-3">
-                    <input
-                      v-model="regForm.first_name"
-                      type="text"
-                      placeholder="Имя"
-                      autocomplete="given-name"
-                      class="w-full rounded-lg border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:ring-primary-500"
-                      :class="{ 'border-red-300': regErrors.first_name }"
-                    />
-                    <p v-if="regErrors.first_name" class="text-xs text-red-500 -mt-2">{{ regErrors.first_name[0] }}</p>
-
-                    <input
-                      v-model="regForm.last_name"
-                      type="text"
-                      placeholder="Фамилия"
-                      autocomplete="family-name"
-                      class="w-full rounded-lg border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:ring-primary-500"
-                      :class="{ 'border-red-300': regErrors.last_name }"
-                    />
-                    <p v-if="regErrors.last_name" class="text-xs text-red-500 -mt-2">{{ regErrors.last_name[0] }}</p>
-
-                    <button
-                      @click="registerAndBook"
-                      :disabled="submitting || !regForm.first_name || !regForm.last_name"
-                      class="w-full py-2.5 rounded-lg text-sm font-semibold text-white transition-all flex items-center justify-center gap-2"
-                      :class="!submitting && regForm.first_name && regForm.last_name
-                        ? 'bg-primary-500 hover:bg-primary-600 active:bg-primary-700'
-                        : 'bg-gray-300 cursor-not-allowed'"
-                    >
-                      <svg v-if="submitting" class="size-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      Записаться
-                    </button>
-                  </div>
-                </div>
               </div>
 
               <!-- Authenticated user -->
@@ -275,7 +232,7 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Подтвердить запись
+                  Оплатить и подтвердить
                 </button>
               </div>
             </div>
@@ -318,16 +275,12 @@ const codeInput = ref(null);
 const phone = ref('');
 const phoneError = ref('');
 
-// SMS auth inline flow: 'phone' → 'code' → 'register'
+// SMS auth inline flow: 'phone' → 'code'
 const authStep = ref('phone');
 const smsCode = ref('');
 const codeError = ref('');
 const cooldown = ref(0);
 let cooldownTimer = null;
-
-// Quick registration
-const regForm = ref({ first_name: '', last_name: '' });
-const regErrors = ref({});
 
 const isAuthenticated = computed(() => !!page.props.auth?.user);
 
@@ -390,8 +343,6 @@ const collapse = () => {
   codeError.value = '';
   authStep.value = 'phone';
   submitting.value = false;
-  regForm.value = { first_name: '', last_name: '' };
-  regErrors.value = {};
   cooldown.value = 0;
   clearInterval(cooldownTimer);
 };
@@ -443,43 +394,16 @@ const verifySmsCode = async () => {
   submitting.value = true;
   codeError.value = '';
   try {
-    const { data } = await axios.post(route('auth.sms.verify'), {
+    await axios.post(route('auth.sms.verify'), {
       phone: fullPhone.value,
       code: smsCode.value,
     });
-
-    if (data.action === 'login') {
-      await createBooking();
-    } else if (data.action === 'register') {
-      authStep.value = 'register';
-    }
+    await createBooking();
   } catch (e) {
     if (e.response?.status === 422) {
       codeError.value = e.response.data.errors?.code?.[0] || 'Неверный код.';
     } else {
       codeError.value = 'Произошла ошибка. Попробуйте позже.';
-    }
-  } finally {
-    submitting.value = false;
-  }
-};
-
-const registerAndBook = async () => {
-  submitting.value = true;
-  regErrors.value = {};
-  try {
-    await axios.post(route('auth.sms.register'), {
-      phone: fullPhone.value,
-      role: 'athlete',
-      first_name: regForm.value.first_name,
-      last_name: regForm.value.last_name,
-    });
-    await createBooking();
-  } catch (e) {
-    if (e.response?.status === 422) {
-      regErrors.value = e.response.data.errors || {};
-    } else {
-      regErrors.value = { first_name: ['Произошла ошибка. Попробуйте позже.'] };
     }
     submitting.value = false;
   }
@@ -488,12 +412,12 @@ const registerAndBook = async () => {
 const createBooking = async () => {
   submitting.value = true;
   try {
-    const response = await axios.post('/api/bookings', {
+    const { data } = await axios.post('/api/bookings', {
       workout_id: props.workout.id,
       slots_count: 1,
     });
-    const bookingId = response.data.booking.id;
-    router.visit(`/athlete/bookings/${bookingId}`);
+
+    openPaymentWidget(data);
   } catch (error) {
     const msg = error.response?.data?.errors?.workout_id?.[0]
       || error.response?.data?.message
@@ -503,13 +427,52 @@ const createBooking = async () => {
   }
 };
 
+function openPaymentWidget(data) {
+  const pay = data.payment;
+  const bookingId = data.booking.id;
+
+  loadCloudPaymentsScript().then(() => {
+    const widget = new window.cp.CloudPayments();
+    widget.pay('charge', {
+      publicId: pay.public_id,
+      description: pay.description,
+      amount: pay.amount,
+      currency: pay.currency,
+      invoiceId: String(pay.invoice_id),
+      skin: 'mini',
+    }, {
+      onSuccess() {
+        router.visit(`/athlete/bookings/${bookingId}`);
+      },
+      onFail() {
+        alert('Оплата не прошла. Попробуйте ещё раз.');
+        submitting.value = false;
+      },
+      onComplete() {
+        submitting.value = false;
+      },
+    });
+  });
+}
+
+let cpScriptPromise = null;
+function loadCloudPaymentsScript() {
+  if (window.cp) return Promise.resolve();
+  if (cpScriptPromise) return cpScriptPromise;
+
+  cpScriptPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://widget.cloudpayments.ru/bundles/cloudpayments.js';
+    script.onload = resolve;
+    script.onerror = () => reject(new Error('Failed to load CloudPayments widget'));
+    document.head.appendChild(script);
+  });
+
+  return cpScriptPromise;
+}
+
 const handleBooking = async () => {
   if (isAuthenticated.value) {
-    const userRole = page.props.auth?.user?.role;
-    if (userRole !== 'athlete') {
-      alert('Только атлеты могут записываться на тренировки');
-      return;
-    }
     await createBooking();
   }
 };

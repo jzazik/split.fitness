@@ -47,6 +47,11 @@ class HandleInertiaRequests extends Middleware
 
         $authData = ['user' => $user];
 
+        if ($user) {
+            $authData['avatar_url'] = $user->getFirstMediaUrl('avatar') ?: null;
+            $authData['primary_sport_slug'] = $this->resolvePrimarySportSlug($user);
+        }
+
         if ($user && $user->role === 'coach' && $user->coachProfile) {
             $authData['coachProfile'] = [
                 'moderation_status' => $user->coachProfile->moderation_status,
@@ -62,5 +67,20 @@ class HandleInertiaRequests extends Middleware
                 'location' => $request->url(),
             ],
         ];
+    }
+
+    private function resolvePrimarySportSlug(\App\Models\User $user): ?string
+    {
+        if ($user->isCoach()) {
+            return $user->coachProfile
+                ?->sports()
+                ->value('slug');
+        }
+
+        return $user->bookings()
+            ->join('workouts', 'workouts.id', '=', 'bookings.workout_id')
+            ->join('sports', 'sports.id', '=', 'workouts.sport_id')
+            ->orderBy('bookings.created_at')
+            ->value('sports.slug');
     }
 }

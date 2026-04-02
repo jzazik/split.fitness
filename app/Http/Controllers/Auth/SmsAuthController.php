@@ -31,11 +31,15 @@ class SmsAuthController extends Controller
         $user = User::where('phone', $validated['phone'])->first();
 
         if (! $user) {
-            return response()->json([
-                'success' => true,
-                'action' => 'register',
+            $user = User::create([
                 'phone' => $validated['phone'],
+                'role' => 'athlete',
+                'first_name' => null,
+                'last_name' => null,
+                'email' => null,
+                'password' => null,
             ]);
+            $user->forceFill(['phone_verified_at' => now()])->save();
         }
 
         Auth::login($user);

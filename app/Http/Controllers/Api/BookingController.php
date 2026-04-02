@@ -7,6 +7,7 @@ use App\Exceptions\Booking\OversellException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateBookingRequest;
 use App\Models\Workout;
+use App\Services\Payment\PaymentServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -14,7 +15,8 @@ use Illuminate\Validation\ValidationException;
 class BookingController extends Controller
 {
     public function __construct(
-        protected CreateBookingAction $createBookingAction
+        protected CreateBookingAction $createBookingAction,
+        protected PaymentServiceInterface $paymentService,
     ) {}
 
     /**
@@ -30,6 +32,7 @@ class BookingController extends Controller
             $slotsCount = $validated['slots_count'];
 
             $booking = $this->createBookingAction->execute($workout, $athlete, $slotsCount);
+            $payment = $this->paymentService->createPayment($booking);
 
             return response()->json([
                 'booking' => [
@@ -41,7 +44,7 @@ class BookingController extends Controller
                     'payment_status' => $booking->payment_status,
                     'booked_at' => $booking->booked_at,
                 ],
-                'payment_url' => null, // Placeholder for Sprint 6
+                'payment' => $this->paymentService->getWidgetData($booking, $payment),
             ], 201);
         } catch (OversellException $e) {
             return response()->json([

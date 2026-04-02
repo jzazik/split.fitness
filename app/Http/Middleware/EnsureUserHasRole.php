@@ -14,7 +14,7 @@ class EnsureUserHasRole
      *
      * @param  Closure(Request): (Response)  $next
      */
-    public function handle(Request $request, Closure $next, string $role): Response
+    public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         $user = $request->user();
 
@@ -22,11 +22,11 @@ class EnsureUserHasRole
             abort(401, 'Unauthenticated');
         }
 
-        if ($user->role !== $role) {
+        if (! in_array($user->role, $roles, true)) {
             Log::warning('Unauthorized role access attempt', [
                 'user_id' => $user->id,
                 'user_role' => $user->role,
-                'required_role' => $role,
+                'required_roles' => $roles,
                 'url' => $request->fullUrl(),
             ]);
 

@@ -29,7 +29,7 @@ const coachProfile = computed(() => page.props.auth?.coachProfile || null);
                         <div class="flex">
                             <!-- Logo -->
                             <div class="flex shrink-0 items-center">
-                                <Link :href="route('coach.dashboard')">
+                                <Link :href="route('map')">
                                     <ApplicationLogo />
                                 </Link>
                             </div>

@@ -69,6 +69,7 @@ class EnsureProfileCompleted
             'onboarding',
             'profile',
             'logout',
+            'bookings',
         ];
 
         foreach ($excludedPaths as $path) {
