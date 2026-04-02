@@ -69,8 +69,7 @@ class ExpirePendingBookingJob implements ShouldQueue
                         throw new \RuntimeException('Data corruption detected: slots_booked < booking->slots_count');
                     }
 
-                    $workout->slots_booked = $workout->slots_booked - $booking->slots_count;
-                    $workout->save();
+                    $workout->decrement('slots_booked', $booking->slots_count);
 
                     $slotsAfter = $workout->fresh()->slots_booked;
 

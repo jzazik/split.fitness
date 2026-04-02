@@ -4,12 +4,11 @@ namespace Tests\Feature\Booking;
 
 use App\Actions\Booking\CreateBookingAction;
 use App\Actions\Booking\ReserveSlotAction;
+use App\Exceptions\Booking\OversellException;
 use App\Models\User;
 use App\Models\Workout;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class OversellTest extends TestCase
@@ -46,22 +45,16 @@ class OversellTest extends TestCase
         // The lockForUpdate should prevent oversell
 
         try {
-            DB::beginTransaction();
             $this->createBookingAction->execute($workout->fresh(), $athlete1, 1);
-            DB::commit();
             $successCount++;
-        } catch (ValidationException $e) {
-            DB::rollBack();
+        } catch (OversellException $e) {
             $exceptions[] = $e;
         }
 
         try {
-            DB::beginTransaction();
             $this->createBookingAction->execute($workout->fresh(), $athlete2, 1);
-            DB::commit();
             $successCount++;
-        } catch (ValidationException $e) {
-            DB::rollBack();
+        } catch (OversellException $e) {
             $exceptions[] = $e;
         }
 
@@ -93,7 +86,7 @@ class OversellTest extends TestCase
             try {
                 $booking = $this->createBookingAction->execute($workout->fresh(), $athlete, 1);
                 $results[] = ['success' => true, 'booking' => $booking];
-            } catch (ValidationException $e) {
+            } catch (OversellException $e) {
                 $results[] = ['success' => false, 'error' => $e];
             }
         }
@@ -130,7 +123,7 @@ class OversellTest extends TestCase
         // Now try to book again - should fail
         $athlete2 = User::factory()->athlete()->create();
 
-        $this->expectException(ValidationException::class);
+        $this->expectException(OversellException::class);
         $this->createBookingAction->execute($workout->fresh(), $athlete2, 1);
     }
 
@@ -157,8 +150,8 @@ class OversellTest extends TestCase
 
         try {
             $this->createBookingAction->execute($workout, $athlete, 1);
-            $this->fail('Expected ValidationException was not thrown');
-        } catch (ValidationException $e) {
+            $this->fail('Expected OversellException was not thrown');
+        } catch (OversellException $e) {
             // Expected
             $this->assertTrue(true);
         }
@@ -215,7 +208,7 @@ class OversellTest extends TestCase
         $this->assertEquals(9, $workout->slots_booked);
 
         // Second athlete tries to book 2 slots - should fail (only 1 left)
-        $this->expectException(ValidationException::class);
+        $this->expectException(OversellException::class);
         $this->createBookingAction->execute($workout->fresh(), $athlete2, 2);
 
         $workout->refresh();
@@ -235,7 +228,7 @@ class OversellTest extends TestCase
 
         try {
             $this->createBookingAction->execute($workout, $athlete, 1);
-        } catch (ValidationException $e) {
+        } catch (OversellException $e) {
             // Expected
         }
 

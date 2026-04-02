@@ -496,7 +496,9 @@ class BookingTest extends TestCase
         $athlete = User::factory()->athlete()->create();
         AthleteProfile::factory()->create(['user_id' => $athlete->id]);
 
-        $workout = Workout::factory()->published()->create();
+        $workout = Workout::factory()->published()->create([
+            'city_id' => $city->id,
+        ]);
 
         $booking = Booking::factory()->create([
             'workout_id' => $workout->id,
