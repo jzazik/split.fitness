@@ -34,10 +34,6 @@ class SmsAuthController extends Controller
             $user = User::create([
                 'phone' => $validated['phone'],
                 'role' => 'athlete',
-                'first_name' => null,
-                'last_name' => null,
-                'email' => null,
-                'password' => null,
             ]);
             $user->forceFill(['phone_verified_at' => now()])->save();
         }
