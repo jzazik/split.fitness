@@ -2,7 +2,9 @@
   <Transition name="card">
     <div
       v-if="isOpen && workout"
-      class="card-container absolute z-50 bottom-6 left-3 right-3 sm:left-1/2 sm:right-auto sm:w-full sm:max-w-lg pointer-events-auto"
+      ref="cardContainer"
+      class="card-container absolute z-50 left-3 right-3 sm:left-1/2 sm:right-auto sm:w-full sm:max-w-lg pointer-events-auto"
+      :style="{ bottom: `calc(1.5rem + ${keyboardOffset}px)` }"
     >
       <button
         @click="close"
@@ -287,7 +289,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import {
@@ -313,6 +315,24 @@ const expanded = ref(false);
 const submitting = ref(false);
 const phoneInput = ref(null);
 const codeInput = ref(null);
+const cardContainer = ref(null);
+const keyboardOffset = ref(0);
+
+function onViewportResize() {
+  if (!window.visualViewport) return;
+  const offset = window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop;
+  keyboardOffset.value = Math.max(0, offset);
+}
+
+onMounted(() => {
+  window.visualViewport?.addEventListener('resize', onViewportResize);
+  window.visualViewport?.addEventListener('scroll', onViewportResize);
+});
+
+onUnmounted(() => {
+  window.visualViewport?.removeEventListener('resize', onViewportResize);
+  window.visualViewport?.removeEventListener('scroll', onViewportResize);
+});
 
 // Phone step
 const phone = ref('');
@@ -375,12 +395,22 @@ function startCooldown(seconds = 60) {
   }, 1000);
 }
 
+const scrollInputIntoView = (el) => {
+  if (!el) return;
+  setTimeout(() => {
+    el.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+  }, 300);
+};
+
 const expand = () => {
   if (availableSlotsCount.value === 0) return;
   expanded.value = true;
   emit('update:expanded', true);
   if (!isAuthenticated.value) {
-    nextTick(() => phoneInput.value?.focus());
+    nextTick(() => {
+      phoneInput.value?.focus();
+      scrollInputIntoView(phoneInput.value);
+    });
   }
 };
 
@@ -519,9 +549,9 @@ const handleBooking = async () => {
 </script>
 
 <style scoped>
-/* Desktop centering via translate instead of Tailwind class (animation overrides transform) */
 .card-container {
   transform: none;
+  transition: bottom 0.15s ease-out;
 }
 
 @media (min-width: 640px) {

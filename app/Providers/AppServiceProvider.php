@@ -34,6 +34,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Workout::class, WorkoutPolicy::class);
         Gate::policy(Booking::class, BookingPolicy::class);
 
+        Gate::define('viewLogViewer', fn () => true);
+
         // Register event listeners
         Event::listen(
             BookingCreated::class,
