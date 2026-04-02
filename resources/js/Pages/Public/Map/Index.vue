@@ -25,7 +25,7 @@
           class="absolute z-[1000] right-3 md:top-4 md:bottom-auto md:right-4 flex items-center justify-center size-11 rounded-full bg-white shadow-lg border border-gray-200 text-gray-600 hover:text-primary-600 active:bg-gray-50 transition-all duration-300"
           :class="[
             geoLocating ? 'text-primary-500' : '',
-            selectedWorkout ? 'bottom-44' : 'bottom-6',
+            selectedWorkout ? 'bottom-[calc(11rem+env(safe-area-inset-bottom,0px))]' : 'bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]',
           ]"
           :disabled="geoLocating"
           @click="goToMyLocation"
@@ -319,6 +319,7 @@ const initMap = () => {
     {
       location: { center: initialCenter, zoom: initialZoom },
       showScaleInCopyrights: true,
+      margin: [64, 0, 60, 0],
     },
     [
       new YMapDefaultSchemeLayer({}),

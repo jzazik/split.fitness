@@ -9,7 +9,7 @@ defineProps({
 </script>
 
 <template>
-    <div :class="fullScreen ? 'h-screen relative overflow-hidden bg-gray-50' : 'min-h-screen flex flex-col bg-gray-50'">
+    <div :class="fullScreen ? 'h-dvh relative overflow-hidden bg-gray-50' : 'min-h-screen flex flex-col bg-gray-50'">
         <!-- Header -->
         <header :class="fullScreen ? 'absolute top-0 inset-x-0 z-[1100] bg-white/80 backdrop-blur-sm' : 'bg-white border-b border-gray-200'">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
