@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Athlete;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\CoachPublicResource;
 use App\Models\Booking;
 use Carbon\Carbon;
 use Inertia\Inertia;
@@ -26,7 +27,12 @@ class BookingsController extends Controller
                 'workout.city',
             ])
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($booking) {
+                $booking->workout->coach = new CoachPublicResource($booking->workout->coach);
+
+                return $booking;
+            });
 
         $past = Booking::where('athlete_id', $user->id)
             ->where('status', 'paid')
@@ -39,7 +45,12 @@ class BookingsController extends Controller
                 'workout.city',
             ])
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($booking) {
+                $booking->workout->coach = new CoachPublicResource($booking->workout->coach);
+
+                return $booking;
+            });
 
         $cancelled = Booking::where('athlete_id', $user->id)
             ->whereIn('status', ['cancelled', 'expired', 'refunded'])
@@ -49,7 +60,12 @@ class BookingsController extends Controller
                 'workout.city',
             ])
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($booking) {
+                $booking->workout->coach = new CoachPublicResource($booking->workout->coach);
+
+                return $booking;
+            });
 
         return Inertia::render('Athlete/Bookings/Index', [
             'upcoming' => $upcoming,
@@ -68,6 +84,9 @@ class BookingsController extends Controller
             'workout.coach',
             'workout.city',
         ]);
+
+        // Protect coach private data
+        $booking->workout->coach = new CoachPublicResource($booking->workout->coach);
 
         return Inertia::render('Athlete/Bookings/Show', [
             'booking' => $booking,

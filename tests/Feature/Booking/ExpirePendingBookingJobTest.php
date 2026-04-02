@@ -21,12 +21,13 @@ class ExpirePendingBookingJobTest extends TestCase
             'slots_booked' => 2,
         ]);
 
-        $athlete = User::factory()->athlete()->create();
+        $athlete1 = User::factory()->athlete()->create();
+        $athlete2 = User::factory()->athlete()->create();
 
         // Create an old pending booking (20 minutes ago)
         $oldBooking = Booking::factory()->create([
             'workout_id' => $workout->id,
-            'athlete_id' => $athlete->id,
+            'athlete_id' => $athlete1->id,
             'status' => 'pending_payment',
             'slots_count' => 1,
             'created_at' => now()->subMinutes(20),
@@ -35,7 +36,7 @@ class ExpirePendingBookingJobTest extends TestCase
         // Create a recent pending booking (5 minutes ago) - should NOT expire
         $recentBooking = Booking::factory()->create([
             'workout_id' => $workout->id,
-            'athlete_id' => $athlete->id,
+            'athlete_id' => $athlete2->id,
             'status' => 'pending_payment',
             'slots_count' => 1,
             'created_at' => now()->subMinutes(5),
@@ -154,10 +155,9 @@ class ExpirePendingBookingJobTest extends TestCase
             'slots_booked' => 1500,
         ]);
 
-        $athlete = User::factory()->athlete()->create();
-
-        // Create 1001 old bookings to trigger warning
+        // Create 1001 old bookings to trigger warning (different athletes to avoid unique constraint)
         foreach (range(1, 1001) as $i) {
+            $athlete = User::factory()->athlete()->create();
             Booking::factory()->create([
                 'workout_id' => $workout->id,
                 'athlete_id' => $athlete->id,

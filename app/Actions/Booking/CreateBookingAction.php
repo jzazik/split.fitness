@@ -7,7 +7,7 @@ use App\Exceptions\Booking\OversellException;
 use App\Models\Booking;
 use App\Models\User;
 use App\Models\Workout;
-use Illuminate\Support\Facades\DB;
+use App\Support\TransactionRetry;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -28,7 +28,7 @@ class CreateBookingAction
     {
         $transactionId = Str::uuid()->toString();
 
-        return DB::transaction(function () use ($workout, $athlete, $slotsCount, $transactionId) {
+        return TransactionRetry::execute(function () use ($workout, $athlete, $slotsCount, $transactionId) {
             // Check for duplicate booking within transaction
             $existingBooking = Booking::where('workout_id', $workout->id)
                 ->where('athlete_id', $athlete->id)
