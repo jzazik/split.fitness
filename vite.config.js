@@ -64,7 +64,7 @@ export default defineConfig({
             workbox: {
                 globPatterns: ['**/*.{js,css,html,ico,jpg,png,svg,woff,woff2}'],
                 navigateFallback: '/',
-                navigateFallbackDenylist: [/^\/telescope/, /^\/api/, /^\/broadcasting/],
+                navigateFallbackDenylist: [/^\/telescope/, /^\/api/, /^\/broadcasting/, /^\/log-viewer/],
                 additionalManifestEntries: [
                     { url: '/', revision: `${Date.now()}` },
                     ...manifestIcons.map((i) => ({
