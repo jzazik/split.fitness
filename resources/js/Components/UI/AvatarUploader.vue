@@ -100,7 +100,7 @@ const triggerFileInput = () => {
             @dragleave="handleDragLeave"
             :class="[
                 'w-24 h-24 rounded-full overflow-hidden flex items-center justify-center transition-all cursor-pointer',
-                isDragging ? 'ring-4 ring-blue-500 ring-opacity-50' : '',
+                isDragging ? 'ring-4 ring-primary-500 ring-opacity-50' : '',
                 preview ? 'bg-gray-100' : 'bg-gray-200'
             ]"
             @click="triggerFileInput"
@@ -149,7 +149,7 @@ const triggerFileInput = () => {
                         v-if="selectedFile"
                         type="button"
                         @click="uploadFile"
-                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                        class="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 transition"
                     >
                         Загрузить
                     </button>
@@ -168,7 +168,7 @@ const triggerFileInput = () => {
                     Максимум {{ maxSizeMb }} МБ, только изображения
                 </p>
 
-                <p v-if="isDragging" class="text-xs text-blue-600">
+                <p v-if="isDragging" class="text-xs text-primary-600">
                     Отпустите файл для загрузки
                 </p>
 

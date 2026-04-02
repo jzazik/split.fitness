@@ -8,12 +8,16 @@
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- PWA Meta Tags -->
-        <meta name="theme-color" content="#ffffff">
+        <meta name="theme-color" content="#f04e23">
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="default">
-        <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'Laravel') }}">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'Split Fitness') }}">
+        <link rel="manifest" href="/build/manifest.webmanifest">
+        <link rel="icon" type="image/x-icon" href="/favicon.ico">
+        <link rel="icon" type="image/png" sizes="192x192" href="/pwa-192x192.png">
+        <link rel="icon" type="image/png" sizes="512x512" href="/pwa-512x512.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

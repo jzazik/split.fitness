@@ -7,13 +7,11 @@
 
 <script setup>
 import { ref, onMounted, watch, onBeforeUnmount } from 'vue';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 
 const props = defineProps({
   initialLat: {
     type: Number,
-    default: 55.7558, // Moscow center
+    default: 55.7558,
   },
   initialLng: {
     type: Number,
@@ -33,82 +31,103 @@ const emit = defineEmits(['update:modelValue', 'coordinates-selected']);
 
 const mapContainer = ref(null);
 const mapReady = ref(false);
+let ymaps3 = null;
 let map = null;
 let marker = null;
+let YMapMarker = null;
 
-// Fix for default marker icon not showing in production builds
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
+onMounted(async () => {
+  if (typeof window === 'undefined' || !mapContainer.value) return;
 
-onMounted(() => {
-  // Initialize map only in browser (not during SSR)
-  if (typeof window !== 'undefined' && mapContainer.value) {
-    initMap();
+  try {
+    const { loadYandexMaps } = await import('@/composables/useYandexMap');
+    ymaps3 = await loadYandexMaps();
+    if (!ymaps3) return;
+
+    const { YMapDefaultMarker } = await ymaps3.import('@yandex/ymaps3-default-ui-theme');
+    YMapMarker = ymaps3.YMapMarker;
+
+    initMap(YMapDefaultMarker);
+  } catch (error) {
+    console.error('Failed to load Yandex Maps:', error);
   }
 });
 
 onBeforeUnmount(() => {
   if (map) {
-    map.remove();
+    map.destroy();
     map = null;
   }
 });
 
-const initMap = () => {
-  // Create map instance
-  map = L.map(mapContainer.value).setView([props.initialLat, props.initialLng], 13);
+const initMap = (YMapDefaultMarker) => {
+  const { YMap, YMapDefaultSchemeLayer, YMapDefaultFeaturesLayer, YMapListener } = ymaps3;
 
-  // Add OpenStreetMap tiles
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-  }).addTo(map);
+  const startLng = props.modelValue?.lng ?? props.initialLng;
+  const startLat = props.modelValue?.lat ?? props.initialLat;
 
-  // Add initial marker if coordinates are provided
+  map = new YMap(
+    mapContainer.value,
+    {
+      location: { center: [startLng, startLat], zoom: 13 },
+      showScaleInCopyrights: true,
+    },
+    [
+      new YMapDefaultSchemeLayer({}),
+      new YMapDefaultFeaturesLayer({}),
+    ]
+  );
+
   if (props.modelValue && props.modelValue.lat && props.modelValue.lng) {
     addMarker(props.modelValue.lat, props.modelValue.lng);
   }
 
-  // Handle map clicks if editable
   if (props.editable) {
-    map.on('click', (e) => {
-      const { lat, lng } = e.latlng;
-      addMarker(lat, lng);
-      emitCoordinates(lat, lng);
+    const listener = new YMapListener({
+      layer: 'any',
+      onClick: (_, event) => {
+        if (!event || !event.coordinates) return;
+        const [lng, lat] = event.coordinates;
+        addMarker(lat, lng);
+        emitCoordinates(lat, lng);
+      },
     });
+    map.addChild(listener);
   }
 
   mapReady.value = true;
 };
 
 const addMarker = (lat, lng) => {
-  // Remove existing marker if present
-  if (marker) {
-    map.removeLayer(marker);
+  if (marker && map) {
+    map.removeChild(marker);
   }
 
-  // Add new marker
-  marker = L.marker([lat, lng]).addTo(map);
+  const el = document.createElement('div');
+  el.className = 'ym-pin-marker';
 
-  // Center map on marker
-  map.setView([lat, lng], map.getZoom());
+  marker = new YMapMarker(
+    { coordinates: [lng, lat] },
+    el
+  );
+  map.addChild(marker);
+
+  map.setLocation({
+    center: [lng, lat],
+    zoom: map.zoom,
+    duration: 200,
+  });
 };
 
 const emitCoordinates = (lat, lng) => {
   const coordinates = {
-    lat: parseFloat(lat.toFixed(8)),
-    lng: parseFloat(lng.toFixed(8)),
+    lat: parseFloat(parseFloat(lat).toFixed(8)),
+    lng: parseFloat(parseFloat(lng).toFixed(8)),
   };
-
   emit('update:modelValue', coordinates);
   emit('coordinates-selected', coordinates);
 };
 
-// Watch for external coordinate updates
 watch(
   () => props.modelValue,
   (newValue) => {
@@ -121,12 +140,13 @@ watch(
 </script>
 
 <style scoped>
-/* Ensure Leaflet controls are visible */
-:deep(.leaflet-control-zoom) {
-  border: 2px solid rgba(0, 0, 0, 0.2);
-}
-
-:deep(.leaflet-bar a) {
-  color: #000;
+:deep(.ym-pin-marker) {
+  width: 24px;
+  height: 24px;
+  background: rgb(79, 70, 229);
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transform: translate(-50%, -50%);
 }
 </style>

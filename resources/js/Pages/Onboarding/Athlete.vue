@@ -72,7 +72,7 @@ const submit = async () => {
                     id="first_name"
                     v-model="form.first_name"
                     type="text"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                     required
                 />
                 <div v-if="form.errors.first_name" class="mt-1 text-sm text-red-600">
@@ -88,7 +88,7 @@ const submit = async () => {
                     id="last_name"
                     v-model="form.last_name"
                     type="text"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                     required
                 />
                 <div v-if="form.errors.last_name" class="mt-1 text-sm text-red-600">
@@ -104,7 +104,7 @@ const submit = async () => {
                     id="phone"
                     v-model="form.phone"
                     type="tel"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                     placeholder="+7 (999) 123-45-67"
                 />
                 <div v-if="form.errors.phone" class="mt-1 text-sm text-red-600">
@@ -119,7 +119,7 @@ const submit = async () => {
                 <select
                     id="city_id"
                     v-model="form.city_id"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                 >
                     <option :value="null">Выберите город</option>
                     <option v-for="city in cities" :key="city.id" :value="city.id">
@@ -139,7 +139,7 @@ const submit = async () => {
                     id="emergency_contact"
                     v-model="form.emergency_contact"
                     type="text"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                     placeholder="Имя и телефон близкого человека"
                 />
                 <p class="mt-1 text-sm text-gray-500">
@@ -154,7 +154,7 @@ const submit = async () => {
                 <button
                     type="submit"
                     :disabled="form.processing || !form.first_name || !form.last_name"
-                    class="w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    class="w-full rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                     {{ form.processing ? 'Сохранение...' : 'Готово' }}
                 </button>

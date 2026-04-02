@@ -293,8 +293,8 @@ const submit = () => {
                                     label="Общая стоимость (₽) *"
                                     placeholder="1000"
                                     :error="form.errors.total_price"
-                                    step="0.01"
-                                    min="0.01"
+                                    step="1"
+                                    min="1"
                                 />
                             </div>
 
@@ -312,14 +312,14 @@ const submit = () => {
                         </div>
 
                         <!-- Price Preview -->
-                        <div v-if="slotPrice > 0" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                            <p class="text-sm font-medium text-blue-900">
+                        <div v-if="slotPrice > 0" class="mt-4 p-4 bg-primary-50 border border-primary-200 rounded-md">
+                            <p class="text-sm font-medium text-primary-900">
                                 Цена слота: {{ slotPrice }} ₽
                             </p>
-                            <p class="text-xs text-blue-700 mt-1">
+                            <p class="text-xs text-primary-700 mt-1">
                                 Атлет будет платить {{ slotPrice }} ₽ за место
                             </p>
-                            <p class="text-xs text-blue-700">
+                            <p class="text-xs text-primary-700">
                                 Вы получите {{ slotPrice * form.slots_total }} ₽ при полной записи
                             </p>
                         </div>

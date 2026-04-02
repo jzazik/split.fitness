@@ -3,6 +3,7 @@ import CoachLayout from '@/Layouts/CoachLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import Button from '@/Components/UI/Button.vue';
+import { formatPrice } from '@/utils/workout';
 
 const props = defineProps({
     workouts: Object,
@@ -230,7 +231,7 @@ const cancelWorkout = (workoutId) => {
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ workout.slot_price }} ₽
+                                        {{ formatPrice(workout.slot_price) }} ₽
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ workout.slots_booked }} / {{ workout.slots_total }}

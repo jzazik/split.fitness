@@ -1,22 +1,5 @@
 <template>
-  <div class="absolute top-4 left-4 z-[1000] bg-white rounded-lg shadow-lg p-4 max-w-sm w-full">
-    <!-- City Filter -->
-    <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 mb-2">
-        Город
-      </label>
-      <select
-        v-model="localFilters.cityId"
-        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-        @change="emitFilters"
-      >
-        <option :value="null">Все города</option>
-        <option v-for="city in cities" :key="city.id" :value="city.id">
-          {{ city.name }}
-        </option>
-      </select>
-    </div>
-
+  <div class="hidden md:block absolute top-20 left-4 z-[1000] bg-white rounded-lg shadow-lg p-4 max-w-sm w-full">
     <!-- Sport Filter (Multiple Chips) -->
     <div class="mb-4">
       <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -30,7 +13,7 @@
           :class="[
             'px-3 py-1 rounded-full text-sm font-medium transition-colors',
             localFilters.sportIds.includes(sport.id)
-              ? 'bg-indigo-600 text-white'
+              ? 'bg-primary-600 text-white'
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           ]"
           @click="toggleSport(sport.id)"
@@ -47,13 +30,13 @@
       </label>
       <div class="flex flex-wrap gap-2 mb-2">
         <button
-          v-for="preset in datePresets"
+          v-for="preset in presets"
           :key="preset.value"
           type="button"
           :class="[
             'px-3 py-1 rounded-md text-sm font-medium transition-colors',
             selectedPreset === preset.value
-              ? 'bg-indigo-600 text-white'
+              ? 'bg-primary-600 text-white'
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           ]"
           @click="selectDatePreset(preset.value)"
@@ -62,19 +45,20 @@
         </button>
       </div>
 
-      <!-- Custom date inputs (shown when no preset is active) -->
-      <div v-if="selectedPreset === null" class="space-y-2">
+      <div v-if="selectedPreset === 'custom'" class="space-y-2">
         <input
           v-model="localFilters.dateFrom"
           type="date"
-          class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+          :min="formatDate(new Date())"
+          class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
           placeholder="Дата от"
           @change="emitFilters"
         />
         <input
           v-model="localFilters.dateTo"
           type="date"
-          class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+          :min="localFilters.dateFrom || formatDate(new Date())"
+          class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
           placeholder="Дата до"
           @change="emitFilters"
         />
@@ -93,13 +77,10 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch } from 'vue';
+import { reactive, watch } from 'vue';
+import { useDatePresets } from '@/composables/useDatePresets';
 
 const props = defineProps({
-  cities: {
-    type: Array,
-    required: true,
-  },
   sports: {
     type: Array,
     required: true,
@@ -107,7 +88,6 @@ const props = defineProps({
   modelValue: {
     type: Object,
     default: () => ({
-      cityId: null,
       sportIds: [],
       dateFrom: null,
       dateTo: null,
@@ -117,32 +97,20 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'change']);
 
-// Local filters state
+const { presets, selectedPreset, computeRange, formatDate } = useDatePresets();
+
 const localFilters = reactive({
-  cityId: props.modelValue.cityId,
   sportIds: [...(props.modelValue.sportIds || [])],
   dateFrom: props.modelValue.dateFrom,
   dateTo: props.modelValue.dateTo,
 });
 
-// Watch for external prop changes and sync to localFilters
 watch(() => props.modelValue, (newValue) => {
-  localFilters.cityId = newValue.cityId;
   localFilters.sportIds = [...(newValue.sportIds || [])];
   localFilters.dateFrom = newValue.dateFrom;
   localFilters.dateTo = newValue.dateTo;
 }, { deep: true });
 
-// Date presets
-const datePresets = [
-  { value: 'today', label: 'Сегодня' },
-  { value: 'tomorrow', label: 'Завтра' },
-  { value: 'week', label: 'На этой неделе' },
-];
-
-const selectedPreset = ref(null);
-
-// Toggle sport selection
 const toggleSport = (sportId) => {
   const index = localFilters.sportIds.indexOf(sportId);
   if (index > -1) {
@@ -153,51 +121,33 @@ const toggleSport = (sportId) => {
   emitFilters();
 };
 
-// Select date preset
 const selectDatePreset = (preset) => {
+  if (selectedPreset.value === preset) {
+    selectedPreset.value = null;
+    localFilters.dateFrom = null;
+    localFilters.dateTo = null;
+    emitFilters();
+    return;
+  }
+
   selectedPreset.value = preset;
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  if (preset === 'custom') {
+    localFilters.dateFrom = null;
+    localFilters.dateTo = null;
+    return;
+  }
 
-  switch (preset) {
-    case 'today':
-      localFilters.dateFrom = formatDate(today);
-      localFilters.dateTo = formatDate(today);
-      break;
-    case 'tomorrow':
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      localFilters.dateFrom = formatDate(tomorrow);
-      localFilters.dateTo = formatDate(tomorrow);
-      break;
-    case 'week':
-      // Calculate start of week (Monday) and end of week (Sunday)
-      const dayOfWeek = today.getDay();
-      const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Sunday is 0, Monday is 1
-      const weekStart = new Date(today);
-      weekStart.setDate(today.getDate() + daysToMonday);
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 6); // Sunday is 6 days after Monday
-      localFilters.dateFrom = formatDate(weekStart);
-      localFilters.dateTo = formatDate(weekEnd);
-      break;
+  const range = computeRange(preset);
+  if (range) {
+    localFilters.dateFrom = range.dateFrom;
+    localFilters.dateTo = range.dateTo;
   }
 
   emitFilters();
 };
 
-// Format date to YYYY-MM-DD
-const formatDate = (date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-// Reset all filters
 const resetFilters = () => {
-  localFilters.cityId = null;
   localFilters.sportIds = [];
   localFilters.dateFrom = null;
   localFilters.dateTo = null;
@@ -205,19 +155,13 @@ const resetFilters = () => {
   emitFilters();
 };
 
-// Emit filter changes
 const emitFilters = () => {
-  emit('update:modelValue', {
-    cityId: localFilters.cityId,
+  const payload = {
     sportIds: [...localFilters.sportIds],
     dateFrom: localFilters.dateFrom,
     dateTo: localFilters.dateTo,
-  });
-  emit('change', {
-    cityId: localFilters.cityId,
-    sportIds: [...localFilters.sportIds],
-    dateFrom: localFilters.dateFrom,
-    dateTo: localFilters.dateTo,
-  });
+  };
+  emit('update:modelValue', payload);
+  emit('change', payload);
 };
 </script>

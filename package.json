@@ -24,8 +24,7 @@
     },
     "dependencies": {
         "@headlessui/vue": "^1.7.23",
-        "leaflet": "^1.9.4",
-        "leaflet.markercluster": "^1.5.3",
+        "@yandex/ymaps3-clusterer": "^0.0.12",
         "pinia": "^3.0.4"
     }
 }

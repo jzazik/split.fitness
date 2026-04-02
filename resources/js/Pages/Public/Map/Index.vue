@@ -1,30 +1,56 @@
 <template>
-  <PublicLayout>
+  <PublicLayout hide-footer full-screen>
     <Head title="Карта тренировок" />
 
-    <div class="relative h-screen">
-      <!-- Map Container (Fullscreen) -->
+    <div class="relative h-full">
       <div ref="mapContainer" class="w-full h-full"></div>
 
-      <!-- Map Filters -->
       <MapFilters
         v-model="filters"
-        :cities="cities"
         :sports="sports"
         @change="handleFilterChange"
       />
 
-      <!-- Loading State -->
+      <MobileMapFilters
+        v-model="filters"
+        :sports="sports"
+        @change="handleFilterChange"
+      />
+
+      <!-- Geolocation button -->
+      <Transition name="geo-btn">
+        <button
+          v-show="!workoutCardExpanded"
+          type="button"
+          class="absolute z-[1000] right-3 md:top-4 md:bottom-auto md:right-4 flex items-center justify-center size-11 rounded-full bg-white shadow-lg border border-gray-200 text-gray-600 hover:text-primary-600 active:bg-gray-50 transition-all duration-300"
+          :class="[
+            geoLocating ? 'text-primary-500' : '',
+            selectedWorkout ? 'bottom-44' : 'bottom-6',
+          ]"
+          :disabled="geoLocating"
+          @click="goToMyLocation"
+          aria-label="Моё местоположение"
+        >
+        <svg v-if="!geoLocating" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v2m0 16v2m10-10h-2M4 12H2" />
+        </svg>
+        <svg v-else class="size-5 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+        </button>
+      </Transition>
+
       <div
-        v-if="loading"
+        v-if="initialLoading"
         class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-[1000]"
       >
         <LoadingSpinner size="md" message="Загрузка тренировок..." />
       </div>
 
-      <!-- Empty State -->
       <div
-        v-if="!loading && workouts.length === 0"
+        v-if="!initialLoading && workouts.length === 0"
         class="absolute inset-0 flex items-center justify-center z-[999]"
         :class="hasError ? 'pointer-events-auto' : 'pointer-events-none'"
       >
@@ -72,21 +98,27 @@
           <button
             v-if="hasError"
             @click="retryAfterError"
-            class="mt-4 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            class="mt-4 inline-flex items-center rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
           >
             Повторить попытку
           </button>
         </div>
       </div>
 
-      <!-- Workout Bottom Card -->
+      <SearchResultsSheet
+        ref="searchResultsSheet"
+        :workouts="workouts"
+        :selected-workout="selectedWorkout"
+        @select="selectWorkoutFromSheet"
+      />
+
       <WorkoutBottomCard
         :workout="selectedWorkout"
         :is-open="!!selectedWorkout"
         @close="closeWorkoutCard"
+        @update:expanded="workoutCardExpanded = $event"
       />
 
-      <!-- Toast Notification -->
       <div
         aria-live="assertive"
         class="pointer-events-none fixed inset-0 flex items-end px-4 py-6 sm:items-start sm:p-6 z-[1001]"
@@ -105,101 +137,72 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount, watch } from 'vue';
-import { Head, usePage } from '@inertiajs/vue3';
+import { ref, reactive, onMounted, onBeforeUnmount } from 'vue';
+import { Head } from '@inertiajs/vue3';
 import PublicLayout from '@/Layouts/PublicLayout.vue';
 import MapFilters from '@/Components/Map/MapFilters.vue';
+import MobileMapFilters from '@/Components/Map/MobileMapFilters.vue';
 import WorkoutBottomCard from '@/Components/Map/WorkoutBottomCard.vue';
+import SearchResultsSheet from '@/Components/Map/SearchResultsSheet.vue';
 import LoadingSpinner from '@/Components/UI/LoadingSpinner.vue';
 import Toast from '@/Components/UI/Toast.vue';
 import { debounce } from '@/utils/debounce';
+import { formatPrice } from '@/utils/workout';
 
-// SSR-safe: leaflet will be dynamically imported in onMounted
-let L = null;
-let useMarkerCluster = null;
+let ymaps3 = null;
 
 const props = defineProps({
-  cities: {
-    type: Array,
-    required: true,
-  },
-  sports: {
-    type: Array,
-    required: true,
-  },
+  sports: { type: Array, required: true },
 });
 
-const page = usePage();
 const mapContainer = ref(null);
-const loading = ref(false);
+const searchResultsSheet = ref(null);
+const initialLoading = ref(true);
 const hasError = ref(false);
 const workouts = ref([]);
 const selectedWorkout = ref(null);
+
 let map = null;
-let markerClusterGroup = null;
+let clusterer = null;
+let clusterByGrid = null;
+let YMapClusterer = null;
+let YMapMarker = null;
 let toastTimeout = null;
 let isInitialLoad = true;
 let currentRequestController = null;
 let isMounted = false;
+let debouncedLoadWorkouts = null;
 
-// Initialize filters (URL params will be parsed in onMounted for SSR safety)
+const geoLocating = ref(false);
+const workoutCardExpanded = ref(false);
+
 const filters = reactive({
-  cityId: null,
   sportIds: [],
   dateFrom: null,
   dateTo: null,
 });
 
-// Toast state
 const toast = reactive({
   show: false,
   type: 'info',
   message: '',
 });
 
-// Watch for city filter changes and recenter map
-watch(() => filters.cityId, (newCityId) => {
-  if (map && newCityId) {
-    const selectedCity = props.cities.find(city => city.id === newCityId);
-    if (selectedCity && selectedCity.lat && selectedCity.lng) {
-      map.setView([selectedCity.lat, selectedCity.lng], 12);
-    }
-  }
-});
-
 const initBootstrap = async () => {
-  if (typeof window === 'undefined' || !mapContainer.value) {
-    return;
-  }
+  if (typeof window === 'undefined' || !mapContainer.value) return;
 
   try {
-    // Dynamic import for SSR safety
-    const leafletModule = await import('leaflet');
-    L = leafletModule.default;
-    await import('leaflet/dist/leaflet.css');
-    await import('leaflet.markercluster');
+    const { loadYandexMaps } = await import('@/composables/useYandexMap');
+    ymaps3 = await loadYandexMaps();
+    if (!ymaps3 || !isMounted) return;
 
-    const markerClusterModule = await import('@/composables/useMarkerCluster');
-    useMarkerCluster = markerClusterModule.useMarkerCluster;
+    const { useMarkerCluster } = await import('@/composables/useMarkerCluster');
+    const clusterModule = await useMarkerCluster();
+    YMapClusterer = clusterModule.YMapClusterer;
+    clusterByGrid = clusterModule.clusterByGrid;
+    YMapMarker = ymaps3.YMapMarker;
 
-    // Check if component was unmounted during async imports
-    if (!isMounted) {
-      return;
-    }
-
-    // Fix for default marker icon not showing in production builds
-    delete L.Icon.Default.prototype._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    });
-
-    // Parse URL parameters safely (SSR-safe)
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('city_id')) {
-      filters.cityId = parseInt(urlParams.get('city_id'));
-    }
+    if (!isMounted) return;
 
     initMap();
     loadWorkouts();
@@ -216,86 +219,54 @@ onMounted(async () => {
   await initBootstrap();
 });
 
-let debouncedLoadWorkouts = null;
-
 onBeforeUnmount(() => {
-  // Mark component as unmounted to prevent late async continuations
   isMounted = false;
 
-  // Abort any in-flight requests
   if (currentRequestController) {
     currentRequestController.abort();
     currentRequestController = null;
   }
-
-  // Clear toast timeout
   if (toastTimeout) {
     clearTimeout(toastTimeout);
     toastTimeout = null;
   }
-
-  // Cancel filter debounce to prevent post-unmount race
   if (typeof handleFilterChange.cancel === 'function') {
     handleFilterChange.cancel();
   }
-
-  // Clean up marker cluster group
-  if (markerClusterGroup) {
-    markerClusterGroup.clearLayers();
-    markerClusterGroup.remove();
-    markerClusterGroup = null;
+  if (debouncedLoadWorkouts && typeof debouncedLoadWorkouts.cancel === 'function') {
+    debouncedLoadWorkouts.cancel();
   }
 
-  // Clean up map and event listeners
+  clusterer = null;
   if (map) {
-    if (debouncedLoadWorkouts) {
-      map.off('moveend', debouncedLoadWorkouts);
-      if (typeof debouncedLoadWorkouts.cancel === 'function') {
-        debouncedLoadWorkouts.cancel();
-      }
-      debouncedLoadWorkouts = null;
-    }
-    map.remove();
+    map.destroy();
     map = null;
   }
 });
 
 const initMap = () => {
-  // Guard: bail if component is unmounted or map container not available
-  if (!isMounted || !mapContainer.value) {
-    return;
-  }
+  if (!isMounted || !mapContainer.value || !ymaps3) return;
 
-  // Determine initial map center
-  let initialCenter = [55.7558, 37.6173]; // Default: Moscow
-  let initialZoom = 11;
+  const initialCenter = [37.6173, 55.7558];
+  const initialZoom = 11;
 
-  // If city is selected via URL param, center on that city
-  if (filters.cityId) {
-    const selectedCity = props.cities.find(city => city.id === filters.cityId);
-    if (selectedCity && selectedCity.lat && selectedCity.lng) {
-      initialCenter = [selectedCity.lat, selectedCity.lng];
-      initialZoom = 12;
-    }
-  }
+  const { YMap, YMapDefaultSchemeLayer, YMapDefaultFeaturesLayer, YMapFeatureDataSource, YMapLayer, YMapListener } = ymaps3;
 
-  // Create map instance
-  map = L.map(mapContainer.value).setView(initialCenter, initialZoom);
+  map = new YMap(
+    mapContainer.value,
+    {
+      location: { center: initialCenter, zoom: initialZoom },
+      showScaleInCopyrights: true,
+    },
+    [
+      new YMapDefaultSchemeLayer({}),
+      new YMapDefaultFeaturesLayer({}),
+      new YMapFeatureDataSource({ id: 'clusterer-source' }),
+      new YMapLayer({ source: 'clusterer-source', type: 'markers', zIndex: 1800 }),
+    ]
+  );
 
-  // Add OpenStreetMap tiles
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-  }).addTo(map);
-
-  // Create cluster group using composable (pass L for SSR safety)
-  const { createClusterGroup } = useMarkerCluster(L);
-  markerClusterGroup = createClusterGroup();
-  map.addLayer(markerClusterGroup);
-
-  // Add debounced viewport change listener for bbox optimization
   debouncedLoadWorkouts = debounce(() => {
-    // Skip the first moveend event (fired right after initialization)
     if (isInitialLoad) {
       isInitialLoad = false;
       return;
@@ -303,186 +274,212 @@ const initMap = () => {
     loadWorkouts();
   }, 500);
 
-  map.on('moveend', debouncedLoadWorkouts);
+  const listener = new YMapListener({
+    layer: 'any',
+    onActionEnd: debouncedLoadWorkouts,
+  });
+  map.addChild(listener);
+};
+
+const buildFeatures = (workoutList) => {
+  return workoutList
+    .filter(w => w.lat != null && w.lng != null)
+    .map(w => ({
+      type: 'Feature',
+      id: String(w.id),
+      geometry: {
+        type: 'Point',
+        coordinates: [parseFloat(w.lng), parseFloat(w.lat)],
+      },
+      properties: { workout: w },
+    }));
+};
+
+const getAvailabilityStatus = (workout) => {
+  const total = workout.slots_total || 0;
+  const booked = workout.slots_booked || 0;
+  const available = total - booked;
+  if (available <= 0) return 'full';
+  if (total > 0 && available / total < 0.3) return 'low';
+  return 'available';
+};
+
+const createMarkerElement = (workout) => {
+  const el = document.createElement('div');
+  const status = getAvailabilityStatus(workout);
+  el.className = `ym-workout-pin ym-workout-pin--${status}`;
+  el.innerHTML = `
+    <svg width="32" height="40" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 0C7.163 0 0 7.163 0 16c0 10 16 24 16 24s16-14 16-24C32 7.163 24.837 0 16 0z" fill="currentColor"/>
+      <circle cx="16" cy="16" r="7" fill="white"/>
+    </svg>
+    <span class="ym-workout-pin__price">${escapeHtml(formatPrice(workout.slot_price))} ₽</span>
+  `;
+  el.addEventListener('click', () => {
+    selectedWorkout.value = workout;
+  });
+  return el;
+};
+
+const createClusterElement = (count) => {
+  const el = document.createElement('div');
+  el.className = 'ym-cluster-marker';
+  el.innerHTML = `<div class="ym-cluster-content"><span>${count}</span></div>`;
+  return el;
+};
+
+const updateClusterer = (workoutList) => {
+  if (!map || !YMapClusterer || !clusterByGrid) return;
+
+  if (clusterer) {
+    map.removeChild(clusterer);
+    clusterer = null;
+  }
+
+  const features = buildFeatures(workoutList);
+  if (features.length === 0) return;
+
+  const markerFactory = (feature) => {
+    return new YMapMarker(
+      { coordinates: feature.geometry.coordinates, source: 'clusterer-source' },
+      createMarkerElement(feature.properties.workout)
+    );
+  };
+
+  const clusterFactory = (coordinates, features) => {
+    const el = createClusterElement(features.length);
+    el.addEventListener('click', () => {
+      const allCoords = features.map(f => f.geometry.coordinates);
+      const lngs = allCoords.map(c => c[0]);
+      const lats = allCoords.map(c => c[1]);
+
+      const minLng = Math.min(...lngs);
+      const maxLng = Math.max(...lngs);
+      const minLat = Math.min(...lats);
+      const maxLat = Math.max(...lats);
+
+      const lngSpan = maxLng - minLng || 0.005;
+      const latSpan = maxLat - minLat || 0.005;
+      const pad = 0.35;
+
+      map.setLocation({
+        bounds: [
+          [minLng - lngSpan * pad, minLat - latSpan * pad],
+          [maxLng + lngSpan * pad, maxLat + latSpan * pad],
+        ],
+        duration: 400,
+      });
+
+      setTimeout(() => loadWorkouts(), 450);
+    });
+    return new YMapMarker({ coordinates, source: 'clusterer-source' }, el);
+  };
+
+  clusterer = new YMapClusterer({
+    method: clusterByGrid({ gridSize: 64 }),
+    features,
+    marker: markerFactory,
+    cluster: clusterFactory,
+  });
+
+  map.addChild(clusterer);
 };
 
 const loadWorkouts = async () => {
-  // Guard: bail if component is unmounted or map primitives not ready
-  if (!isMounted || !L || !markerClusterGroup) {
-    return;
-  }
+  if (!isMounted || !ymaps3 || !map) return;
 
-  // Cancel previous request if still in flight
   if (currentRequestController) {
     currentRequestController.abort();
   }
   const controller = new AbortController();
   currentRequestController = controller;
 
-  loading.value = true;
   hasError.value = false;
 
   try {
-    // Build query parameters from filters
     const params = {};
 
-    if (filters.cityId) {
-      params.city_id = filters.cityId;
-    }
+    if (filters.sportIds && filters.sportIds.length > 0) params.sport_id = filters.sportIds;
+    if (filters.dateFrom) params.date_from = filters.dateFrom;
+    if (filters.dateTo) params.date_to = filters.dateTo;
 
-    if (filters.sportIds && filters.sportIds.length > 0) {
-      params.sport_id = filters.sportIds;
-    }
-
-    if (filters.dateFrom) {
-      params.date_from = filters.dateFrom;
-    }
-
-    if (filters.dateTo) {
-      params.date_to = filters.dateTo;
-    }
-
-    // Add bounding box parameters from current viewport
-    if (map) {
-      const bounds = map.getBounds();
-      const northEast = bounds.getNorthEast();
-      const southWest = bounds.getSouthWest();
-
-      params.ne_lat = northEast.lat;
-      params.ne_lng = northEast.lng;
-      params.sw_lat = southWest.lat;
-      params.sw_lng = southWest.lng;
+    if (map.bounds) {
+      const [[lng1, lat1], [lng2, lat2]] = map.bounds;
+      const round6 = (v) => Math.round(v * 1e6) / 1e6;
+      params.sw_lat = round6(Math.min(lat1, lat2));
+      params.ne_lat = round6(Math.max(lat1, lat2));
+      params.sw_lng = round6(Math.min(lng1, lng2));
+      params.ne_lng = round6(Math.max(lng1, lng2));
     }
 
     const response = await window.axios.get('/api/workouts/map', {
       params,
-      signal: controller.signal
+      signal: controller.signal,
     });
 
-    // Check if results were truncated (API returns meta.truncated flag)
     if (response.data.meta?.truncated) {
       showToast('warning', 'Показано максимум 200 тренировок. Приблизьте карту для детального просмотра.');
     }
 
     workouts.value = response.data.data;
-
-    // Clear existing markers
-    if (markerClusterGroup) {
-      markerClusterGroup.clearLayers();
-    }
-
-    // Add markers for each workout
-    workouts.value.forEach(workout => {
-      if (workout.lat != null && workout.lng != null) {
-        addWorkoutMarker(workout);
-      }
-    });
-
+    updateClusterer(workouts.value);
   } catch (error) {
-    if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') {
-      // Request was cancelled, ignore
-      return;
-    }
+    if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') return;
     console.error('Failed to load workouts:', error);
     hasError.value = true;
     workouts.value = [];
 
-    // Clear existing markers to show true empty state
-    if (markerClusterGroup) {
-      markerClusterGroup.clearLayers();
+    if (clusterer && map) {
+      map.removeChild(clusterer);
+      clusterer = null;
     }
 
     showToast('error', 'Не удалось загрузить тренировки.');
   } finally {
-    // Only clear loading and controller if this request is still the current one
     if (currentRequestController === controller) {
-      loading.value = false;
+      initialLoading.value = false;
       currentRequestController = null;
     }
   }
 };
 
-// Handle filter changes with debouncing
 const handleFilterChange = debounce(() => {
   loadWorkouts();
 }, 300);
 
-// Escape HTML to prevent XSS
 const escapeHtml = (text) => {
   if (!text) return '';
-  const map = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;'
-  };
-  return String(text).replace(/[&<>"']/g, (m) => map[m]);
+  const entities = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+  return String(text).replace(/[&<>"']/g, (m) => entities[m]);
 };
 
-const addWorkoutMarker = (workout) => {
-  const lat = parseFloat(workout.lat);
-  const lng = parseFloat(workout.lng);
+const selectWorkoutFromSheet = (workout) => {
+  searchResultsSheet.value?.close();
+  selectedWorkout.value = workout;
 
-  if (isNaN(lat) || isNaN(lng)) {
-    console.warn('Invalid coordinates for workout:', workout.id);
-    return;
+  if (map && workout.lat && workout.lng) {
+    map.setLocation({
+      center: [parseFloat(workout.lng), parseFloat(workout.lat)],
+      zoom: Math.max(map.zoom ?? 14, 14),
+      duration: 400,
+    });
   }
-
-  const marker = L.marker([lat, lng]);
-
-  // Create popup content with escaped HTML
-  const popupContent = `
-    <div class="p-2">
-      <div class="font-semibold text-sm">${escapeHtml(workout.sport_name || 'Тренировка')}</div>
-      <div class="text-xs text-gray-600 mt-1">
-        ${new Date(workout.starts_at).toLocaleString('ru-RU', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        })}
-      </div>
-      <div class="text-xs text-gray-600 mt-1">
-        ${escapeHtml(workout.coach_name || 'Тренер')}
-      </div>
-      <div class="text-xs font-semibold mt-1">
-        ${escapeHtml(String(workout.slot_price))} ₽
-      </div>
-    </div>
-  `;
-
-  marker.bindPopup(popupContent);
-
-  // Handle marker click
-  marker.on('click', () => {
-    selectedWorkout.value = workout;
-  });
-
-  // Add marker to cluster group
-  markerClusterGroup.addLayer(marker);
 };
 
 const closeWorkoutCard = () => {
   selectedWorkout.value = null;
+  workoutCardExpanded.value = false;
 };
 
 const showToast = (type, message) => {
-  // Clear existing timeout
-  if (toastTimeout) {
-    clearTimeout(toastTimeout);
-  }
+  if (toastTimeout) clearTimeout(toastTimeout);
 
   toast.show = true;
   toast.type = type;
   toast.message = message;
 
-  // Auto-dismiss after 5 seconds (8 seconds for warnings)
   const dismissTime = type === 'warning' ? 8000 : 5000;
-  toastTimeout = setTimeout(() => {
-    closeToast();
-  }, dismissTime);
+  toastTimeout = setTimeout(() => closeToast(), dismissTime);
 };
 
 const closeToast = () => {
@@ -493,89 +490,113 @@ const closeToast = () => {
   }
 };
 
+const goToMyLocation = () => {
+  if (!navigator.geolocation || !map) return;
+
+  geoLocating.value = true;
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      geoLocating.value = false;
+      const { longitude, latitude } = position.coords;
+      map.setLocation({
+        center: [longitude, latitude],
+        zoom: 14,
+        duration: 400,
+      });
+      setTimeout(() => loadWorkouts(), 450);
+    },
+    () => {
+      geoLocating.value = false;
+      showToast('error', 'Не удалось определить местоположение. Проверьте разрешения.');
+    },
+    { enableHighAccuracy: true, timeout: 10000 },
+  );
+};
+
 const retryAfterError = async () => {
-  // If bootstrap incomplete (L, useMarkerCluster, or map missing), retry full bootstrap
-  if (!L || !useMarkerCluster || !map || !markerClusterGroup) {
-    // Clean up partial state before retry
+  if (!ymaps3 || !map || !YMapClusterer) {
     if (map) {
-      map.remove();
+      map.destroy();
       map = null;
     }
-    if (markerClusterGroup) {
-      markerClusterGroup.clearLayers();
-      markerClusterGroup = null;
-    }
-    L = null;
-    useMarkerCluster = null;
+    clusterer = null;
+    ymaps3 = null;
     await initBootstrap();
   } else {
-    // Otherwise just retry loading workouts
     await loadWorkouts();
   }
 };
 </script>
 
 <style scoped>
-/* Ensure map takes full height */
-:deep(.leaflet-container) {
-  height: 100%;
-  width: 100%;
+.geo-btn-enter-active,
+.geo-btn-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.geo-btn-enter-from,
+.geo-btn-leave-to {
+  opacity: 0;
+  transform: scale(0.8);
 }
 
-/* Ensure Leaflet controls are visible and above other content */
-:deep(.leaflet-control-zoom) {
-  border: 2px solid rgba(0, 0, 0, 0.2);
-  z-index: 1000;
+:deep(.ym-workout-pin) {
+  position: relative;
+  cursor: pointer;
+  transform: translate(-50%, -100%);
+  transition: transform 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #f04e23;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
 }
 
-:deep(.leaflet-bar a) {
-  color: #000;
+:deep(.ym-workout-pin:hover) {
+  transform: translate(-50%, -100%) scale(1.12);
 }
 
-/* Cluster marker styles */
-:deep(.marker-cluster) {
-  background-color: rgba(79, 70, 229, 0.6);
-  border-radius: 50%;
-  text-align: center;
-  color: white;
-  font-weight: bold;
+:deep(.ym-workout-pin--available) {
+  color: #f04e23;
 }
 
-:deep(.marker-cluster div) {
+:deep(.ym-workout-pin--low) {
+  color: #f59e0b;
+}
+
+:deep(.ym-workout-pin--full) {
+  color: #9ca3af;
+}
+
+:deep(.ym-workout-pin__price) {
+  position: absolute;
+  bottom: -18px;
+  white-space: nowrap;
+  background: white;
+  border-radius: 9999px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #374151;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+}
+
+:deep(.ym-cluster-marker) {
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+
+:deep(.ym-cluster-content) {
   width: 40px;
   height: 40px;
-  margin-left: 0;
-  margin-top: 0;
-  text-align: center;
   border-radius: 50%;
-  background-color: rgba(79, 70, 229, 0.8);
-}
-
-:deep(.marker-cluster span) {
-  line-height: 40px;
-}
-
-:deep(.marker-cluster-small) {
-  background-color: rgba(79, 70, 229, 0.6);
-}
-
-:deep(.marker-cluster-small div) {
-  background-color: rgba(79, 70, 229, 0.8);
-}
-
-:deep(.marker-cluster-medium) {
-  background-color: rgba(67, 56, 202, 0.6);
-}
-
-:deep(.marker-cluster-medium div) {
-  background-color: rgba(67, 56, 202, 0.8);
-}
-
-:deep(.marker-cluster-large) {
-  background-color: rgba(55, 48, 163, 0.6);
-}
-
-:deep(.marker-cluster-large div) {
-  background-color: rgba(55, 48, 163, 0.8);
+  background: rgba(240, 78, 35, 0.9);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(240, 78, 35, 0.4);
 }
 </style>

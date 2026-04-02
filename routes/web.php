@@ -9,23 +9,22 @@ use App\Http\Controllers\Coach\WorkoutController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicMapController;
-use App\Models\City;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get('/', function () {
-    $cities = City::select('id', 'name', 'lat', 'lng')
-        ->orderBy('name')
-        ->get();
+Route::get('/sw.js', function () {
+    $path = public_path('build/sw.js');
 
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'cities' => $cities,
+    if (! file_exists($path)) {
+        abort(404);
+    }
+
+    return response()->file($path, [
+        'Content-Type' => 'application/javascript',
+        'Service-Worker-Allowed' => '/',
     ]);
 });
 
-// Public map route
+Route::get('/', [PublicMapController::class, 'index'])->name('home');
 Route::get('/map', [PublicMapController::class, 'index'])->name('map');
 
 Route::get('/dashboard', function () {

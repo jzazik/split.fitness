@@ -1,6 +1,7 @@
 <script setup>
 import AthleteLayout from '@/Layouts/AthleteLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { formatPrice } from '@/utils/workout';
 
 const props = defineProps({
     booking: Object,
@@ -247,14 +248,14 @@ const cancelBooking = () => {
                             <div>
                                 <label class="block text-sm font-medium text-gray-500 mb-1">Стоимость за место</label>
                                 <p class="text-base text-gray-900">
-                                    {{ booking.slot_price }} ₽
+                                    {{ formatPrice(booking.slot_price) }} ₽
                                 </p>
                             </div>
 
                             <div class="pt-2 border-t">
                                 <label class="block text-sm font-medium text-gray-500 mb-1">Итого к оплате</label>
                                 <p class="text-2xl font-bold text-gray-900">
-                                    {{ booking.total_amount }} ₽
+                                    {{ formatPrice(booking.total_amount) }} ₽
                                 </p>
                             </div>
 

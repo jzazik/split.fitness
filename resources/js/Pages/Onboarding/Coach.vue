@@ -131,7 +131,7 @@ const submit = async () => {
         <div class="mb-6">
             <div class="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
                 <div
-                    class="h-full bg-blue-600 transition-all duration-300"
+                    class="h-full bg-primary-600 transition-all duration-300"
                     :style="{ width: progress + '%' }"
                 ></div>
             </div>
@@ -158,7 +158,7 @@ const submit = async () => {
                     id="first_name"
                     v-model="form.first_name"
                     type="text"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                     required
                 />
                 <div v-if="form.errors.first_name" class="mt-1 text-sm text-red-600">
@@ -174,7 +174,7 @@ const submit = async () => {
                     id="last_name"
                     v-model="form.last_name"
                     type="text"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                     required
                 />
                 <div v-if="form.errors.last_name" class="mt-1 text-sm text-red-600">
@@ -190,7 +190,7 @@ const submit = async () => {
                     id="middle_name"
                     v-model="form.middle_name"
                     type="text"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                 />
             </div>
 
@@ -198,7 +198,7 @@ const submit = async () => {
                 type="button"
                 @click="nextStep"
                 :disabled="!canProceedToStep2"
-                class="w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                class="w-full rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
                 Далее
             </button>
@@ -235,7 +235,7 @@ const submit = async () => {
                     v-model.number="form.experience_years"
                     type="number"
                     min="0"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                 />
             </div>
 
@@ -251,7 +251,7 @@ const submit = async () => {
                     type="button"
                     @click="nextStep"
                     :disabled="!canProceedToStep3"
-                    class="flex-1 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    class="flex-1 rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                     Далее
                 </button>
@@ -268,7 +268,7 @@ const submit = async () => {
                 <select
                     id="city_id"
                     v-model="form.city_id"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                     required
                 >
                     <option :value="null">Выберите город</option>
@@ -290,7 +290,7 @@ const submit = async () => {
                     v-model="form.bio"
                     rows="5"
                     maxlength="1000"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                     placeholder="Расскажите о своем опыте, достижениях, подходе к тренировкам..."
                     required
                 ></textarea>
@@ -314,7 +314,7 @@ const submit = async () => {
                     type="button"
                     @click="nextStep"
                     :disabled="!canProceedToStep4"
-                    class="flex-1 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    class="flex-1 rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                     Далее
                 </button>
@@ -324,8 +324,8 @@ const submit = async () => {
         <div v-if="currentStep === 4" class="space-y-4">
             <h3 class="text-lg font-semibold text-gray-900">Загрузите дипломы (необязательно)</h3>
 
-            <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
-                <p class="text-sm text-blue-900">
+            <div class="bg-primary-50 border border-primary-200 rounded-md p-4">
+                <p class="text-sm text-primary-900">
                     Загрузите фотографии или сканы ваших дипломов, сертификатов и других документов, подтверждающих ваше образование и квалификацию. Этот шаг необязателен, но он повышает доверие к вашему профилю.
                 </p>
             </div>
@@ -357,7 +357,7 @@ const submit = async () => {
                 <button
                     type="button"
                     @click="nextStep"
-                    class="flex-1 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                    class="flex-1 rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700"
                 >
                     {{ (profile?.diplomas || []).length > 0 ? 'Далее' : 'Пропустить' }}
                 </button>
@@ -367,8 +367,8 @@ const submit = async () => {
         <div v-if="currentStep === 5" class="space-y-4">
             <h3 class="text-lg font-semibold text-gray-900">Готово!</h3>
 
-            <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
-                <p class="text-sm text-blue-900">
+            <div class="bg-primary-50 border border-primary-200 rounded-md p-4">
+                <p class="text-sm text-primary-900">
                     Ваш профиль будет отправлен на модерацию. После одобрения администратором вы сможете публиковать тренировки и принимать заявки от атлетов.
                 </p>
             </div>

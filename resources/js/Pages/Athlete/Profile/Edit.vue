@@ -85,7 +85,7 @@ const submit = () => {
                                         id="last_name"
                                         v-model="form.last_name"
                                         type="text"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                         required
                                     >
                                     <p v-if="form.errors.last_name" class="mt-1 text-sm text-red-600">{{ form.errors.last_name }}</p>
@@ -99,7 +99,7 @@ const submit = () => {
                                         id="first_name"
                                         v-model="form.first_name"
                                         type="text"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                         required
                                     >
                                     <p v-if="form.errors.first_name" class="mt-1 text-sm text-red-600">{{ form.errors.first_name }}</p>
@@ -115,7 +115,7 @@ const submit = () => {
                                     id="phone"
                                     v-model="form.phone"
                                     type="tel"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                     placeholder="+7 (___) ___-__-__"
                                 >
                                 <p v-if="form.errors.phone" class="mt-1 text-sm text-red-600">{{ form.errors.phone }}</p>
@@ -129,7 +129,7 @@ const submit = () => {
                                 <select
                                     id="city_id"
                                     v-model="form.city_id"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                 >
                                     <option :value="null">Выберите город</option>
                                     <option v-for="city in cities" :key="city.id" :value="city.id">
@@ -148,7 +148,7 @@ const submit = () => {
                                     id="emergency_contact"
                                     v-model="form.emergency_contact"
                                     type="text"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                     placeholder="Имя и телефон близкого человека"
                                 >
                                 <p v-if="form.errors.emergency_contact" class="mt-1 text-sm text-red-600">{{ form.errors.emergency_contact }}</p>
@@ -162,7 +162,7 @@ const submit = () => {
                                 <button
                                     type="submit"
                                     :disabled="form.processing"
-                                    class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    class="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {{ form.processing ? 'Сохранение...' : 'Сохранить' }}
                                 </button>

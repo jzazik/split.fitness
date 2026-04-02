@@ -99,13 +99,13 @@ const isSelected = (optionValue) => {
             <span
                 v-for="item in selectedItems"
                 :key="item[valueKey]"
-                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-primary-100 text-primary-800"
             >
                 {{ item[labelKey] }}
                 <button
                     type="button"
                     @click.stop="removeBadge(item[valueKey])"
-                    class="ml-1.5 inline-flex items-center justify-center w-4 h-4 text-blue-600 hover:bg-blue-200 hover:text-blue-900 rounded-full transition"
+                    class="ml-1.5 inline-flex items-center justify-center w-4 h-4 text-primary-600 hover:bg-primary-200 hover:text-primary-900 rounded-full transition"
                 >
                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                         <path
@@ -122,7 +122,7 @@ const isSelected = (optionValue) => {
         <button
             type="button"
             @click="toggleDropdown"
-            class="w-full px-4 py-2 text-left border border-gray-300 rounded-md bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            class="w-full px-4 py-2 text-left border border-gray-300 rounded-md bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition"
         >
             <div class="flex items-center justify-between">
                 <span class="text-sm text-gray-700">
@@ -154,7 +154,7 @@ const isSelected = (optionValue) => {
                     v-model="searchQuery"
                     type="text"
                     :placeholder="placeholder"
-                    class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     @click.stop
                 >
             </div>
@@ -172,7 +172,7 @@ const isSelected = (optionValue) => {
                         :value="option[valueKey]"
                         :checked="isSelected(option[valueKey])"
                         @change="toggleOption(option[valueKey])"
-                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                     >
                     <span class="ml-2 text-sm text-gray-700">
                         {{ option[labelKey] }}

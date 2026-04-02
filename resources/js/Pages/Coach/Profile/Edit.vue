@@ -164,7 +164,7 @@ const submit = () => {
                                         id="last_name"
                                         v-model="form.last_name"
                                         type="text"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                         required
                                     >
                                     <p v-if="form.errors.last_name" class="mt-1 text-sm text-red-600">{{ form.errors.last_name }}</p>
@@ -178,7 +178,7 @@ const submit = () => {
                                         id="first_name"
                                         v-model="form.first_name"
                                         type="text"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                         required
                                     >
                                     <p v-if="form.errors.first_name" class="mt-1 text-sm text-red-600">{{ form.errors.first_name }}</p>
@@ -192,7 +192,7 @@ const submit = () => {
                                         id="middle_name"
                                         v-model="form.middle_name"
                                         type="text"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                     >
                                 </div>
                             </div>
@@ -206,7 +206,7 @@ const submit = () => {
                                     id="bio"
                                     v-model="form.bio"
                                     rows="4"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                     maxlength="1000"
                                     required
                                 ></textarea>
@@ -223,7 +223,7 @@ const submit = () => {
                                     <select
                                         id="city_id"
                                         v-model="form.city_id"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                         required
                                     >
                                         <option :value="null">Выберите город</option>
@@ -244,7 +244,7 @@ const submit = () => {
                                         type="number"
                                         min="0"
                                         max="100"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                     >
                                     <p v-if="form.errors.experience_years" class="mt-1 text-sm text-red-600">{{ form.errors.experience_years }}</p>
                                 </div>
@@ -305,7 +305,7 @@ const submit = () => {
                                 <button
                                     type="submit"
                                     :disabled="form.processing"
-                                    class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    class="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {{ form.processing ? 'Сохранение...' : 'Сохранить' }}
                                 </button>

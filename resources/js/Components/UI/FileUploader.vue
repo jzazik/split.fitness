@@ -149,7 +149,7 @@ const triggerFileInput = () => {
                             class="w-8 h-8"
                             :class="{
                                 'text-red-500': getFileIcon(file) === 'pdf',
-                                'text-blue-500': getFileIcon(file) === 'image',
+                                'text-primary-500': getFileIcon(file) === 'image',
                                 'text-gray-500': getFileIcon(file) === 'file',
                             }"
                             viewBox="0 0 20 20"
@@ -164,7 +164,7 @@ const triggerFileInput = () => {
                         </p>
                         <p class="text-xs text-gray-500">
                             {{ formatFileSize(file.size) }}
-                            <span v-if="!file.isExisting" class="text-blue-600 ml-1">
+                            <span v-if="!file.isExisting" class="text-primary-600 ml-1">
                                 (новый)
                             </span>
                         </p>
@@ -177,7 +177,7 @@ const triggerFileInput = () => {
                         v-if="file.isExisting && file.url"
                         :href="file.url"
                         target="_blank"
-                        class="text-sm text-blue-600 hover:underline"
+                        class="text-sm text-primary-600 hover:underline"
                     >
                         Открыть
                     </a>
@@ -223,7 +223,7 @@ const triggerFileInput = () => {
                 v-if="selectedFiles.length > 0"
                 type="button"
                 @click="uploadFiles"
-                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                class="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 transition"
             >
                 Загрузить ({{ selectedFiles.length }})
             </button>
