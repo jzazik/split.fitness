@@ -104,34 +104,20 @@ class MapController extends Controller
 
         $requestDuration = round((microtime(true) - $startTime) * 1000, 2);
 
-        // Log successful request with monitoring data
-        $logContext = [
-            'result_count' => $resultCount,
-            'truncated' => $wasTruncated,
-            'request_duration' => $requestDuration,
-        ];
+        if ($wasTruncated || $requestDuration > 1000) {
+            $logContext = [
+                'result_count' => $resultCount,
+                'truncated' => $wasTruncated,
+                'request_duration' => $requestDuration,
+            ];
 
-        if ($bbox) {
-            $logContext['bbox'] = $bbox;
-        }
+            if ($wasTruncated) {
+                Log::warning('Map API: result limit reached', $logContext);
+            }
 
-        if ($request->filled('city_id')) {
-            $logContext['city_id'] = $validated['city_id'];
-        }
-
-        if ($request->filled('sport_id')) {
-            $logContext['sport_id'] = $validated['sport_id'];
-        }
-
-        Log::info('Map API: workouts loaded', $logContext);
-
-        // Log performance warnings
-        if ($wasTruncated) {
-            Log::warning('Map API: result limit reached', $logContext);
-        }
-
-        if ($requestDuration > 1000) {
-            Log::warning('Map API: slow query detected', $logContext);
+            if ($requestDuration > 1000) {
+                Log::warning('Map API: slow query detected', $logContext);
+            }
         }
 
         return WorkoutMapResource::collection($workouts)->additional([

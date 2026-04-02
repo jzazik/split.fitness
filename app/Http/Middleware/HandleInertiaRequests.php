@@ -15,6 +15,15 @@ class HandleInertiaRequests extends Middleware
      */
     protected $rootView = 'app';
 
+    public function handle(Request $request, \Closure $next): mixed
+    {
+        if ($request->is('log-viewer*')) {
+            return $next($request);
+        }
+
+        return parent::handle($request, $next);
+    }
+
     /**
      * Determine the current asset version.
      */
