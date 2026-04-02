@@ -159,7 +159,7 @@ const cancelBooking = (bookingId) => {
                             У вас нет отменённых тренировок
                         </template>
                     </p>
-                    <Link :href="route('map')" class="mt-4 inline-block text-primary-600 hover:text-primary-800">
+                    <Link :href="route('home')" class="mt-4 inline-block text-primary-600 hover:text-primary-800">
                         Найти тренировку
                     </Link>
                 </div>

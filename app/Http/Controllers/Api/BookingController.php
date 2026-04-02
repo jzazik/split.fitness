@@ -6,6 +6,7 @@ use App\Actions\Booking\CreateBookingAction;
 use App\Exceptions\Booking\OversellException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateBookingRequest;
+use App\Models\Booking;
 use App\Models\Workout;
 use App\Services\Payment\PaymentServiceInterface;
 use Illuminate\Http\JsonResponse;
@@ -20,7 +21,7 @@ class BookingController extends Controller
     ) {}
 
     /**
-     * Create a new booking.
+     * Create a new booking or retry payment for an existing pending one.
      */
     public function store(CreateBookingRequest $request): JsonResponse
     {
@@ -31,8 +32,10 @@ class BookingController extends Controller
             $athlete = $request->user();
             $slotsCount = $validated['slots_count'];
 
-            $booking = $this->createBookingAction->execute($workout, $athlete, $slotsCount);
-            $payment = $this->paymentService->createPayment($booking);
+            $booking = $this->findPendingBooking($workout, $athlete)
+                ?? $this->createBookingAction->execute($workout, $athlete, $slotsCount);
+
+            $payment = $booking->payment ?? $this->paymentService->createPayment($booking);
 
             return response()->json([
                 'booking' => [
@@ -67,5 +70,13 @@ class BookingController extends Controller
                 'message' => 'Не удалось создать бронирование. Попробуйте позже.',
             ], 500);
         }
+    }
+
+    private function findPendingBooking(Workout $workout, $athlete): ?Booking
+    {
+        return Booking::where('workout_id', $workout->id)
+            ->where('athlete_id', $athlete->id)
+            ->where('status', 'pending_payment')
+            ->first();
     }
 }

@@ -34,6 +34,18 @@ class SportsSeeder extends Seeder
             ['slug' => 'bootcamp', 'name' => 'Буткемп'],
             ['slug' => 'skiing', 'name' => 'Лыжи'],
             ['slug' => 'ice-skating', 'name' => 'Коньки'],
+            ['slug' => 'dance', 'name' => 'Танцы'],
+            ['slug' => 'boxing', 'name' => 'Бокс'],
+            ['slug' => 'swimming', 'name' => 'Плавание'],
+            ['slug' => 'pilates', 'name' => 'Пилатес'],
+            ['slug' => 'martial-arts', 'name' => 'Единоборства'],
+            ['slug' => 'weightlifting', 'name' => 'Тяжёлая атлетика'],
+            ['slug' => 'powerlifting', 'name' => 'Пауэрлифтинг'],
+            ['slug' => 'bodybuilding', 'name' => 'Бодибилдинг'],
+            ['slug' => 'climbing', 'name' => 'Скалолазание'],
+            ['slug' => 'surfing', 'name' => 'Сёрфинг'],
+            ['slug' => 'gymnastics', 'name' => 'Гимнастика'],
+            ['slug' => 'trx', 'name' => 'TRX'],
         ];
 
         $canonicalSlugs = array_column($sports, 'slug');

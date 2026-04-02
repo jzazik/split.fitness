@@ -47,12 +47,9 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
-        $defaultIntended = match ($user->role) {
-            'athlete' => route('athlete.bookings', absolute: false),
-            'coach' => route('coach.dashboard', absolute: false),
-            'admin' => route('admin.dashboard', absolute: false),
-            default => throw new \RuntimeException('Invalid user role: '.$user->role),
-        };
+        $defaultIntended = $user->role === 'admin'
+            ? route('admin.dashboard', absolute: false)
+            : route('home', absolute: false);
 
         return redirect()->intended($defaultIntended);
     }

@@ -1,11 +1,10 @@
 <template>
-  <div class="md:hidden">
-    <!-- Floating button -->
+  <div>
     <Transition name="fab">
       <button
         v-if="workouts.length > 0 && !isOpen && !selectedWorkout"
         type="button"
-        class="fixed z-[1000] bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 px-5 py-3 rounded-full bg-primary-500 text-white text-sm font-semibold shadow-lg active:scale-95 transition-transform whitespace-nowrap"
+        class="md:hidden fixed z-[1000] bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 flex items-center gap-2 px-5 py-3 rounded-full bg-primary-500 text-white text-sm font-semibold shadow-lg active:scale-95 transition-all whitespace-nowrap"
         @click="isOpen = true"
       >
         <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

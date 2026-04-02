@@ -43,4 +43,9 @@ return [
         'force' => env('SMSCRU_FORCE', false),
     ],
 
+    'cloudpayments' => [
+        'public_id' => env('CLOUDPAYMENTS_PUBLIC_ID'),
+        'api_secret' => env('CLOUDPAYMENTS_API_SECRET'),
+    ],
+
 ];

@@ -22,12 +22,8 @@ class OnboardingController extends Controller
         $user = auth()->user();
 
         // Redirect if profile is already completed
-        if ($user->isCoach() && $user->coachProfile && $this->isProfileCompleted($user)) {
-            return redirect()->route('coach.dashboard');
-        }
-
-        if ($user->isAthlete() && $user->athleteProfile && $this->isProfileCompleted($user)) {
-            return redirect()->route('athlete.bookings');
+        if ($this->isProfileCompleted($user)) {
+            return redirect()->route('home');
         }
 
         $cities = City::orderBy('name')->get(['id', 'name']);
@@ -147,7 +143,7 @@ class OnboardingController extends Controller
                 ]);
             });
 
-            return redirect()->route('coach.dashboard')->with('success', 'Профиль заполнен! Он будет проверен администратором.');
+            return redirect()->route('home')->with('success', 'Профиль заполнен! Он будет проверен администратором.');
         } catch (\Exception $e) {
             Log::error('Failed to complete coach onboarding', [
                 'user_id' => $user->id,

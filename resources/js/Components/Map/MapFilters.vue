@@ -11,13 +11,14 @@
           :key="sport.id"
           type="button"
           :class="[
-            'px-3 py-1 rounded-full text-sm font-medium transition-colors',
+            'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium transition-colors',
             localFilters.sportIds.includes(sport.id)
               ? 'bg-primary-600 text-white'
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           ]"
           @click="toggleSport(sport.id)"
         >
+          <svg class="size-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" v-html="getSportIconPaths(sport.slug)" />
           {{ sport.name }}
         </button>
       </div>
@@ -79,6 +80,7 @@
 <script setup>
 import { reactive, watch } from 'vue';
 import { useDatePresets } from '@/composables/useDatePresets';
+import { getSportIconPaths } from '@/utils/sportIcons';
 
 const props = defineProps({
   sports: {

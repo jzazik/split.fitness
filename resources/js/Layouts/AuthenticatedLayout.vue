@@ -22,7 +22,7 @@ const showingNavigationDropdown = ref(false);
                         <div class="flex">
                             <!-- Logo -->
                             <div class="flex shrink-0 items-center">
-                                <Link :href="route('map')">
+                                <Link :href="route('home')">
                                     <ApplicationLogo />
                                 </Link>
                             </div>

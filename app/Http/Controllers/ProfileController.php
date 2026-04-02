@@ -3,25 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Sport;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
     public function edit(Request $request): Response
     {
+        $user = $request->user();
+
         return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
+            'avatarUrl' => $user->getFirstMediaUrl('avatar') ?: null,
+            'sports' => Sport::where('is_active', true)->orderBy('name')->get(['id', 'slug', 'name']),
         ]);
     }
 
@@ -41,9 +44,56 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit');
     }
 
-    /**
-     * Delete the user's account.
-     */
+    public function uploadAvatar(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'avatar' => 'required|image|max:5120',
+        ]);
+
+        $user = $request->user();
+
+        try {
+            $user->addMediaFromRequest('avatar')
+                ->toMediaCollection('avatar');
+
+            Log::info('Avatar uploaded', [
+                'user_id' => $user->id,
+                'role' => $user->role,
+            ]);
+
+            return Redirect::route('profile.edit')->with('success', 'Фото загружено');
+        } catch (\Exception $e) {
+            Log::error('Avatar upload failed', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return Redirect::route('profile.edit')
+                ->withErrors(['avatar' => 'Не удалось загрузить фото. Попробуйте ещё раз.']);
+        }
+    }
+
+    public function deleteAvatar(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        try {
+            $user->clearMediaCollection('avatar');
+
+            Log::info('Avatar removed', ['user_id' => $user->id]);
+
+            return Redirect::route('profile.edit')->with('success', 'Фото удалено');
+        } catch (\Exception $e) {
+            Log::error('Avatar removal failed', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return Redirect::route('profile.edit')
+                ->withErrors(['avatar' => 'Не удалось удалить фото.']);
+        }
+    }
+
     public function destroy(Request $request): RedirectResponse
     {
         $request->validate([

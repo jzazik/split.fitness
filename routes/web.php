@@ -30,23 +30,21 @@ Route::get('/debug/sms-config', function () {
 });
 
 Route::get('/', [PublicMapController::class, 'index'])->name('home');
-Route::get('/map', [PublicMapController::class, 'index'])->name('map');
 
 Route::get('/dashboard', function () {
     $user = auth()->user();
 
-    return redirect(match ($user->role) {
-        'athlete' => route('athlete.bookings'),
-        'coach' => route('coach.dashboard'),
-        'admin' => route('admin.dashboard'),
-        default => '/',
-    });
+    return redirect($user->role === 'admin'
+        ? route('admin.dashboard')
+        : route('home'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/avatar', [ProfileController::class, 'uploadAvatar'])->name('profile.uploadAvatar');
+    Route::delete('/profile/avatar', [ProfileController::class, 'deleteAvatar'])->name('profile.deleteAvatar');
 });
 
 // Onboarding routes

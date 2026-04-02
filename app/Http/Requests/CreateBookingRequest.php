@@ -15,7 +15,7 @@ class CreateBookingRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user() && $this->user()->role === 'athlete';
+        return $this->user() !== null;
     }
 
     /**
@@ -58,17 +58,22 @@ class CreateBookingRequest extends FormRequest
                 $validator->errors()->add('workout_id', 'Тренировка уже началась или завершилась');
             }
 
-            // Check for duplicate booking (also checked in action for TOCTOU protection)
             $existingBooking = Booking::where('workout_id', $workoutId)
                 ->where('athlete_id', $this->user()->id)
                 ->whereIn('status', ['pending_payment', 'paid'])
-                ->exists();
+                ->first();
 
-            if ($existingBooking) {
+            if ($existingBooking?->status === 'paid') {
                 $validator->errors()->add('workout_id', 'Вы уже записаны на эту тренировку');
+
+                return;
             }
 
-            // Check if requested slots fit available capacity
+            // Skip capacity check if retrying payment for existing pending booking
+            if ($existingBooking?->status === 'pending_payment') {
+                return;
+            }
+
             $slotsCount = (int) $this->input('slots_count', 1);
             $availableSlots = $workout->slots_total - $workout->slots_booked;
             if ($slotsCount > $availableSlots) {

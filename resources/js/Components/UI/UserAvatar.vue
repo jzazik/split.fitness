@@ -1,14 +1,13 @@
 <script setup>
-import { computed, ref } from 'vue';
-import { getSportIconSvg, getRandomSportIconSvg } from '@/utils/sportIcons';
-
-const stableRandomIcon = ref(getRandomSportIconSvg());
+import { computed } from 'vue';
+import { getSportIconSvg, getDeterministicSportIconSvg } from '@/utils/sportIcons';
 
 const props = defineProps({
     firstName: { type: String, default: '' },
     lastName: { type: String, default: '' },
     avatarUrl: { type: String, default: null },
     sportSlug: { type: String, default: null },
+    userId: { type: [Number, String], default: null },
     size: { type: String, default: 'md', validator: (v) => ['sm', 'md', 'lg'].includes(v) },
 });
 
@@ -24,7 +23,7 @@ const initials = computed(() => {
 
 const fallbackIconHtml = computed(() => {
     if (props.sportSlug) return getSportIconSvg(props.sportSlug);
-    return stableRandomIcon.value;
+    return getDeterministicSportIconSvg(props.userId);
 });
 
 const sportBadgeHtml = computed(() => {
@@ -55,13 +54,13 @@ const sizeClasses = computed(() => ({
             />
             <span
                 v-else-if="hasName"
-                class="size-full flex items-center justify-center bg-gradient-to-br from-primary-500 to-primary-700 text-white"
+                class="avatar-gradient size-full flex items-center justify-center text-white"
             >
                 {{ initials }}
             </span>
             <span
                 v-else
-                class="size-full flex items-center justify-center bg-gradient-to-br from-primary-500 to-primary-700 text-white p-1.5"
+                class="avatar-gradient size-full flex items-center justify-center text-white p-1.5"
                 v-html="fallbackIconHtml"
             />
         </div>
@@ -76,3 +75,9 @@ const sizeClasses = computed(() => ({
         />
     </div>
 </template>
+
+<style scoped>
+.avatar-gradient {
+    background: linear-gradient(135deg, #ff7043 0%, #f04e23 45%, #c62828 100%);
+}
+</style>

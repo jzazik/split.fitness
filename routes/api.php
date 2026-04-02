@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/workouts/map', [MapController::class, 'index'])
     ->middleware('throttle:60,1');
 
-Route::middleware(['auth:sanctum', 'role:athlete,coach'])->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/bookings', [BookingController::class, 'store'])
         ->middleware('throttle:10,1');
 });

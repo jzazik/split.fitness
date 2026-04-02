@@ -11,19 +11,9 @@ export function useSmsAuth() {
 
     let cooldownTimer = null;
 
-    const phoneFormatted = computed(() => {
-        const digits = phone.value.replace(/\D/g, '');
-        if (digits.startsWith('8') && digits.length === 11) {
-            return '+7' + digits.slice(1);
-        }
-        if (digits.startsWith('7') && digits.length === 11) {
-            return '+7' + digits.slice(1);
-        }
-        if (digits.length === 10) {
-            return '+7' + digits;
-        }
-        return phone.value.startsWith('+') ? phone.value : '+' + digits;
-    });
+    const phoneDigits = computed(() => phone.value.replace(/\D/g, ''));
+    const isPhoneValid = computed(() => phoneDigits.value.length === 10);
+    const phoneFormatted = computed(() => `+7${phoneDigits.value}`);
 
     function startCooldown(seconds = 60) {
         cooldown.value = seconds;
@@ -139,6 +129,8 @@ export function useSmsAuth() {
         loading,
         errors,
         cooldown,
+        phoneDigits,
+        isPhoneValid,
         phoneFormatted,
         sendCode,
         verifyCode,

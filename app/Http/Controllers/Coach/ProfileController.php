@@ -364,12 +364,12 @@ class ProfileController extends Controller
         $profile = $user->coachProfile;
 
         if (! $profile) {
-            return redirect()->route('coach.dashboard')
+            return redirect()->route('home')
                 ->withErrors(['profile' => 'Профиль не найден.']);
         }
 
         if ($profile->moderation_status !== 'rejected') {
-            return redirect()->route('coach.dashboard')
+            return redirect()->route('home')
                 ->withErrors(['profile' => 'Профиль не был отклонён.']);
         }
 
@@ -387,7 +387,7 @@ class ProfileController extends Controller
             ]);
         });
 
-        return redirect()->route('coach.dashboard')
+        return redirect()->route('home')
             ->with('success', 'Профиль отправлен на повторную проверку.');
     }
 }

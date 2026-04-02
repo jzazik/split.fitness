@@ -2,8 +2,8 @@
   <PublicLayout hide-footer full-screen>
     <Head title="Карта тренировок" />
 
-    <div class="relative h-full">
-      <div ref="mapContainer" class="w-full h-full"></div>
+    <div class="relative h-full overflow-hidden">
+      <div ref="mapContainer" class="w-full h-[calc(100%+40px)]"></div>
 
       <MapFilters
         v-model="filters"
@@ -14,19 +14,24 @@
       <MobileMapFilters
         v-model="filters"
         :sports="sports"
+        :geo-locating="geoLocating"
         @change="handleFilterChange"
+        @geolocate="goToMyLocation"
       />
 
-      <!-- Geolocation button -->
+      <UpcomingWorkoutBanner
+        :workouts="props.bookedWorkouts"
+        :highlight-workout-id="bookedWorkoutParam"
+        @select="selectWorkoutFromBanner"
+      />
+
+      <!-- Geolocation button (desktop only, mobile is inside MobileMapFilters) -->
       <Transition name="geo-btn">
         <button
           v-show="!workoutCardExpanded"
           type="button"
-          class="absolute z-[1000] right-3 md:top-4 md:bottom-auto md:right-4 flex items-center justify-center size-11 rounded-full bg-white shadow-lg border border-gray-200 text-gray-600 hover:text-primary-600 active:bg-gray-50 transition-all duration-300"
-          :class="[
-            geoLocating ? 'text-primary-500' : '',
-            selectedWorkout ? 'bottom-[calc(11rem+env(safe-area-inset-bottom,0px))]' : 'bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]',
-          ]"
+          class="hidden md:flex absolute z-[1000] top-4 right-4 items-center justify-center size-11 rounded-full bg-white shadow-lg border border-gray-200 text-gray-600 hover:text-primary-600 active:bg-gray-50 transition-all duration-300"
+          :class="geoLocating ? 'text-primary-500' : ''"
           :disabled="geoLocating"
           @click="goToMyLocation"
           aria-label="Моё местоположение"
@@ -169,11 +174,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount } from 'vue';
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import PublicLayout from '@/Layouts/PublicLayout.vue';
 import MapFilters from '@/Components/Map/MapFilters.vue';
 import MobileMapFilters from '@/Components/Map/MobileMapFilters.vue';
+import UpcomingWorkoutBanner from '@/Components/Map/UpcomingWorkoutBanner.vue';
 import WorkoutBottomCard from '@/Components/Map/WorkoutBottomCard.vue';
 import SearchResultsSheet from '@/Components/Map/SearchResultsSheet.vue';
 import LoadingSpinner from '@/Components/UI/LoadingSpinner.vue';
@@ -186,7 +192,12 @@ let ymaps3 = null;
 
 const props = defineProps({
   sports: { type: Array, required: true },
+  bookedWorkouts: { type: Array, default: () => [] },
 });
+
+const bookedWorkoutParam = typeof window !== 'undefined'
+  ? new URLSearchParams(window.location.search).get('booked_workout')
+  : null;
 
 const mapContainer = ref(null);
 const searchResultsSheet = ref(null);
@@ -207,6 +218,7 @@ let currentRequestController = null;
 let isMounted = false;
 let debouncedLoadWorkouts = null;
 let prefetchedWorkouts = null;
+let selectedMarkerEl = null;
 
 const geoLocating = ref(false);
 const workoutCardExpanded = ref(false);
@@ -278,6 +290,11 @@ const initBootstrap = async () => {
 
 onMounted(async () => {
   isMounted = true;
+
+  if (bookedWorkoutParam) {
+    window.history.replaceState({}, '', '/');
+  }
+
   await initBootstrap();
 });
 
@@ -370,15 +387,27 @@ const getAvailabilityStatus = (workout) => {
 const createMarkerElement = (workout) => {
   const el = document.createElement('div');
   const status = getAvailabilityStatus(workout);
-  el.className = `ym-workout-pin ym-workout-pin--${status}`;
+  const isSelected = selectedWorkout.value?.id === workout.id;
+  el.className = `ym-workout-pin ym-workout-pin--${status}${isSelected ? ' ym-workout-pin--selected' : ''}`;
+  el.dataset.workoutId = workout.id;
   el.innerHTML = `
     <div class="ym-workout-pin__icon">${getSportIconSvg(workout.sport_slug)}</div>
     <span class="ym-workout-pin__price">${escapeHtml(formatPrice(workout.slot_price))} ₽</span>
   `;
+  if (isSelected) selectedMarkerEl = el;
   el.addEventListener('click', () => {
-    selectedWorkout.value = workout;
+    selectMarker(el, workout);
   });
   return el;
+};
+
+const selectMarker = (el, workout) => {
+  if (selectedMarkerEl) {
+    selectedMarkerEl.classList.remove('ym-workout-pin--selected');
+  }
+  selectedMarkerEl = el;
+  el.classList.add('ym-workout-pin--selected');
+  selectedWorkout.value = workout;
 };
 
 const createClusterElement = (count) => {
@@ -395,6 +424,7 @@ const updateClusterer = (workoutList) => {
     map.removeChild(clusterer);
     clusterer = null;
   }
+  selectedMarkerEl = null;
 
   const features = buildFeatures(workoutList);
   if (features.length === 0) return;
@@ -513,10 +543,7 @@ const escapeHtml = (text) => {
   return String(text).replace(/[&<>"']/g, (m) => entities[m]);
 };
 
-const selectWorkoutFromSheet = (workout) => {
-  searchResultsSheet.value?.close();
-  selectedWorkout.value = workout;
-
+const flyToWorkout = (workout) => {
   if (map && workout.lat && workout.lng) {
     map.setLocation({
       center: [parseFloat(workout.lng), parseFloat(workout.lat)],
@@ -526,7 +553,38 @@ const selectWorkoutFromSheet = (workout) => {
   }
 };
 
+const highlightMarkerById = (workoutId) => {
+  clearSelectedMarker();
+  if (!mapContainer.value) return;
+  const el = mapContainer.value.querySelector(`[data-workout-id="${workoutId}"]`);
+  if (el) {
+    selectedMarkerEl = el;
+    el.classList.add('ym-workout-pin--selected');
+  }
+};
+
+const selectWorkoutFromSheet = (workout) => {
+  searchResultsSheet.value?.close();
+  selectedWorkout.value = workout;
+  flyToWorkout(workout);
+  setTimeout(() => loadWorkouts(), 450);
+};
+
+const selectWorkoutFromBanner = (workout) => {
+  selectedWorkout.value = workout;
+  flyToWorkout(workout);
+  setTimeout(() => loadWorkouts(), 450);
+};
+
+const clearSelectedMarker = () => {
+  if (selectedMarkerEl) {
+    selectedMarkerEl.classList.remove('ym-workout-pin--selected');
+    selectedMarkerEl = null;
+  }
+};
+
 const closeWorkoutCard = () => {
+  clearSelectedMarker();
   selectedWorkout.value = null;
   workoutCardExpanded.value = false;
 };
@@ -643,6 +701,41 @@ const retryAfterError = async () => {
 :deep(.ym-workout-pin--full .ym-workout-pin__icon) {
   background: #9ca3af;
   box-shadow: 0 2px 8px rgba(156, 163, 175, 0.45);
+}
+
+:deep(.ym-workout-pin--selected) {
+  transform: translate(-50%, -50%) scale(1.2);
+  z-index: 10;
+}
+
+:deep(.ym-workout-pin--selected .ym-workout-pin__icon) {
+  box-shadow: 0 0 0 3px white, 0 0 0 5px #f04e23, 0 4px 12px rgba(240, 78, 35, 0.5);
+}
+
+:deep(.ym-workout-pin--selected .ym-workout-pin__price) {
+  background: #f04e23;
+  color: white;
+  box-shadow: 0 2px 6px rgba(240, 78, 35, 0.4);
+}
+
+:deep(.ym-workout-pin--low.ym-workout-pin--selected .ym-workout-pin__icon) {
+  box-shadow: 0 0 0 3px white, 0 0 0 5px #f59e0b, 0 4px 12px rgba(245, 158, 11, 0.5);
+}
+
+:deep(.ym-workout-pin--low.ym-workout-pin--selected .ym-workout-pin__price) {
+  background: #f59e0b;
+  color: white;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
+}
+
+:deep(.ym-workout-pin--full.ym-workout-pin--selected .ym-workout-pin__icon) {
+  box-shadow: 0 0 0 3px white, 0 0 0 5px #9ca3af, 0 4px 12px rgba(156, 163, 175, 0.5);
+}
+
+:deep(.ym-workout-pin--full.ym-workout-pin--selected .ym-workout-pin__price) {
+  background: #9ca3af;
+  color: white;
+  box-shadow: 0 2px 6px rgba(156, 163, 175, 0.4);
 }
 
 :deep(.ym-workout-pin__price) {

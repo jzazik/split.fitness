@@ -2,18 +2,25 @@
   <Transition name="card">
     <div
       v-if="isOpen && workout"
-      class="card-container absolute z-50 bottom-6 left-3 right-3 sm:left-1/2 sm:right-auto sm:w-full sm:max-w-lg pointer-events-auto"
+      ref="cardEl"
+      class="card-container absolute z-[1000] bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] left-3 right-3 sm:left-1/2 sm:right-auto sm:w-full sm:max-w-lg sm:bottom-6 pointer-events-auto"
+      :style="dragStyle"
+      @touchstart.passive="onTouchStart"
+      @touchend="onTouchEnd"
     >
       <button
         @click="close"
-        class="absolute -top-2.5 -right-2.5 sm:-top-3 sm:-right-3 size-7 flex items-center justify-center rounded-full bg-white text-gray-400 hover:text-gray-600 shadow-md ring-1 ring-gray-200 transition-colors z-20"
+        class="absolute -top-2.5 -right-2.5 sm:-top-3 sm:-right-3 size-7 hidden sm:flex items-center justify-center rounded-full bg-white text-gray-400 hover:text-gray-600 shadow-md ring-1 ring-gray-200 transition-colors z-20"
         aria-label="Закрыть"
       >
         <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
-      <div class="bg-white rounded-2xl shadow-xl relative overflow-hidden">
+      <div class="bg-white rounded-2xl shadow-xl relative overflow-hidden ring-2" :class="ringColorClass">
+        <div class="flex justify-center pt-2 pb-0.5 cursor-grab sm:hidden">
+          <div class="w-10 h-1 rounded-full bg-gray-300" />
+        </div>
 
         <!-- Compact preview (always visible) -->
         <div class="p-4">
@@ -130,31 +137,22 @@
 
                 <!-- Step 1: Phone input -->
                 <div v-if="authStep === 'phone'">
-                  <label for="booking-phone" class="block text-sm font-medium text-gray-700 mb-1.5">
-                    Введите номер телефона для записи
-                  </label>
                   <div class="flex gap-2">
-                    <div class="relative flex-1">
-                      <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm pointer-events-none">+7</span>
-                      <input
-                        ref="phoneInput"
-                        id="booking-phone"
-                        v-model="phone"
-                        type="tel"
-                        inputmode="numeric"
-                        placeholder="900 123-45-67"
-                        maxlength="13"
-                        class="w-full rounded-lg border-gray-300 pl-9 pr-3 py-2.5 text-sm focus:border-primary-500 focus:ring-primary-500 transition-colors"
-                        :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-500': phoneError }"
-                        @input="onPhoneInput"
-                        @keydown.enter="sendSmsCode"
-                      />
-                    </div>
+                    <PhoneInput
+                      ref="phoneInput"
+                      id="booking-phone"
+                      v-model="phone"
+                      label="Введите номер телефона для записи"
+                      :error="phoneError"
+                      :hint="!phoneError ? 'Отправим SMS с кодом подтверждения' : null"
+                      class="flex-1"
+                      @keydown.enter="sendSmsCode"
+                    />
                     <button
                       @click="sendSmsCode"
-                      :disabled="!isPhoneValid || submitting"
-                      class="px-5 py-2.5 rounded-lg text-sm font-semibold text-white transition-all whitespace-nowrap flex items-center gap-2"
-                      :class="isPhoneValid && !submitting
+                      :disabled="!isPhoneValid || submitting || cooldown > 0"
+                      class="self-center mt-5 px-5 py-2.5 rounded-lg text-sm font-semibold text-white transition-all whitespace-nowrap flex items-center gap-2"
+                      :class="isPhoneValid && !submitting && cooldown <= 0
                         ? 'bg-primary-500 hover:bg-primary-600 active:bg-primary-700'
                         : 'bg-gray-300 cursor-not-allowed'"
                     >
@@ -162,17 +160,15 @@
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                       </svg>
-                      Записаться
+                      {{ cooldown > 0 ? `${cooldown}с` : 'Записаться' }}
                     </button>
                   </div>
-                  <p v-if="phoneError" class="mt-1.5 text-xs text-red-500">{{ phoneError }}</p>
-                  <p v-else class="mt-1.5 text-xs text-gray-400">Отправим SMS с кодом подтверждения</p>
                 </div>
 
                 <!-- Step 2: Code input -->
                 <div v-else-if="authStep === 'code'">
                   <p class="text-sm text-gray-600 mb-3">
-                    Код отправлен на <span class="font-medium">+7 {{ formatPhoneValue(rawPhone) }}</span>
+                    Код отправлен на <span class="font-medium">+7 {{ formatPhoneValue(phoneDigits) }}</span>
                   </p>
                   <div class="flex gap-2">
                     <input
@@ -244,9 +240,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue';
+import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
+import PhoneInput from '@/Components/UI/PhoneInput.vue';
 import {
   getInitials,
   shortCoachName as buildShortName,
@@ -282,6 +279,58 @@ const codeError = ref('');
 const cooldown = ref(0);
 let cooldownTimer = null;
 
+const SWIPE_DISMISS_THRESHOLD = 80;
+const cardEl = ref(null);
+const dragOffsetY = ref(0);
+const dragging = ref(false);
+let touchStartY = 0;
+
+const dragStyle = computed(() => {
+  if (!dragging.value || dragOffsetY.value <= 0) return {};
+  return { transform: `translateY(${dragOffsetY.value}px)`, transition: 'none' };
+});
+
+const onTouchStart = (e) => {
+  touchStartY = e.touches[0].clientY;
+  dragOffsetY.value = 0;
+  dragging.value = false;
+};
+
+const onTouchMove = (e) => {
+  const deltaY = e.touches[0].clientY - touchStartY;
+  if (!dragging.value && deltaY > 0) {
+    dragging.value = true;
+  }
+  if (dragging.value) {
+    e.preventDefault();
+    dragOffsetY.value = Math.max(0, deltaY);
+  }
+};
+
+const onTouchEnd = () => {
+  if (dragging.value && dragOffsetY.value > SWIPE_DISMISS_THRESHOLD) {
+    close();
+  }
+  dragOffsetY.value = 0;
+  dragging.value = false;
+};
+
+const bindTouchMove = (el) => {
+  if (el) el.addEventListener('touchmove', onTouchMove, { passive: false });
+};
+const unbindTouchMove = (el) => {
+  if (el) el.removeEventListener('touchmove', onTouchMove);
+};
+
+watch(cardEl, (newEl, oldEl) => {
+  unbindTouchMove(oldEl);
+  bindTouchMove(newEl);
+});
+
+onBeforeUnmount(() => {
+  unbindTouchMove(cardEl.value);
+});
+
 const isAuthenticated = computed(() => !!page.props.auth?.user);
 
 const slotsTotal = computed(() => {
@@ -296,12 +345,20 @@ const slotsBooked = computed(() => {
 
 const availableSlotsCount = computed(() => props.workout ? calcAvailableSlots(props.workout) : 0);
 const availabilityText = computed(() => props.workout ? buildAvailabilityLabel(props.workout) : '');
+
+const ringColorClass = computed(() => {
+  if (availableSlotsCount.value <= 0) return 'ring-gray-400';
+  const total = props.workout?.slots_total || 0;
+  if (total > 0 && availableSlotsCount.value / total < 0.3) return 'ring-amber-400';
+  return 'ring-primary-500';
+});
+
 const coachShortName = computed(() => buildShortName(props.workout?.coach_name));
 const workoutDate = computed(() => props.workout ? formatWorkoutDate(props.workout.starts_at) : '');
 
-const rawPhone = computed(() => phone.value.replace(/\D/g, ''));
-const isPhoneValid = computed(() => rawPhone.value.length === 10);
-const fullPhone = computed(() => `+7${rawPhone.value}`);
+const phoneDigits = computed(() => phone.value.replace(/\D/g, ''));
+const isPhoneValid = computed(() => phoneDigits.value.length === 10);
+const fullPhone = computed(() => `+7${phoneDigits.value}`);
 
 watch(() => props.workout, () => { collapse(); });
 watch(() => props.isOpen, (open) => { if (!open) collapse(); });
@@ -313,18 +370,15 @@ const formatPhoneValue = (digits) => {
   return `${digits.slice(0, 3)} ${digits.slice(3, 6)}-${digits.slice(6, 8)}-${digits.slice(8, 10)}`;
 };
 
-const onPhoneInput = () => {
-  phoneError.value = '';
-  const digits = phone.value.replace(/\D/g, '').slice(0, 10);
-  phone.value = formatPhoneValue(digits);
-};
-
 function startCooldown(seconds = 60) {
   cooldown.value = seconds;
   clearInterval(cooldownTimer);
   cooldownTimer = setInterval(() => {
     cooldown.value--;
-    if (cooldown.value <= 0) clearInterval(cooldownTimer);
+    if (cooldown.value <= 0) {
+      clearInterval(cooldownTimer);
+      phoneError.value = '';
+    }
   }, 1000);
 }
 
@@ -375,6 +429,10 @@ const sendSmsCode = async () => {
       } else {
         phoneError.value = errors.phone?.[0] || 'Ошибка отправки.';
       }
+    } else if (e.response?.status === 429) {
+      const retryAfter = parseInt(e.response.headers['retry-after'], 10) || 60;
+      startCooldown(retryAfter);
+      phoneError.value = `Слишком много попыток. Подождите ${retryAfter} сек.`;
     } else {
       phoneError.value = 'Не удалось отправить SMS. Попробуйте позже.';
     }
@@ -442,7 +500,7 @@ function openPaymentWidget(data) {
       skin: 'mini',
     }, {
       onSuccess() {
-        router.visit(`/athlete/bookings/${bookingId}`);
+        router.visit(`/?booked_workout=${props.workout.id}`);
       },
       onFail() {
         alert('Оплата не прошла. Попробуйте ещё раз.');

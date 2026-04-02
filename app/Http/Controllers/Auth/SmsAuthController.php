@@ -41,12 +41,9 @@ class SmsAuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        $redirect = match ($user->role) {
-            'athlete' => route('athlete.bookings', absolute: false),
-            'coach' => route('coach.dashboard', absolute: false),
-            'admin' => route('admin.dashboard', absolute: false),
-            default => '/',
-        };
+        $redirect = $user->role === 'admin'
+            ? route('admin.dashboard', absolute: false)
+            : route('home', absolute: false);
 
         return response()->json([
             'success' => true,
