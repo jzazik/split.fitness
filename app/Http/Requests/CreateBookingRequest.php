@@ -27,7 +27,7 @@ class CreateBookingRequest extends FormRequest
     {
         return [
             'workout_id' => 'required|integer|exists:workouts,id',
-            'slots_count' => 'integer|min:1|max:100',
+            'slots_count' => 'required|integer|min:1|max:100',
         ];
     }
 
@@ -54,8 +54,15 @@ class CreateBookingRequest extends FormRequest
             }
 
             // Check if workout hasn't started yet
-            if ($workout->starts_at < now()) {
+            if ($workout->starts_at <= now()) {
                 $validator->errors()->add('workout_id', 'Тренировка уже началась или завершилась');
+            }
+
+            // Check if requested slots fit available capacity
+            $slotsCount = (int) $this->input('slots_count', 1);
+            $availableSlots = $workout->slots_total - $workout->slots_booked;
+            if ($slotsCount > $availableSlots) {
+                $validator->errors()->add('slots_count', "Недостаточно свободных мест. Доступно: {$availableSlots}");
             }
 
             // Note: Duplicate booking check moved to CreateBookingAction within transaction

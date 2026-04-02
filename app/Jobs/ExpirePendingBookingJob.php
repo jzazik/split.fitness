@@ -10,6 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class ExpirePendingBookingJob implements ShouldQueue
 {
@@ -29,8 +30,10 @@ class ExpirePendingBookingJob implements ShouldQueue
         $processedCount = 0;
 
         foreach ($expiredBookings as $booking) {
+            $transactionId = Str::uuid()->toString();
+
             try {
-                DB::transaction(function () use ($booking) {
+                DB::transaction(function () use ($booking, $transactionId) {
                     // Re-lock and re-check booking status to prevent race conditions
                     $booking = Booking::lockForUpdate()->find($booking->id);
 
@@ -45,6 +48,7 @@ class ExpirePendingBookingJob implements ShouldQueue
                         Log::warning('Workout not found during booking expiration, cancelling booking', [
                             'booking_id' => $booking->id,
                             'workout_id' => $booking->workout_id,
+                            'transaction_id' => $transactionId,
                         ]);
 
                         $booking->update(['status' => 'cancelled']);
@@ -64,6 +68,7 @@ class ExpirePendingBookingJob implements ShouldQueue
                             'workout_id' => $workout->id,
                             'slots_booked' => $workout->slots_booked,
                             'booking_slots_count' => $booking->slots_count,
+                            'transaction_id' => $transactionId,
                         ]);
 
                         throw new \RuntimeException('Data corruption detected: slots_booked < booking->slots_count');
@@ -79,6 +84,7 @@ class ExpirePendingBookingJob implements ShouldQueue
                         'athlete_id' => $booking->athlete_id,
                         'slots_count' => $booking->slots_count,
                         'status' => 'expired',
+                        'transaction_id' => $transactionId,
                         'slots_booked_before' => $slotsBefore,
                         'slots_booked_after' => $slotsAfter,
                         'created_at' => $booking->created_at->toDateTimeString(),
@@ -92,6 +98,7 @@ class ExpirePendingBookingJob implements ShouldQueue
                     'booking_id' => $booking->id,
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
+                    'transaction_id' => $transactionId,
                 ]);
             }
         }

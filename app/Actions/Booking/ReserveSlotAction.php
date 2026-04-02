@@ -14,7 +14,7 @@ class ReserveSlotAction
      *
      * @throws OversellException
      */
-    public function execute(Workout $workout, int $slotsCount = 1): void
+    public function execute(Workout $workout, int $slotsCount = 1, ?string $transactionId = null): void
     {
         $workout->lockForUpdate();
         $workout->refresh();
@@ -29,6 +29,7 @@ class ReserveSlotAction
                 'slots_booked' => $slotsBefore,
                 'slots_total' => $workout->slots_total,
                 'slots_available' => $workout->slots_total - $slotsBefore,
+                'transaction_id' => $transactionId,
             ]);
 
             throw new OversellException(
@@ -50,6 +51,7 @@ class ReserveSlotAction
                 'slots_total' => $workout->slots_total,
                 'slots_count' => $slotsCount,
                 'slots_before' => $slotsBefore,
+                'transaction_id' => $transactionId,
             ]);
 
             throw new OversellException(
@@ -67,6 +69,7 @@ class ReserveSlotAction
             'slots_booked_before' => $slotsBefore,
             'slots_booked_after' => $workout->slots_booked,
             'slots_total' => $workout->slots_total,
+            'transaction_id' => $transactionId,
         ]);
     }
 }

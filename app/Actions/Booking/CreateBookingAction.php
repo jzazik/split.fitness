@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Workout;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class CreateBookingAction
@@ -25,7 +26,9 @@ class CreateBookingAction
      */
     public function execute(Workout $workout, User $athlete, int $slotsCount = 1): Booking
     {
-        return DB::transaction(function () use ($workout, $athlete, $slotsCount) {
+        $transactionId = Str::uuid()->toString();
+
+        return DB::transaction(function () use ($workout, $athlete, $slotsCount, $transactionId) {
             // Check for duplicate booking within transaction
             $existingBooking = Booking::where('workout_id', $workout->id)
                 ->where('athlete_id', $athlete->id)
@@ -40,7 +43,7 @@ class CreateBookingAction
             }
 
             $slotsBefore = $workout->slots_booked;
-            $this->reserveSlotAction->execute($workout, $slotsCount);
+            $this->reserveSlotAction->execute($workout, $slotsCount, $transactionId);
             $workout->refresh();
             $slotsAfter = $workout->slots_booked;
 
@@ -64,6 +67,7 @@ class CreateBookingAction
                 'athlete_id' => $athlete->id,
                 'slots_count' => $slotsCount,
                 'status' => $booking->status,
+                'transaction_id' => $transactionId,
                 'total_amount' => $totalAmount,
                 'slots_booked_before' => $slotsBefore,
                 'slots_booked_after' => $slotsAfter,
