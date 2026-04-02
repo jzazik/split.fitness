@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use Opcodes\LogViewer\Facades\LogViewer;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,7 +35,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Workout::class, WorkoutPolicy::class);
         Gate::policy(Booking::class, BookingPolicy::class);
 
-        Gate::define('viewLogViewer', fn () => true);
+        LogViewer::auth(fn ($request) => true);
 
         // Register event listeners
         Event::listen(
