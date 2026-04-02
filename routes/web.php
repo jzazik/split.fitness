@@ -11,18 +11,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicMapController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/sw.js', function () {
-    $path = public_path('build/sw.js');
-
-    if (! file_exists($path)) {
-        abort(404);
-    }
-
-    return response()->file($path, [
-        'Content-Type' => 'application/javascript',
-        'Service-Worker-Allowed' => '/',
-    ]);
-});
 
 Route::get('/', [PublicMapController::class, 'index'])->name('home');
 Route::get('/map', [PublicMapController::class, 'index'])->name('map');
