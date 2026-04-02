@@ -8,33 +8,24 @@ use RuntimeException;
 
 class SmsCRuProvider implements SmsProviderInterface
 {
-    protected ?string $login;
-
-    protected ?string $password;
-
-    protected ?string $sender;
-
     protected string $baseUrl = 'https://smsc.ru/sys/send.php';
-
-    public function __construct()
-    {
-        $this->login = config('services.smscru.login');
-        $this->password = config('services.smscru.password');
-        $this->sender = config('services.smscru.sender');
-
-        if (empty($this->login) || empty($this->password)) {
-            throw new RuntimeException('SMSC.RU is not configured');
-        }
-    }
 
     public function send(string $phone, string $message): void
     {
+        $login = config('services.smscru.login');
+        $password = config('services.smscru.password');
+        $sender = config('services.smscru.sender');
+
+        if (empty($login) || empty($password)) {
+            throw new RuntimeException('SMSC.RU is not configured: SMSCRU_LOGIN and SMSCRU_PASSWORD are required');
+        }
+
         try {
             $response = Http::get($this->baseUrl, [
-                'login' => $this->login,
-                'psw' => $this->password,
+                'login' => $login,
+                'psw' => $password,
                 'phones' => $phone,
-                'sender' => $this->sender,
+                'sender' => $sender,
                 'mes' => $message,
             ]);
 
