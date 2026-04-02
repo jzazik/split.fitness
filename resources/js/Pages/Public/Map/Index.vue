@@ -180,6 +180,7 @@ import LoadingSpinner from '@/Components/UI/LoadingSpinner.vue';
 import Toast from '@/Components/UI/Toast.vue';
 import { debounce } from '@/utils/debounce';
 import { formatPrice } from '@/utils/workout';
+import { getSportIconSvg } from '@/utils/sportIcons';
 
 let ymaps3 = null;
 
@@ -370,10 +371,7 @@ const createMarkerElement = (workout) => {
   const status = getAvailabilityStatus(workout);
   el.className = `ym-workout-pin ym-workout-pin--${status}`;
   el.innerHTML = `
-    <svg width="32" height="40" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M16 0C7.163 0 0 7.163 0 16c0 10 16 24 16 24s16-14 16-24C32 7.163 24.837 0 16 0z" fill="currentColor"/>
-      <circle cx="16" cy="16" r="7" fill="white"/>
-    </svg>
+    <div class="ym-workout-pin__icon">${getSportIconSvg(workout.sport_slug)}</div>
     <span class="ym-workout-pin__price">${escapeHtml(formatPrice(workout.slot_price))} ₽</span>
   `;
   el.addEventListener('click', () => {
@@ -607,36 +605,47 @@ const retryAfterError = async () => {
 }
 
 :deep(.ym-workout-pin) {
-  position: relative;
   cursor: pointer;
-  transform: translate(-50%, -100%);
+  transform: translate(-50%, -50%);
   transition: transform 0.15s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: #f04e23;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
 }
 
 :deep(.ym-workout-pin:hover) {
-  transform: translate(-50%, -100%) scale(1.12);
+  transform: translate(-50%, -50%) scale(1.15);
 }
 
-:deep(.ym-workout-pin--available) {
-  color: #f04e23;
+:deep(.ym-workout-pin__icon) {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f04e23;
+  color: white;
+  box-shadow: 0 2px 8px rgba(240, 78, 35, 0.45);
 }
 
-:deep(.ym-workout-pin--low) {
-  color: #f59e0b;
+:deep(.ym-workout-pin__icon svg) {
+  width: 22px;
+  height: 22px;
 }
 
-:deep(.ym-workout-pin--full) {
-  color: #9ca3af;
+:deep(.ym-workout-pin--low .ym-workout-pin__icon) {
+  background: #f59e0b;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.45);
+}
+
+:deep(.ym-workout-pin--full .ym-workout-pin__icon) {
+  background: #9ca3af;
+  box-shadow: 0 2px 8px rgba(156, 163, 175, 0.45);
 }
 
 :deep(.ym-workout-pin__price) {
-  position: absolute;
-  bottom: -18px;
+  margin-top: 2px;
   white-space: nowrap;
   background: white;
   border-radius: 9999px;

@@ -40,6 +40,7 @@ class WorkoutMapResource extends JsonResource
             'lat' => $lat,
             'lng' => $lng,
             'sport_name' => $this->sport?->name,
+            'sport_slug' => $this->sport?->slug,
             'location_name' => $this->location_name,
             'address' => $this->address,
             'city_name' => $this->city?->name,

@@ -3,8 +3,10 @@
     <div
       v-if="isOpen && workout"
       ref="cardContainer"
-      class="card-container absolute z-50 left-3 right-3 sm:left-1/2 sm:right-auto sm:w-full sm:max-w-lg pointer-events-auto"
-      :style="{ bottom: `calc(1.5rem + ${keyboardOffset}px)` }"
+      class="card-container z-50 left-3 right-3 sm:left-1/2 sm:right-auto sm:w-full sm:max-w-lg pointer-events-auto"
+      :class="showsInputForm
+        ? 'fixed bottom-auto top-[env(safe-area-inset-top,0px)] sm:absolute sm:top-auto sm:bottom-6'
+        : 'absolute bottom-6'"
     >
       <button
         @click="close"
@@ -289,7 +291,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import {
@@ -316,23 +318,6 @@ const submitting = ref(false);
 const phoneInput = ref(null);
 const codeInput = ref(null);
 const cardContainer = ref(null);
-const keyboardOffset = ref(0);
-
-function onViewportResize() {
-  if (!window.visualViewport) return;
-  const offset = window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop;
-  keyboardOffset.value = Math.max(0, offset);
-}
-
-onMounted(() => {
-  window.visualViewport?.addEventListener('resize', onViewportResize);
-  window.visualViewport?.addEventListener('scroll', onViewportResize);
-});
-
-onUnmounted(() => {
-  window.visualViewport?.removeEventListener('resize', onViewportResize);
-  window.visualViewport?.removeEventListener('scroll', onViewportResize);
-});
 
 // Phone step
 const phone = ref('');
@@ -350,6 +335,11 @@ const regForm = ref({ first_name: '', last_name: '' });
 const regErrors = ref({});
 
 const isAuthenticated = computed(() => !!page.props.auth?.user);
+
+const showsInputForm = computed(() => {
+  if (typeof window === 'undefined') return false;
+  return expanded.value && !isAuthenticated.value && window.innerWidth < 640;
+});
 
 const slotsTotal = computed(() => {
   if (!props.workout) return 0;
@@ -395,22 +385,12 @@ function startCooldown(seconds = 60) {
   }, 1000);
 }
 
-const scrollInputIntoView = (el) => {
-  if (!el) return;
-  setTimeout(() => {
-    el.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
-  }, 300);
-};
-
 const expand = () => {
   if (availableSlotsCount.value === 0) return;
   expanded.value = true;
   emit('update:expanded', true);
   if (!isAuthenticated.value) {
-    nextTick(() => {
-      phoneInput.value?.focus();
-      scrollInputIntoView(phoneInput.value);
-    });
+    nextTick(() => phoneInput.value?.focus());
   }
 };
 
@@ -551,7 +531,6 @@ const handleBooking = async () => {
 <style scoped>
 .card-container {
   transform: none;
-  transition: bottom 0.15s ease-out;
 }
 
 @media (min-width: 640px) {
