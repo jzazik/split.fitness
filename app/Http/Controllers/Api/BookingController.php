@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Actions\Booking\CreateBookingAction;
+use App\Exceptions\Booking\OversellException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateBookingRequest;
 use App\Models\Workout;
@@ -42,6 +43,13 @@ class BookingController extends Controller
                 ],
                 'payment_url' => null, // Placeholder for Sprint 6
             ], 201);
+        } catch (OversellException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => [
+                    'workout_id' => [$e->getMessage()],
+                ],
+            ], 422);
         } catch (ValidationException $e) {
             throw $e;
         } catch (\Exception $e) {

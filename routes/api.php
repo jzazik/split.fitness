@@ -8,5 +8,6 @@ Route::get('/workouts/map', [MapController::class, 'index'])
     ->middleware('throttle:60,1'); // 60 requests per minute
 
 Route::middleware(['auth:sanctum', 'role:athlete'])->group(function () {
-    Route::post('/bookings', [BookingController::class, 'store']);
+    Route::post('/bookings', [BookingController::class, 'store'])
+        ->middleware('throttle:10,1'); // 10 requests per minute
 });

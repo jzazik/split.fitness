@@ -3,6 +3,7 @@
 namespace App\Actions\Booking;
 
 use App\Events\BookingCreated;
+use App\Exceptions\Booking\OversellException;
 use App\Models\Booking;
 use App\Models\User;
 use App\Models\Workout;
@@ -18,6 +19,9 @@ class CreateBookingAction
 
     /**
      * Create a booking for a workout.
+     *
+     * @throws ValidationException
+     * @throws OversellException
      */
     public function execute(Workout $workout, User $athlete, int $slotsCount = 1): Booking
     {

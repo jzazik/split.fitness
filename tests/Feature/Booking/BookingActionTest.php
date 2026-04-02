@@ -4,11 +4,11 @@ namespace Tests\Feature\Booking;
 
 use App\Actions\Booking\CreateBookingAction;
 use App\Actions\Booking\ReserveSlotAction;
+use App\Exceptions\Booking\OversellException;
 use App\Models\Booking;
 use App\Models\User;
 use App\Models\Workout;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class BookingActionTest extends TestCase
@@ -47,7 +47,7 @@ class BookingActionTest extends TestCase
             'slots_booked' => 5,
         ]);
 
-        $this->expectException(ValidationException::class);
+        $this->expectException(OversellException::class);
         $this->reserveSlotAction->execute($workout, 1);
 
         $workout->refresh();
@@ -61,7 +61,7 @@ class BookingActionTest extends TestCase
             'slots_booked' => 3,
         ]);
 
-        $this->expectException(ValidationException::class);
+        $this->expectException(OversellException::class);
         $this->reserveSlotAction->execute($workout, 3);
 
         $workout->refresh();
@@ -120,7 +120,7 @@ class BookingActionTest extends TestCase
         ]);
         $athlete = User::factory()->athlete()->create();
 
-        $this->expectException(ValidationException::class);
+        $this->expectException(OversellException::class);
         $this->createBookingAction->execute($workout, $athlete, 1);
 
         $this->assertEquals(0, Booking::count());
@@ -143,7 +143,7 @@ class BookingActionTest extends TestCase
 
         try {
             $this->reserveSlotAction->execute($workout, 1);
-        } catch (ValidationException $e) {
+        } catch (OversellException $e) {
             // Expected
         }
 

@@ -57,17 +57,19 @@ class ExpirePendingBookingJob implements ShouldQueue
                     // Update booking status
                     $booking->update(['status' => 'expired']);
 
-                    // Release the slot(s) - log warning if data corruption detected
+                    // Release the slot(s) - abort transaction if data corruption detected
                     if ($workout->slots_booked < $booking->slots_count) {
-                        Log::critical('Slot count data corruption detected during booking expiration', [
+                        Log::critical('Slot count data corruption detected during booking expiration - aborting transaction', [
                             'booking_id' => $booking->id,
                             'workout_id' => $workout->id,
                             'slots_booked' => $workout->slots_booked,
                             'booking_slots_count' => $booking->slots_count,
                         ]);
+
+                        throw new \RuntimeException('Data corruption detected: slots_booked < booking->slots_count');
                     }
 
-                    $workout->slots_booked = max(0, $workout->slots_booked - $booking->slots_count);
+                    $workout->slots_booked = $workout->slots_booked - $booking->slots_count;
                     $workout->save();
 
                     $slotsAfter = $workout->fresh()->slots_booked;

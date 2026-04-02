@@ -54,7 +54,7 @@ class CreateBookingRequest extends FormRequest
             }
 
             // Check if workout hasn't started yet
-            if ($workout->starts_at <= now()) {
+            if ($workout->starts_at < now()) {
                 $validator->errors()->add('workout_id', 'Тренировка уже началась или завершилась');
             }
 

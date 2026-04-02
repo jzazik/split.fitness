@@ -206,10 +206,9 @@ const handleBooking = async () => {
       slots_count: 1,
     });
 
-    // On success, redirect to booking payment placeholder
-    // For now, redirect to athlete bookings page
+    // On success, redirect to booking detail page
     const bookingId = response.data.booking.id;
-    router.visit(`/athlete/bookings`);
+    router.visit(`/athlete/bookings/${bookingId}`);
   } catch (error) {
     if (error.response?.data?.errors?.workout_id) {
       alert(error.response.data.errors.workout_id[0]);

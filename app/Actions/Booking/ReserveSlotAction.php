@@ -2,9 +2,9 @@
 
 namespace App\Actions\Booking;
 
+use App\Exceptions\Booking\OversellException;
 use App\Models\Workout;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\ValidationException;
 
 class ReserveSlotAction
 {
@@ -12,7 +12,7 @@ class ReserveSlotAction
      * Reserve a slot for a workout with oversell protection.
      * Note: This method is called within a transaction from CreateBookingAction.
      *
-     * @throws ValidationException
+     * @throws OversellException
      */
     public function execute(Workout $workout, int $slotsCount = 1): void
     {
@@ -31,9 +31,12 @@ class ReserveSlotAction
                 'slots_available' => $workout->slots_total - $slotsBefore,
             ]);
 
-            throw ValidationException::withMessages([
-                'workout_id' => 'Недостаточно мест для бронирования.',
-            ]);
+            throw new OversellException(
+                workoutId: $workout->id,
+                slotsRequested: $slotsCount,
+                slotsBooked: $slotsBefore,
+                slotsTotal: $workout->slots_total
+            );
         }
 
         $workout->increment('slots_booked', $slotsCount);
@@ -48,6 +51,14 @@ class ReserveSlotAction
                 'slots_count' => $slotsCount,
                 'slots_before' => $slotsBefore,
             ]);
+
+            throw new OversellException(
+                workoutId: $workout->id,
+                slotsRequested: $slotsCount,
+                slotsBooked: $workout->slots_booked,
+                slotsTotal: $workout->slots_total,
+                message: 'КРИТИЧЕСКАЯ ОШИБКА: Обнаружена пересадка слотов.'
+            );
         }
 
         Log::info('Slot reserved successfully', [
