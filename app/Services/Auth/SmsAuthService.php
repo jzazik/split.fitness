@@ -10,7 +10,7 @@ use Illuminate\Validation\ValidationException;
 
 class SmsAuthService
 {
-    public const int MAX_CODE_ENTRY_ATTEMPTS = 5;
+    public const MAX_CODE_ENTRY_ATTEMPTS = 5;
 
     public function __construct(protected SmsProviderInterface $smsProvider) {}
 
