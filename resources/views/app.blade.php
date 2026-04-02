@@ -14,6 +14,8 @@
         <meta name="apple-mobile-web-app-status-bar-style" content="default">
         <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'Split Fitness') }}">
         <link rel="manifest" href="/build/manifest.webmanifest">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
         <link rel="icon" type="image/png" sizes="192x192" href="/pwa-192x192.png">
         <link rel="icon" type="image/png" sizes="512x512" href="/pwa-512x512.png">

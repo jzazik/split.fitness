@@ -25,6 +25,8 @@ const manifestIcons = [
 
 const publicAssets = [
     { src: '/favicon.ico' },
+    { src: '/favicon-16x16.png' },
+    { src: '/favicon-32x32.png' },
     { src: '/apple-touch-icon.png' },
 ];
 

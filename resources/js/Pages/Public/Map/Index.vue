@@ -43,14 +43,46 @@
       </Transition>
 
       <div
-        v-if="initialLoading"
+        v-if="mapFailed"
+        class="absolute inset-0 flex items-center justify-center bg-gray-100 z-[1000]"
+      >
+        <div class="bg-white rounded-xl shadow-lg p-8 max-w-md text-center mx-4">
+          <svg class="mx-auto h-14 w-14 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
+          </svg>
+          <h3 class="text-lg font-semibold text-gray-900">
+            Карта не загрузилась
+          </h3>
+          <p class="mt-2 text-sm text-gray-500 leading-relaxed">
+            Возможно, блокировщик рекламы блокирует Яндекс Карты. Попробуйте отключить его для этого сайта или обновите страницу.
+          </p>
+          <div class="mt-5 flex flex-col gap-2">
+            <button
+              @click="retryMapLoad"
+              class="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 transition-colors"
+            >
+              Попробовать снова
+            </button>
+            <button
+              v-if="workouts.length > 0"
+              @click="searchResultsSheet?.open()"
+              class="inline-flex items-center justify-center rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors"
+            >
+              Показать списком ({{ workouts.length }})
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        v-if="initialLoading && !mapFailed"
         class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-[1000]"
       >
         <LoadingSpinner size="md" message="Загрузка тренировок..." />
       </div>
 
       <div
-        v-if="!initialLoading && workouts.length === 0"
+        v-if="!initialLoading && !mapFailed && workouts.length === 0"
         class="absolute inset-0 flex items-center justify-center z-[999]"
         :class="hasError ? 'pointer-events-auto' : 'pointer-events-none'"
       >
@@ -159,6 +191,7 @@ const mapContainer = ref(null);
 const searchResultsSheet = ref(null);
 const initialLoading = ref(true);
 const hasError = ref(false);
+const mapFailed = ref(false);
 const workouts = ref([]);
 const selectedWorkout = ref(null);
 
@@ -172,6 +205,7 @@ let isInitialLoad = true;
 let currentRequestController = null;
 let isMounted = false;
 let debouncedLoadWorkouts = null;
+let prefetchedWorkouts = null;
 
 const geoLocating = ref(false);
 const workoutCardExpanded = ref(false);
@@ -188,8 +222,19 @@ const toast = reactive({
   message: '',
 });
 
+const prefetchWorkouts = async () => {
+  try {
+    const response = await window.axios.get('/api/workouts/map');
+    return response.data;
+  } catch {
+    return null;
+  }
+};
+
 const initBootstrap = async () => {
   if (typeof window === 'undefined' || !mapContainer.value) return;
+
+  const dataPromise = prefetchWorkouts();
 
   try {
     const { loadYandexMaps } = await import('@/composables/useYandexMap');
@@ -205,12 +250,28 @@ const initBootstrap = async () => {
     if (!isMounted) return;
 
     initMap();
-    loadWorkouts();
+
+    prefetchedWorkouts = await dataPromise;
+    if (prefetchedWorkouts) {
+      workouts.value = prefetchedWorkouts.data;
+      updateClusterer(workouts.value);
+      initialLoading.value = false;
+
+      if (prefetchedWorkouts.meta?.truncated) {
+        showToast('warning', 'Показано максимум 200 тренировок. Приблизьте карту для детального просмотра.');
+      }
+    } else {
+      loadWorkouts();
+    }
   } catch (error) {
-    console.error('Failed to initialize map bootstrap:', error);
-    hasError.value = true;
-    workouts.value = [];
-    showToast('error', 'Не удалось загрузить компоненты карты. Попробуйте обновить страницу.');
+    console.error('Failed to initialize map:', error);
+    mapFailed.value = true;
+
+    prefetchedWorkouts = await dataPromise;
+    if (prefetchedWorkouts) {
+      workouts.value = prefetchedWorkouts.data;
+    }
+    initialLoading.value = false;
   }
 };
 
@@ -513,15 +574,21 @@ const goToMyLocation = () => {
   );
 };
 
+const retryMapLoad = async () => {
+  mapFailed.value = false;
+  initialLoading.value = true;
+  ymaps3 = null;
+  clusterer = null;
+  if (map) {
+    map.destroy();
+    map = null;
+  }
+  await initBootstrap();
+};
+
 const retryAfterError = async () => {
   if (!ymaps3 || !map || !YMapClusterer) {
-    if (map) {
-      map.destroy();
-      map = null;
-    }
-    clusterer = null;
-    ymaps3 = null;
-    await initBootstrap();
+    await retryMapLoad();
   } else {
     await loadWorkouts();
   }

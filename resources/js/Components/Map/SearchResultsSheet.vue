@@ -135,13 +135,17 @@ defineEmits(['select']);
 
 const isOpen = ref(false);
 
+const open = () => {
+  isOpen.value = true;
+};
+
 const close = () => {
   isOpen.value = false;
 };
 
 const slotsBars = (workout) => Math.min(workout.slots_total || 0, 10);
 
-defineExpose({ close });
+defineExpose({ open, close });
 </script>
 
 <style scoped>
