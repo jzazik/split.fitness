@@ -17,7 +17,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
-      <div class="bg-white rounded-2xl shadow-xl relative overflow-hidden ring-2" :class="ringColorClass">
+      <div class="bg-white rounded-2xl shadow-xl relative overflow-hidden ring-1" :class="ringColorClass">
         <div class="flex justify-center pt-2 pb-0.5 cursor-grab sm:hidden">
           <div class="w-10 h-1 rounded-full bg-gray-300" />
         </div>
@@ -158,7 +158,7 @@
                     <button
                       type="submit"
                       :disabled="!sms.isPhoneValid.value || sms.loading.value || sms.cooldown.value > 0"
-                      class="px-6 py-2 border border-transparent rounded-xl text-base font-semibold text-white transition-all whitespace-nowrap flex items-center gap-2 shrink-0"
+                      class="px-6 py-2 border border-transparent rounded-md text-base font-semibold text-white transition-all whitespace-nowrap flex items-center gap-2 shrink-0"
                       :class="sms.isPhoneValid.value && !sms.loading.value && sms.cooldown.value <= 0
                         ? 'bg-primary-500 hover:bg-primary-600 active:bg-primary-700'
                         : 'bg-gray-300 cursor-not-allowed'"
@@ -194,7 +194,7 @@
                     <button
                       type="submit"
                       :disabled="sms.code.value.length !== 6 || sms.loading.value"
-                      class="px-6 py-2 rounded-xl text-base font-semibold text-white transition-all whitespace-nowrap flex items-center gap-2 shrink-0"
+                      class="px-6 py-2 rounded-md text-base font-semibold text-white transition-all whitespace-nowrap flex items-center gap-2 shrink-0"
                       :class="sms.code.value.length === 6 && !sms.loading.value
                         ? 'bg-primary-500 hover:bg-primary-600 active:bg-primary-700'
                         : 'bg-gray-300 cursor-not-allowed'"
