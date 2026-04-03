@@ -148,7 +148,6 @@
                         type="tel"
                         v-model="sms.phone.value"
                         :error="sms.errors.value.phone?.[0]"
-                        autofocus
                         autocomplete="tel"
                         inputmode="numeric"
                         placeholder="+7"
@@ -195,7 +194,7 @@
                     <button
                       type="submit"
                       :disabled="sms.code.value.length !== 6 || sms.loading.value"
-                      class="px-5 py-2 rounded-lg text-sm font-semibold text-white transition-all whitespace-nowrap flex items-center gap-2 shrink-0"
+                      class="px-6 py-2 rounded-xl text-base font-semibold text-white transition-all whitespace-nowrap flex items-center gap-2 shrink-0"
                       :class="sms.code.value.length === 6 && !sms.loading.value
                         ? 'bg-primary-500 hover:bg-primary-600 active:bg-primary-700'
                         : 'bg-gray-300 cursor-not-allowed'"
