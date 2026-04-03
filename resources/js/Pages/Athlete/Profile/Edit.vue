@@ -69,7 +69,7 @@ const submit = () => {
                                 </label>
                                 <AvatarUploader
                                     :current-url="user?.avatar_url"
-                                    :max-size-mb="5"
+                                    :max-size-mb="30"
                                     @upload="handleAvatarUpload"
                                     @remove="handleAvatarRemove"
                                 />

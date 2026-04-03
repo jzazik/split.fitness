@@ -91,7 +91,7 @@ const goToMapWithSports = () => {
                     <div class="px-6 pt-6 pb-4">
                         <AvatarUploader
                             :current-url="avatarUrl"
-                            :max-size-mb="5"
+                            :max-size-mb="30"
                             @upload="handleAvatarUpload"
                             @remove="handleAvatarRemove"
                         />

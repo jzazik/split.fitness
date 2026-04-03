@@ -80,7 +80,7 @@ class ProfileController extends Controller
     public function uploadAvatar(Request $request): RedirectResponse
     {
         $request->validate([
-            'avatar' => 'required|image|max:5120',
+            'avatar' => 'required|image|max:30720',
         ]);
 
         $user = auth()->user();

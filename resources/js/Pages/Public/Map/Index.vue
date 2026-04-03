@@ -496,10 +496,12 @@ const loadWorkouts = async () => {
     if (map.bounds) {
       const [[lng1, lat1], [lng2, lat2]] = map.bounds;
       const round6 = (v) => Math.round(v * 1e6) / 1e6;
-      params.sw_lat = round6(Math.min(lat1, lat2));
-      params.ne_lat = round6(Math.max(lat1, lat2));
-      params.sw_lng = round6(Math.min(lng1, lng2));
-      params.ne_lng = round6(Math.max(lng1, lng2));
+      const clampLat = (v) => Math.max(-90, Math.min(90, v));
+      const clampLng = (v) => Math.max(-180, Math.min(180, v));
+      params.sw_lat = round6(clampLat(Math.min(lat1, lat2)));
+      params.ne_lat = round6(clampLat(Math.max(lat1, lat2)));
+      params.sw_lng = round6(clampLng(Math.min(lng1, lng2)));
+      params.ne_lng = round6(clampLng(Math.max(lng1, lng2)));
     }
 
     const response = await window.axios.get('/api/workouts/map', {

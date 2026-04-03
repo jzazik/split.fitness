@@ -94,7 +94,9 @@ export function useSmsAuth(options = {}) {
                 startCooldown(retryAfter);
                 errors.value = { phone: [`Слишком много попыток. Подождите ${retryAfter} сек.`] };
             } else {
-                errors.value = { phone: ['Произошла ошибка. Попробуйте позже.'] };
+                step.value = 'code';
+                startCooldown();
+                errors.value = { code: ['СМС могло не дойти. Попробуйте отправить повторно.'] };
             }
         } finally {
             loading.value = false;

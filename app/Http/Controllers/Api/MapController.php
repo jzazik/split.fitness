@@ -58,28 +58,18 @@ class MapController extends Controller
                 ->endOfDay());
         }
 
+        $query->whereNotNull('lat')->whereNotNull('lng');
+
         // Bounding box filter (viewport optimization)
-        $bbox = null;
         if ($request->filled(['ne_lat', 'ne_lng', 'sw_lat', 'sw_lng'])) {
             $neLat = $validated['ne_lat'];
             $neLng = $validated['ne_lng'];
             $swLat = $validated['sw_lat'];
             $swLng = $validated['sw_lng'];
 
-            $bbox = [
-                'ne_lat' => $neLat,
-                'ne_lng' => $neLng,
-                'sw_lat' => $swLat,
-                'sw_lng' => $swLng,
-            ];
+            $query->whereBetween('lat', [$swLat, $neLat]);
 
-            $query->whereNotNull('lat')
-                ->whereNotNull('lng')
-                ->whereBetween('lat', [$swLat, $neLat]);
-
-            // Handle dateline wrapping for longitude
             if ($swLng > $neLng) {
-                // Crosses dateline (e.g., eastern Russia, Pacific islands)
                 $query->where(function ($q) use ($swLng, $neLng) {
                     $q->where('lng', '>=', $swLng)
                         ->orWhere('lng', '<=', $neLng);

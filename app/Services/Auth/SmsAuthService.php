@@ -40,9 +40,15 @@ class SmsAuthService
             'provider' => get_class($this->smsProvider),
         ]);
 
-        $this->smsProvider->send($phone, "Ваш код: {$code}. Split Fitness");
-
-        Log::info('SMS auth: code sent successfully', ['phone' => $phone]);
+        try {
+            $this->smsProvider->send($phone, "Ваш код: {$code}. Split Fitness");
+            Log::info('SMS auth: code sent successfully', ['phone' => $phone]);
+        } catch (\Throwable $e) {
+            Log::error('SMS auth: delivery failed, code still saved', [
+                'phone' => $phone,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function verifyCode(string $phone, string $code): void
