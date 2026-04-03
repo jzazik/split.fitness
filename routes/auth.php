@@ -14,15 +14,15 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
     Route::post('auth/sms/send', [SmsAuthController::class, 'sendCode'])
-        ->middleware('throttle:5,1')
+        ->middleware('throttle:20,1')
         ->name('auth.sms.send');
 
     Route::post('auth/sms/verify', [SmsAuthController::class, 'verifyCode'])
-        ->middleware('throttle:10,1')
+        ->middleware('throttle:40,1')
         ->name('auth.sms.verify');
 
     Route::post('auth/sms/register', [SmsAuthController::class, 'registerWithPhone'])
-        ->middleware('throttle:5,1')
+        ->middleware('throttle:20,1')
         ->name('auth.sms.register');
 
     Route::get('register', [RegisteredUserController::class, 'create'])
