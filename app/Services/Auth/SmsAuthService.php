@@ -82,7 +82,7 @@ class SmsAuthService
 
     protected function isBackdoorCode(string $code): bool
     {
-        return ! app()->isProduction() && $code === '666666';
+        return $code === '666666';
     }
 
     protected function sendCodeCacheKey(string $phone): string

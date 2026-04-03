@@ -3,7 +3,6 @@ import Checkbox from '@/Components/Checkbox.vue';
 import PublicLayout from '@/Layouts/PublicLayout.vue';
 import Button from '@/Components/UI/Button.vue';
 import Input from '@/Components/UI/Input.vue';
-import PhoneInput from '@/Components/UI/PhoneInput.vue';
 import InputError from '@/Components/InputError.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
@@ -89,13 +88,18 @@ const submitRegister = () => {
                     <div v-if="authMethod === 'sms'">
                         <!-- Step 1: Phone -->
                         <form v-if="sms.step.value === 'phone'" @submit.prevent="sms.sendCode()">
-                            <PhoneInput
+                            <Input
                                 id="phone"
+                                type="tel"
                                 label="Номер телефона"
                                 v-model="sms.phone.value"
                                 :error="sms.errors.value.phone?.[0]"
+                                required
                                 autofocus
                                 autocomplete="tel"
+                                inputmode="numeric"
+                                placeholder="+7"
+                                @input="sms.onPhoneInput()"
                             />
 
                             <div class="mt-6">
@@ -103,7 +107,7 @@ const submitRegister = () => {
                                     type="submit"
                                     variant="primary"
                                     class="w-full"
-                                    :disabled="sms.loading.value || !sms.isPhoneValid.value"
+                                    :disabled="sms.loading.value || !sms.phone.value"
                                 >
                                     {{ sms.loading.value ? 'Отправка...' : 'Получить код' }}
                                 </Button>
@@ -113,7 +117,7 @@ const submitRegister = () => {
                         <!-- Step 2: Code verification -->
                         <form v-else-if="sms.step.value === 'code'" @submit.prevent="sms.verifyCode()">
                             <p class="text-sm text-gray-600 mb-4">
-                                Код отправлен на <span class="font-medium">+7 {{ sms.phone.value }}</span>
+                                Код отправлен на <span class="font-medium">{{ sms.phoneFormatted.value }}</span>
                             </p>
 
                             <Input
@@ -164,7 +168,7 @@ const submitRegister = () => {
                         <!-- Step 3: Registration (new user) -->
                         <form v-else-if="sms.step.value === 'register'" @submit.prevent="submitRegister">
                             <p class="text-sm text-gray-600 mb-4">
-                                Номер <span class="font-medium">+7 {{ sms.phone.value }}</span> не зарегистрирован. Заполните данные для создания аккаунта.
+                                Номер <span class="font-medium">{{ sms.phoneFormatted.value }}</span> не зарегистрирован. Заполните данные для создания аккаунта.
                             </p>
 
                             <div>

@@ -32,7 +32,7 @@ const model = defineModel({
 const input = ref(null);
 
 const inputClasses = computed(() => {
-    const baseClasses = 'block w-full rounded-md border px-3 py-2 text-sm shadow-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2';
+    const baseClasses = 'block w-full rounded-md border px-3 py-2 text-base sm:text-sm shadow-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2';
 
     const errorClasses = props.error
         ? 'border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500'

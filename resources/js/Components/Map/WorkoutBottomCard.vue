@@ -57,53 +57,54 @@
               </p>
             </div>
 
-            <!-- Workout info -->
+            <!-- Workout info + price/button -->
             <div class="flex-1 min-w-0 pt-0.5">
-              <div class="flex items-center gap-2 flex-wrap">
-                <p class="text-sm font-medium text-gray-900 truncate">{{ workout.location_name }}</p>
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 whitespace-nowrap">
-                  {{ workout.sport_name }}
-                </span>
-              </div>
-
-              <p class="mt-1 text-sm text-gray-500">
-                {{ formatWorkoutTime(workout.starts_at) }}
-                <span v-if="workout.duration_minutes" class="mx-0.5">|</span>
-                <span v-if="workout.duration_minutes">{{ workout.duration_minutes }} мин.</span>
-              </p>
-
-              <!-- Availability bars -->
-              <div class="mt-2 flex items-center gap-2">
-                <div class="flex gap-0.5">
-                  <span
-                    v-for="i in slotsTotal"
-                    :key="i"
-                    class="w-1.5 h-4 rounded-sm"
-                    :class="i <= slotsBooked ? 'bg-primary-500' : 'bg-gray-200'"
-                  />
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <p class="text-sm font-medium text-gray-900 truncate">{{ workout.location_name }}</p>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 whitespace-nowrap">
+                      {{ workout.sport_name }}
+                    </span>
+                  </div>
+                  <p class="mt-1 text-sm text-gray-500">
+                    {{ formatWorkoutTime(workout.starts_at) }}
+                    <span v-if="workout.duration_minutes" class="mx-0.5">|</span>
+                    <span v-if="workout.duration_minutes">{{ workout.duration_minutes }} мин.</span>
+                  </p>
                 </div>
-                <span class="text-xs text-gray-500 whitespace-nowrap">
-                  {{ availabilityText }}
-                </span>
+                <p class="text-base font-bold text-primary-600 whitespace-nowrap shrink-0">
+                  {{ formatPrice(workout.slot_price) }} ₽
+                </p>
               </div>
-            </div>
 
-            <!-- Price & booking button -->
-            <div class="flex flex-col items-end justify-between shrink-0 pl-2">
-              <p class="text-base font-bold text-primary-600 whitespace-nowrap">
-                {{ formatPrice(workout.slot_price) }} ₽
-              </p>
-              <button
-                v-if="!expanded"
-                @click="expand"
-                :disabled="availableSlotsCount === 0"
-                class="mt-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors whitespace-nowrap"
-                :class="availableSlotsCount > 0
-                  ? 'bg-primary-500 hover:bg-primary-600 active:bg-primary-700'
-                  : 'bg-gray-400 cursor-not-allowed'"
-              >
-                {{ availableSlotsCount > 0 ? 'Записаться' : 'Мест нет' }}
-              </button>
+              <!-- Availability bars + booking button -->
+              <div class="mt-2 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="flex gap-0.5 shrink-0">
+                    <span
+                      v-for="i in slotsTotal"
+                      :key="i"
+                      class="w-1.5 h-4 rounded-sm"
+                      :class="i <= slotsBooked ? 'bg-primary-500' : 'bg-gray-200'"
+                    />
+                  </div>
+                  <span class="text-xs text-gray-500 truncate">
+                    {{ availabilityText }}
+                  </span>
+                </div>
+                <button
+                  v-if="!expanded"
+                  @click="expand"
+                  :disabled="availableSlotsCount === 0"
+                  class="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors whitespace-nowrap shrink-0"
+                  :class="availableSlotsCount > 0
+                    ? 'bg-primary-500 hover:bg-primary-600 active:bg-primary-700'
+                    : 'bg-gray-400 cursor-not-allowed'"
+                >
+                  {{ availableSlotsCount > 0 ? 'Записаться' : 'Мест нет' }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -136,82 +137,90 @@
               <div v-if="!isAuthenticated">
 
                 <!-- Step 1: Phone input -->
-                <div v-if="authStep === 'phone'">
-                  <div class="flex gap-2">
-                    <PhoneInput
-                      ref="phoneInput"
-                      id="booking-phone"
-                      v-model="phone"
-                      label="Введите номер телефона для записи"
-                      :error="phoneError"
-                      :hint="!phoneError ? 'Отправим SMS с кодом подтверждения' : null"
-                      class="flex-1"
-                      @keydown.enter="sendSmsCode"
-                    />
+                <form v-if="sms.step.value === 'phone'" @submit.prevent="sms.sendCode()">
+                  <label for="booking-phone" class="block text-sm font-medium text-gray-700 mb-1">
+                    Введите номер телефона для записи
+                  </label>
+                  <div class="flex gap-2 items-start">
+                    <div class="flex-1">
+                      <Input
+                        id="booking-phone"
+                        type="tel"
+                        v-model="sms.phone.value"
+                        :error="sms.errors.value.phone?.[0]"
+                        autofocus
+                        autocomplete="tel"
+                        inputmode="numeric"
+                        placeholder="+7"
+                        @input="sms.onPhoneInput()"
+                      />
+                      <p v-if="!sms.errors.value.phone?.[0]" class="mt-1 text-xs text-gray-400">Отправим SMS с кодом подтверждения</p>
+                    </div>
                     <button
-                      @click="sendSmsCode"
-                      :disabled="!isPhoneValid || submitting || cooldown > 0"
-                      class="self-center mt-5 px-5 py-2.5 rounded-lg text-sm font-semibold text-white transition-all whitespace-nowrap flex items-center gap-2"
-                      :class="isPhoneValid && !submitting && cooldown <= 0
+                      type="submit"
+                      :disabled="!sms.isPhoneValid.value || sms.loading.value || sms.cooldown.value > 0"
+                      class="px-6 py-2 border border-transparent rounded-xl text-base font-semibold text-white transition-all whitespace-nowrap flex items-center gap-2 shrink-0"
+                      :class="sms.isPhoneValid.value && !sms.loading.value && sms.cooldown.value <= 0
                         ? 'bg-primary-500 hover:bg-primary-600 active:bg-primary-700'
                         : 'bg-gray-300 cursor-not-allowed'"
                     >
-                      <svg v-if="submitting" class="size-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <svg v-if="sms.loading.value" class="size-5 animate-spin" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                       </svg>
-                      {{ cooldown > 0 ? `${cooldown}с` : 'Записаться' }}
+                      {{ sms.cooldown.value > 0 ? `${sms.cooldown.value}с` : 'Записаться' }}
                     </button>
                   </div>
-                </div>
+                </form>
 
                 <!-- Step 2: Code input -->
-                <div v-else-if="authStep === 'code'">
+                <form v-else-if="sms.step.value === 'code'" @submit.prevent="sms.verifyCode()">
                   <p class="text-sm text-gray-600 mb-3">
-                    Код отправлен на <span class="font-medium">+7 {{ formatPhoneValue(phoneDigits) }}</span>
+                    Код отправлен на <span class="font-medium">{{ sms.phoneFormatted.value }}</span>
                   </p>
-                  <div class="flex gap-2">
-                    <input
-                      ref="codeInput"
-                      v-model="smsCode"
-                      type="text"
-                      inputmode="numeric"
-                      placeholder="123321"
-                      maxlength="6"
-                      autocomplete="one-time-code"
-                      class="flex-1 rounded-lg border-gray-300 px-3 py-2.5 text-sm text-center tracking-widest font-medium focus:border-primary-500 focus:ring-primary-500 transition-colors"
-                      :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-500': codeError }"
-                      @keydown.enter="verifySmsCode"
-                    />
+                  <div class="flex gap-2 items-start">
+                    <div class="flex-1">
+                      <Input
+                        id="booking-code"
+                        type="text"
+                        v-model="sms.code.value"
+                        :error="sms.errors.value.code?.[0]"
+                        autofocus
+                        autocomplete="one-time-code"
+                        placeholder="123321"
+                        inputmode="numeric"
+                        maxlength="6"
+                      />
+                    </div>
                     <button
-                      @click="verifySmsCode"
-                      :disabled="smsCode.length !== 6 || submitting"
-                      class="px-5 py-2.5 rounded-lg text-sm font-semibold text-white transition-all whitespace-nowrap flex items-center gap-2"
-                      :class="smsCode.length === 6 && !submitting
+                      type="submit"
+                      :disabled="sms.code.value.length !== 6 || sms.loading.value"
+                      class="px-5 py-2 rounded-lg text-sm font-semibold text-white transition-all whitespace-nowrap flex items-center gap-2 shrink-0"
+                      :class="sms.code.value.length === 6 && !sms.loading.value
                         ? 'bg-primary-500 hover:bg-primary-600 active:bg-primary-700'
                         : 'bg-gray-300 cursor-not-allowed'"
                     >
-                      <svg v-if="submitting" class="size-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <svg v-if="sms.loading.value" class="size-4 animate-spin" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                       </svg>
                       Подтвердить
                     </button>
                   </div>
-                  <p v-if="codeError" class="mt-1.5 text-xs text-red-500">{{ codeError }}</p>
                   <div class="mt-2 flex items-center justify-between">
-                    <button @click="authStep = 'phone'; smsCode = ''; codeError = ''" class="text-xs text-gray-500 hover:text-gray-700">
+                    <button type="button" @click="sms.goBack()" class="text-xs text-gray-500 hover:text-gray-700">
                       Изменить номер
                     </button>
                     <button
-                      @click="resendCode"
-                      :disabled="cooldown > 0"
+                      type="button"
+                      @click="sms.sendCode()"
+                      :disabled="sms.cooldown.value > 0"
                       class="text-xs text-primary-600 hover:text-primary-700 disabled:text-gray-400 disabled:cursor-not-allowed"
                     >
-                      {{ cooldown > 0 ? `Повторить через ${cooldown}с` : 'Отправить повторно' }}
+                      {{ sms.cooldown.value > 0 ? `Повторить через ${sms.cooldown.value}с` : 'Отправить повторно' }}
                     </button>
                   </div>
-                </div>
+                </form>
               </div>
 
               <!-- Authenticated user -->
@@ -240,10 +249,11 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
-import PhoneInput from '@/Components/UI/PhoneInput.vue';
+import Input from '@/Components/UI/Input.vue';
+import { useSmsAuth } from '@/composables/useSmsAuth.js';
 import {
   getInitials,
   shortCoachName as buildShortName,
@@ -265,19 +275,10 @@ const page = usePage();
 
 const expanded = ref(false);
 const submitting = ref(false);
-const phoneInput = ref(null);
-const codeInput = ref(null);
 
-// Phone step
-const phone = ref('');
-const phoneError = ref('');
-
-// SMS auth inline flow: 'phone' → 'code'
-const authStep = ref('phone');
-const smsCode = ref('');
-const codeError = ref('');
-const cooldown = ref(0);
-let cooldownTimer = null;
+const sms = useSmsAuth({
+  onVerified: () => createBooking(),
+});
 
 const SWIPE_DISMISS_THRESHOLD = 80;
 const cardEl = ref(null);
@@ -329,6 +330,7 @@ watch(cardEl, (newEl, oldEl) => {
 
 onBeforeUnmount(() => {
   unbindTouchMove(cardEl.value);
+  sms.destroy();
 });
 
 const isAuthenticated = computed(() => !!page.props.auth?.user);
@@ -356,31 +358,8 @@ const ringColorClass = computed(() => {
 const coachShortName = computed(() => buildShortName(props.workout?.coach_name));
 const workoutDate = computed(() => props.workout ? formatWorkoutDate(props.workout.starts_at) : '');
 
-const phoneDigits = computed(() => phone.value.replace(/\D/g, ''));
-const isPhoneValid = computed(() => phoneDigits.value.length === 10);
-const fullPhone = computed(() => `+7${phoneDigits.value}`);
-
 watch(() => props.workout, () => { collapse(); });
 watch(() => props.isOpen, (open) => { if (!open) collapse(); });
-
-const formatPhoneValue = (digits) => {
-  if (digits.length <= 3) return digits;
-  if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
-  if (digits.length <= 8) return `${digits.slice(0, 3)} ${digits.slice(3, 6)}-${digits.slice(6)}`;
-  return `${digits.slice(0, 3)} ${digits.slice(3, 6)}-${digits.slice(6, 8)}-${digits.slice(8, 10)}`;
-};
-
-function startCooldown(seconds = 60) {
-  cooldown.value = seconds;
-  clearInterval(cooldownTimer);
-  cooldownTimer = setInterval(() => {
-    cooldown.value--;
-    if (cooldown.value <= 0) {
-      clearInterval(cooldownTimer);
-      phoneError.value = '';
-    }
-  }, 1000);
-}
 
 const expand = () => {
   if (availableSlotsCount.value === 0) return;
@@ -391,80 +370,13 @@ const expand = () => {
 const collapse = () => {
   expanded.value = false;
   emit('update:expanded', false);
-  phone.value = '';
-  phoneError.value = '';
-  smsCode.value = '';
-  codeError.value = '';
-  authStep.value = 'phone';
+  sms.reset();
   submitting.value = false;
-  cooldown.value = 0;
-  clearInterval(cooldownTimer);
 };
 
 const close = () => {
   collapse();
   emit('close');
-};
-
-const sendSmsCode = async () => {
-  if (!isPhoneValid.value) {
-    phoneError.value = 'Введите 10 цифр номера телефона';
-    return;
-  }
-
-  submitting.value = true;
-  phoneError.value = '';
-  try {
-    await axios.post(route('auth.sms.send'), { phone: fullPhone.value });
-    authStep.value = 'code';
-    startCooldown();
-    nextTick(() => codeInput.value?.focus());
-  } catch (e) {
-    if (e.response?.status === 422) {
-      const errors = e.response.data.errors || {};
-      if (errors.phone?.[0]?.includes('уже отправлен')) {
-        authStep.value = 'code';
-        startCooldown();
-        nextTick(() => codeInput.value?.focus());
-      } else {
-        phoneError.value = errors.phone?.[0] || 'Ошибка отправки.';
-      }
-    } else if (e.response?.status === 429) {
-      const retryAfter = parseInt(e.response.headers['retry-after'], 10) || 60;
-      startCooldown(retryAfter);
-      phoneError.value = `Слишком много попыток. Подождите ${retryAfter} сек.`;
-    } else {
-      phoneError.value = 'Не удалось отправить SMS. Попробуйте позже.';
-    }
-  } finally {
-    submitting.value = false;
-  }
-};
-
-const resendCode = () => {
-  if (cooldown.value > 0) return;
-  sendSmsCode();
-};
-
-const verifySmsCode = async () => {
-  if (smsCode.value.length !== 6) return;
-
-  submitting.value = true;
-  codeError.value = '';
-  try {
-    await axios.post(route('auth.sms.verify'), {
-      phone: fullPhone.value,
-      code: smsCode.value,
-    });
-    await createBooking();
-  } catch (e) {
-    if (e.response?.status === 422) {
-      codeError.value = e.response.data.errors?.code?.[0] || 'Неверный код.';
-    } else {
-      codeError.value = 'Произошла ошибка. Попробуйте позже.';
-    }
-    submitting.value = false;
-  }
 };
 
 const createBooking = async () => {
@@ -500,7 +412,7 @@ function openPaymentWidget(data) {
       skin: 'mini',
     }, {
       onSuccess() {
-        router.visit(`/?booked_workout=${props.workout.id}`);
+        router.visit('/');
       },
       onFail() {
         alert('Оплата не прошла. Попробуйте ещё раз.');
